@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Índice de acreditación CNA → ABET · Ingeniería Agronómica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF2EE; --surface:#FFFFFF; --ink:#16241B; --muted:#56655B; --line:#D3DCD5;
+  --moss:#2E6B3E; --ochre:#B7862A; --sage:#9DB3A5; --mulberry:#8B2D4E; --tray:#E3EAE4;
+  --focus:#1D5FA8;
+  --font:"Archivo", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101712; --surface:#18221B; --ink:#E4ECE6; --muted:#9FB0A5; --line:#2C3A30;
+    --moss:#5FA873; --ochre:#D6A64A; --sage:#5E7466; --mulberry:#D0698D; --tray:#1F2B23; --focus:#7FB2F0;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101712; --surface:#18221B; --ink:#E4ECE6; --muted:#9FB0A5; --line:#2C3A30;
+  --moss:#5FA873; --ochre:#D6A64A; --sage:#5E7466; --mulberry:#D0698D; --tray:#1F2B23; --focus:#7FB2F0;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 64px}
+h1,h2,h3{font-stretch:118%;line-height:1.1;margin:0}
+h1{font-size:clamp(1.9rem,4.4vw,3.1rem);font-weight:780;letter-spacing:-.01em;max-width:18ch}
+h2{font-size:1.45rem;font-weight:720}
+h3{font-size:1.02rem;font-weight:680;font-stretch:108%}
+p{margin:.4em 0}
+.lede{color:var(--muted);max-width:64ch;margin-top:12px}
+header{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;padding-bottom:22px;border-bottom:2px solid var(--ink)}
+.figs{display:flex;gap:26px;flex-wrap:wrap}
+.fig b{display:block;font-size:1.9rem;font-stretch:125%;font-weight:760;line-height:1}
+.fig span{color:var(--muted);font-size:.84rem}
+nav{display:flex;gap:4px;flex-wrap:wrap;margin:20px 0 22px}
+nav button{font:inherit;font-weight:600;font-size:.95rem;background:transparent;color:var(--muted);border:1px solid transparent;border-radius:999px;padding:7px 15px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+nav button[aria-selected="false"]:hover{color:var(--ink);border-color:var(--line)}
+button:focus-visible,input:focus-visible,select:focus-visible,.row:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+section[hidden]{display:none}
+.legend{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin:6px 0 16px}
+.sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.sw.p{background:var(--moss)} .sw.q{background:var(--ochre)} .sw.a{background:var(--sage)} .sw.g{background:transparent;border:1.5px dashed var(--mulberry)}
+/* Mapa de cobertura: bandeja de germinación */
+.tray{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(210px,300px) 1fr 92px;gap:16px;align-items:center;padding:11px 18px;border-top:1px solid var(--line);cursor:pointer}
+.row:first-child{border-top:0}
+.row:hover{background:var(--tray)}
+.row.sub .nm{padding-left:18px}
+.row.crit{background:color-mix(in srgb,var(--tray) 55%,transparent)}
+.nm{display:flex;gap:10px;align-items:baseline}
+.nm code{font-family:var(--font);font-stretch:125%;font-weight:760;font-size:.82rem;min-width:36px;color:var(--muted)}
+.nm span{font-size:.93rem;line-height:1.25}
+.cells{display:flex;flex-wrap:wrap;gap:3px;min-height:14px}
+.c{width:11px;height:11px;border-radius:2px}
+.c.principal{background:var(--moss)} .c.parcial{background:var(--ochre)} .c.apoyo{background:var(--sage)}
+.credn{font-size:.86rem;font-weight:650;color:var(--mulberry)}
+.empty{height:14px;border:1.5px dashed var(--mulberry);border-radius:4px;width:min(180px,100%)}
+.stat{text-align:right;font-size:.82rem;color:var(--muted)}
+.stat .br{color:var(--mulberry);font-weight:700}
+.detail{padding:4px 18px 18px 18px;border-top:1px dashed var(--line);background:var(--tray);display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;font-size:.9rem}
+.detail h4{margin:10px 0 6px;font-size:.82rem;color:var(--muted);font-weight:650}
+.detail ul{margin:0;padding-left:18px}
+.detail li{margin:3px 0}
+.tag{display:inline-block;font-size:.76rem;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin:2px 4px 2px 0;background:var(--surface)}
+.tag.equivalente,.tag.principal{border-color:var(--moss);color:var(--moss)}
+.tag.parcial{border-color:var(--ochre);color:var(--ochre)}
+.tag.alta{border-color:var(--mulberry);color:var(--mulberry)}
+.link{font:inherit;background:none;border:0;color:var(--focus);cursor:pointer;padding:0;text-decoration:underline}
+/* Tarjetas */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.panel p.note{color:var(--muted);font-size:.86rem}
+.req{margin:16px 0 26px}
+.req p.note{margin-top:24px}
+.req .lbl{display:flex;justify-content:space-between;gap:10px;font-size:.92rem;margin-bottom:6px}
+.req .lbl b{font-stretch:118%}
+.bar{position:relative;height:26px;background:var(--tray);border-radius:6px;overflow:visible}
+.bar .seg{position:absolute;top:0;bottom:0;border-radius:6px}
+.bar .min{position:absolute;top:-6px;bottom:-6px;width:0;border-left:2px solid var(--ink)}
+.bar .min span{position:absolute;bottom:-20px;left:4px;font-size:.72rem;color:var(--ink);white-space:nowrap}
+.wide{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:650;color:var(--muted);font-size:.8rem}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.cat{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+/* Explorador */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.filters input,.filters select{font:inherit;font-size:.93rem;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+.filters input{flex:1 1 260px}
+.count{color:var(--muted);font-size:.88rem;margin-bottom:8px}
+details.ev{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+details.ev summary{cursor:pointer;padding:11px 16px;list-style:none;display:grid;grid-template-columns:86px 1fr;gap:12px}
+details.ev summary::-webkit-details-marker{display:none}
+details.ev summary .cd{font-stretch:120%;font-weight:720;font-size:.82rem;color:var(--muted);padding-top:2px}
+details.ev .body{padding:0 16px 14px 114px;font-size:.87rem}
+details.ev pre{white-space:pre-wrap;font-family:var(--font);font-size:.84rem;color:var(--muted);max-height:320px;overflow:auto;background:var(--tray);padding:10px 12px;border-radius:8px}
+mark{background:color-mix(in srgb,var(--ochre) 35%,transparent);color:inherit;border-radius:2px}
+.callout{border-left:4px solid var(--mulberry);background:var(--surface);padding:12px 16px;border-radius:0 10px 10px 0;margin-bottom:16px}
+svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
+#charts{grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr))}
+.full{grid-column:1/-1}
+.foot{margin-top:40px;color:var(--muted);font-size:.82rem;max-width:80ch}
+@media (max-width:720px){
+  header{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr;gap:6px}
+  .stat{text-align:left}
+  details.ev .body{padding-left:16px}
+  details.ev summary{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:no-preference){
+  .cells .c{animation:sprout .5s ease-out both;animation-delay:calc(var(--i) * 6ms)}
+  @keyframes sprout{from{transform:scale(0)}to{transform:scale(1)}}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Evidencias CNA reproyectadas a ABET</h1>
+    <p class="lede">Ingeniería Agronómica, UCundinamarca (Fusagasugá y ALD Facatativá). Cada diapositiva de la autoevaluación CNA es una evidencia; las correspondencias la proponen para los criterios de ABET EAC. Las propuestas deben validarse en el comité.</p>
+  </div>
+  <div class="figs" id="figs"></div>
+</header>
+
+<nav role="tablist" aria-label="Vistas">
+  <button role="tab" aria-selected="true" data-tab="mapa">Cobertura ABET</button>
+  <button role="tab" aria-selected="false" data-tab="curriculo">Currículo</button>
+  <button role="tab" aria-selected="false" data-tab="indicadores">Indicadores</button>
+  <button role="tab" aria-selected="false" data-tab="evidencias">Evidencias</button>
+  <button role="tab" aria-selected="false" data-tab="brechas">Brechas</button>
+  <button role="tab" aria-selected="false" data-tab="normativa">Normativa</button>
+</nav>
+
+<section id="mapa" role="tabpanel">
+  <div class="legend">
+    <span><i class="sw p"></i>Evidencia principal (correspondencia equivalente)</span>
+    <span><i class="sw q"></i>Parcial</span>
+    <span><i class="sw a"></i>De apoyo</span>
+    <span><i class="sw g"></i>Sin evidencia</span>
+  </div>
+  <div class="tray" id="tray"></div>
+  <p class="foot">Cada cuadro es una diapositiva. Haz clic en un criterio para ver de qué características CNA viene su evidencia, qué brechas tiene abiertas y para abrir sus evidencias en el explorador.</p>
+</section>
+
+<section id="curriculo" role="tabpanel" hidden>
+  <div class="grid2">
+    <div class="panel">
+      <h2>Criterio 5 frente al plan actual</h2>
+      <p class="note">150 créditos del plan clasificados en categorías ABET. Clasificación preliminar: debe validarse con los contenidos de cada PAD. Se asume 1 crédito colombiano ≈ 1 crédito semestral.</p>
+      <div id="reqs"></div>
+    </div>
+    <div class="panel">
+      <h2>Créditos por categoría</h2>
+      <div id="catbars"></div>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:18px">
+    <h2 style="margin-bottom:10px">Cursos</h2>
+    <div class="wide"><table id="cursos"></table></div>
+  </div>
+</section>
+
+<section id="indicadores" role="tabpanel" hidden>
+  <div id="incons"></div>
+  <div class="grid2" id="charts"></div>
+</section>
+
+<section id="evidencias" role="tabpanel" hidden>
+  <div class="filters">
+    <input id="q" type="search" placeholder="Buscar en el texto de las diapositivas (p. ej. alertas tempranas, laboratorio, Acuerdo 040)" aria-label="Buscar evidencias">
+    <select id="fFactor" aria-label="Factor CNA"></select>
+    <select id="fAbet" aria-label="Criterio ABET"></select>
+    <select id="fTipo" aria-label="Tipo de evidencia"></select>
+  </div>
+  <div class="count" id="count"></div>
+  <div id="list"></div>
+  <button class="link" id="more" hidden>Mostrar más</button>
+</section>
+
+<section id="brechas" role="tabpanel" hidden>
+  <div class="panel"><div class="wide"><table id="tbrechas"></table></div></div>
+</section>
+
+<section id="normativa" role="tabpanel" hidden>
+  <div class="panel">
+    <p class="note">Acuerdos y resoluciones citados en las diapositivas, detectados automáticamente. El órgano emisor puede requerir verificación.</p>
+    <div class="wide"><table id="tnorm"></table></div>
+  </div>
+</section>
+
+<p class="foot">Textos de los criterios ABET parafraseados en español; verificar contra los Criterios EAC 2026-2027 oficiales. La base de datos completa (SQLite y CSV) acompaña este tablero.</p>
+</div>
+
+<script>
+const D = __DATA__;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = n => n.toLocaleString('es-CO');
+
+// Pestañas
+const tabs=[...document.querySelectorAll('nav button')];
+function show(id){
+  tabs.forEach(b=>b.setAttribute('aria-selected', b.dataset.tab===id));
+  document.querySelectorAll('section[role=tabpanel]').forEach(s=>s.hidden = s.id!==id);
+}
+tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+
+// Cifras
+const cred = {}; D.cursos.forEach(c=>cred[c.categoria_abet]=(cred[c.categoria_abet]||0)+c.creditos);
+const sinEv = D.abet.filter(a=>a.ev.length===0).length;
+$('#figs').innerHTML = [
+  [D.evidencias.length,'evidencias indexadas'],
+  [D.abet.length - sinEv + '/' + D.abet.length,'nodos ABET con evidencia'],
+  [(cred.ingenieria||0)+'/45','créditos de ingeniería'],
+  [D.brechas.length,'brechas abiertas']
+].map(([b,s])=>`<div class="fig"><b>${b}</b><span>${s}</span></div>`).join('');
+
+// Mapa de cobertura
+const cnaName = Object.fromEntries(D.cna.map(n=>[n.codigo,n.nombre]));
+function rowHTML(a){
+  const sub = a.padre ? ' sub' : ' crit';
+  const credNote = a.codigo==='C5a' ? `<span class="credn">${(cred.matematicas||0)+(cred.ciencias_basicas||0)} de 30 créditos (matemáticas: ${cred.matematicas})</span>` : a.codigo==='C5b' ? `<span class="credn">${cred.ingenieria} de 45 créditos</span>` : a.codigo==='C5d' ? `<span class="credn">Sin proyecto de diseño obligatorio</span>` : '';
+  const cells = credNote ? credNote : a.ev.length ? a.ev.map((e,i)=>`<i class="c ${e.rol}" style="--i:${i}" title="${e.codigo} · ${e.rol}"></i>`).join('') : '<div class="empty" aria-label="Sin evidencia"></div>';
+  const nb = a.brechas.length;
+  return `<div class="row${sub}" tabindex="0" role="button" aria-expanded="false" data-id="${a.codigo}">
+    <div class="nm"><code>${a.codigo}</code><span>${esc(a.nombre)}</span></div>
+    <div class="cells">${cells}</div>
+    <div class="stat">${a.ev.length} evid.${nb?`<br><span class="br">${nb} brecha${nb>1?'s':''}</span>`:''}</div>
+  </div>`;
+}
+function detailHTML(a){
+  const f = a.fuentes.length ? '<ul>'+a.fuentes.map(x=>`<li><span class="tag ${x.tipo}">${x.tipo}</span>${x.marco==='CNA'?x.codigo.replace('C','Car. ')+' ':''}${esc(x.nombre)}${x.nota?` <em>(${esc(x.nota)})</em>`:''}</li>`).join('')+'</ul>' : '<p>Ninguna característica CNA ni REA se proyecta aquí.</p>';
+  const b = a.brechas.length ? '<ul>'+a.brechas.map(x=>`<li><span class="tag ${x.severidad}">${x.severidad}</span>${esc(x.titulo)}. ${esc(x.descripcion)} <br><strong>Acción:</strong> ${esc(x.accion)}</li>`).join('')+'</ul>' : '<p>Sin brechas registradas.</p>';
+  const i = a.indicadores.length ? a.indicadores.map(x=>`<span class="tag">${esc(x.nombre)}</span>`).join('') : '<p>Ninguno.</p>';
+  return `<div class="detail"><div>${a.descripcion?`<h4>Qué pide</h4><p>${esc(a.descripcion)}</p>`:''}<h4>De dónde viene la evidencia</h4>${f}</div>
+    <div><h4>Brechas</h4>${b}<h4>Indicadores vinculados</h4>${i}${a.ev.length?`<p style="margin-top:12px"><button class="link" data-open="${a.codigo}">Ver sus ${a.ev.length} evidencias</button></p>`:''}</div></div>`;
+}
+$('#tray').innerHTML = D.abet.map(rowHTML).join('');
+$('#tray').addEventListener('click', e=>{
+  const open = e.target.closest('[data-open]');
+  if(open){ $('#fAbet').value=open.dataset.open; $('#fFactor').value=''; $('#q').value=''; render(); show('evidencias'); return; }
+  const r = e.target.closest('.row'); if(r) toggle(r);
+});
+$('#tray').addEventListener('keydown', e=>{ const r=e.target.closest('.row'); if(r && (e.key==='Enter'||e.key===' ')){e.preventDefault();toggle(r);} });
+function toggle(r){
+  const nx = r.nextElementSibling;
+  if(nx && nx.classList.contains('detail')){ nx.remove(); r.setAttribute('aria-expanded','false'); return; }
+  const a = D.abet.find(x=>x.codigo===r.dataset.id);
+  r.insertAdjacentHTML('afterend', detailHTML(a)); r.setAttribute('aria-expanded','true');
+}
+
+// Currículo
+const CAT = {matematicas:['Matemáticas','var(--moss)'],ciencias_basicas:['Ciencias básicas','color-mix(in srgb,var(--moss) 55%,var(--surface))'],
+  ingenieria:['Temas de ingeniería','var(--ochre)'],por_definir:['Por definir','color-mix(in srgb,var(--ochre) 40%,var(--surface))'],
+  educacion_general:['Educación general','var(--sage)'],otro:['Ciencia agronómica y otros','var(--line)']};
+function req(label, segs, min, max, note, shown){
+  const tot = shown ?? segs.reduce((s,x)=>s+x[1],0); let acc=0;
+  const html = segs.map(([c,v])=>{const l=acc/max*100; acc+=v; return `<div class="seg" style="left:${l}%;width:${v/max*100}%;background:${CAT[c][1]}" title="${CAT[c][0]}: ${v}"></div>`}).join('');
+  return `<div class="req"><div class="lbl"><span>${label}</span><b>${tot} de ${min}</b></div>
+    <div class="bar">${html}<div class="min" style="left:${min/max*100}%"><span>mínimo ${min}</span></div></div>
+    <p class="note">${note}</p></div>`;
+}
+$('#reqs').innerHTML =
+  req('Matemáticas y ciencias básicas', [['matematicas',cred.matematicas||0],['ciencias_basicas',cred.ciencias_basicas||0]], 30, 70,
+      `Llega al mínimo solo sumando biología y genética. Matemáticas: ${cred.matematicas} créditos, sin cálculo diferencial e integral visible.`) +
+  req('Temas de ingeniería', [['ingenieria',cred.ingenieria||0],['por_definir',cred.por_definir||0]], 45, 70,
+      `${cred.ingenieria} créditos clasificados como ingeniería (barra oscura). Aunque todas las profundizaciones y electivas (${cred.por_definir}, barra clara) fueran ingeniería, no se alcanza el mínimo.`, cred.ingenieria);
+$('#catbars').innerHTML = Object.entries(CAT).map(([k,[n,col]])=>{
+  const v=cred[k]||0; return `<div class="req"><div class="lbl"><span><i class="cat" style="background:${col}"></i>${n}</span><b>${v}</b></div><div class="bar"><div class="seg" style="left:0;width:${v/150*100}%;background:${col}"></div></div></div>`}).join('');
+$('#cursos').innerHTML = '<thead><tr><th>Curso</th><th>Componente CMA</th><th class="n">Créd.</th><th>Categoría ABET</th><th>Confianza</th><th>Nota</th></tr></thead><tbody>' +
+  D.cursos.map(c=>`<tr><td>${esc(c.nombre)}</td><td>${esc(c.componente_cma)}</td><td class="n">${c.creditos}</td><td><i class="cat" style="background:${CAT[c.categoria_abet][1]}"></i>${CAT[c.categoria_abet][0]}</td><td>${c.confianza}</td><td>${esc(c.nota||'')}</td></tr>`).join('')+'</tbody>';
+
+// Indicadores
+const I = Object.fromEntries(D.indicadores.map(i=>[i.codigo,i]));
+if(D.inconsistencias.length){
+  $('#incons').innerHTML = `<div class="callout"><h3>Cifras inconsistentes entre presentaciones</h3>` +
+    D.inconsistencias.map(x=>`<p>${esc(x.nombre)}, ${x.periodo}: <strong>${x.valor_a}</strong> (${x.fuente_a}) frente a <strong>${x.valor_b}</strong> (${x.fuente_b}).</p>`).join('') + `</div>`;
+}
+function lineChart(title, series, labels, unit, yMin, yMax, note){
+  const W=460,H=210,L=34,R=28,T=14,B=30, w=W-L-R, h=H-T-B;
+  const x=i=>L+ i*(w/(labels.length-1||1)), y=v=>T+h-(v-yMin)/(yMax-yMin)*h;
+  const ticks=[yMin,(yMin+yMax)/2,yMax];
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}" style="width:100%;height:auto">`;
+  ticks.forEach(t=>{s+=`<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${Math.round(t)}</text>`});
+  labels.forEach((l,i)=>{ if(labels.length<=6 || i%2===0) s+=`<text x="${x(i)}" y="${H-10}" text-anchor="middle">${l}</text>`});
+  series.forEach(se=>{
+    const pts=se.v.map((v,i)=>v==null?null:[x(i),y(v)]).filter(Boolean);
+    s+=`<polyline fill="none" stroke="${se.c}" stroke-width="2.4" points="${pts.map(p=>p.join(',')).join(' ')}"/>`;
+    pts.forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${se.c}"/>`);
+  });
+  s+='</svg>';
+  const leg = series.map(se=>`<span><i class="sw" style="background:${se.c}"></i>${esc(se.n)}</span>`).join('');
+  return `<div class="panel"><h3>${esc(title)}</h3><div class="legend">${leg}</div>${s}${note?`<p class="note">${note}</p>`:''}</div>`;
+}
+const pick=(code,sede,d)=>I[code].m.filter(m=>(sede?m.sede===sede:true)&&(d==null||m.d===d));
+const sem=['2020-1','2020-2','2021-1','2021-2','2022-1','2022-2','2023-1','2023-2','2024-1','2024-2','2025-1','2025-2'];
+const ser=(code,sede,lab)=>lab.map(p=>{const m=pick(code,sede).find(m=>m.periodo===p);return m?m.valor:null});
+const reaSem=['2023-2','2024-1','2024-2','2025-1','2025-2'];
+const reaCol=['var(--moss)','var(--ochre)','var(--mulberry)','var(--sage)','var(--ink)'];
+let charts='';
+charts+=lineChart('Alcance de los resultados de aprendizaje (%)',
+  ['REA1','REA2','REA3','REA4','REA5'].map((r,k)=>({n:r,c:reaCol[k],v:ser('ALC_'+r,null,reaSem)})), reaSem,'%',65,90,
+  'Medición agregada del programa. Para ABET hace falta evaluación directa por indicador de desempeño, con rúbricas y metas.');
+charts+=lineChart('Graduados por periodo',[{n:'Fusagasugá',c:'var(--moss)',v:ser('GRAD','Fusagasugá',sem)},{n:'Facatativá',c:'var(--ochre)',v:ser('GRAD','Facatativá',sem)}],sem,'',0,50);
+charts+=lineChart('Deserción por periodo (%)',[{n:'Programa',c:'var(--mulberry)',v:ser('DES',null,sem.slice(0,10))}],sem.slice(0,10),'%',0,10,'Fuente SPADIES; retención entre 93 % y 96 %.');
+charts+=lineChart('Saber Pro, puntaje global',[{n:'Programa',c:'var(--moss)',v:ser('SP_PROG',null,['2022','2023','2024'])},{n:'Institución',c:'var(--sage)',v:ser('SP_INST',null,['2022','2023','2024'])},{n:'Grupo de referencia',c:'var(--ochre)',v:ser('SP_REF',null,['2022','2023','2024'])}],['2022','2023','2024'],'',138,150);
+// Valoración CNA vs cobertura ABET
+const val = Object.fromEntries(I.CNA_VAL.m.map(m=>[m.d,m.valor]));
+const rows = D.abet.filter(a=>!a.padre||a.padre==='C3').map(a=>{
+  const src=a.fuentes.filter(f=>f.marco==='CNA'); const vs=src.map(f=>val[f.codigo]).filter(v=>v!=null);
+  return [a.codigo,a.nombre,vs.length?(vs.reduce((s,v)=>s+v,0)/vs.length).toFixed(1):'–',a.ev.filter(e=>e.rol==='principal').length,a.brechas.length];
+});
+charts+=`<div class="panel full"><h3>Nota CNA frente a preparación para ABET</h3><p class="note">Promedio de la valoración CNA de las características que alimentan cada criterio. Una nota CNA alta no implica cumplimiento ABET.</p><div class="wide"><table><thead><tr><th>ABET</th><th></th><th class="n">Nota CNA</th><th class="n">Evid. principales</th><th class="n">Brechas</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${esc(r[1])}</td><td class="n">${r[2]}</td><td class="n">${r[3]}</td><td class="n">${r[4]}</td></tr>`).join('')}</tbody></table></div></div>`;
+$('#charts').innerHTML=charts;
+
+// Explorador de evidencias
+const facts=[...new Set(D.evidencias.map(e=>e.codigo.slice(0,3)))];
+$('#fFactor').innerHTML='<option value="">Todos los factores CNA</option>'+D.cna.filter(n=>n.tipo==='factor').map(n=>`<option value="${n.codigo}">${n.codigo.replace('F0','F')} ${esc(n.nombre)}</option>`).join('');
+$('#fAbet').innerHTML='<option value="">Todos los criterios ABET</option>'+D.abet.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('');
+const TIPOS={diapositiva:'Diapositiva',valoracion:'Valoración del factor',logros:'Logros e impacto',plan_mejora:'Plan de mejoramiento'};
+$('#fTipo').innerHTML='<option value="">Todos los tipos</option>'+Object.entries(TIPOS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+let limit=40;
+function render(){
+  const q=$('#q').value.trim().toLowerCase(), f=$('#fFactor').value, a=$('#fAbet').value, t=$('#fTipo').value;
+  const res=D.evidencias.filter(e=>(!f||e.codigo.startsWith(f))&&(!t||e.tipo===t)&&(!a||e.tags.some(g=>g[0]==='ABET-EAC'&&g[1]===a))&&(!q||(e.titulo+' '+e.texto).toLowerCase().includes(q)));
+  $('#count').textContent=`${res.length} evidencia${res.length===1?'':'s'}`;
+  const hl=s=>{s=esc(s); if(!q) return s; const i=s.toLowerCase().indexOf(esc(q)); return i<0?s:s.slice(0,i)+'<mark>'+s.slice(i,i+esc(q).length)+'</mark>'+s.slice(i+esc(q).length)};
+  $('#list').innerHTML=res.slice(0,limit).map(e=>{
+    const cna=e.tags.filter(g=>g[0]==='CNA').map(g=>`<span class="tag">${g[1].startsWith('C')?'Car. '+(+g[1].slice(1)):'Factor '+(+g[1].slice(1))}</span>`).join('');
+    const ab=e.tags.filter(g=>g[0]==='ABET-EAC').map(g=>`<span class="tag ${g[2]}" title="${g[3]==='inferida'?'Propuesta por correspondencia':'Asignada'}">${g[1]} · ${g[2]}</span>`).join('');
+    let snip='';
+    if(q){const i=e.texto.toLowerCase().indexOf(q); if(i>=0) snip=`<p>…${hl(e.texto.slice(Math.max(0,i-80),i+120).replace(/\s+/g,' '))}…</p>`;}
+    return `<details class="ev"><summary><span class="cd">${e.codigo}</span><span><strong>${hl(e.titulo)}</strong><br>${cna}${ab}${snip}</span></summary>
+      <div class="body"><p>${esc(TIPOS[e.tipo]||e.tipo)} · ${esc(e.archivo)}, página ${e.pagina}${e.fuente?` · Fuente: ${esc(e.fuente)}`:''}</p><pre>${esc(e.texto)}</pre></div></details>`;
+  }).join('') || '<p>No hay evidencias con esos filtros. Prueba quitar un filtro o buscar otra palabra.</p>';
+  $('#more').hidden = res.length<=limit;
+}
+['#q','#fFactor','#fAbet','#fTipo'].forEach(s=>$(s).addEventListener('input',()=>{limit=40;render()}));
+$('#more').addEventListener('click',()=>{limit+=40;render()});
+render();
+
+// Brechas
+$('#tbrechas').innerHTML='<thead><tr><th>ABET</th><th>Severidad</th><th>Brecha</th><th>Acción propuesta</th><th>Estado</th></tr></thead><tbody>'+
+  D.brechas.map(b=>`<tr><td>${b.nodo}</td><td><span class="tag ${b.severidad}">${b.severidad}</span></td><td><strong>${esc(b.titulo)}</strong><br>${esc(b.descripcion)}</td><td>${esc(b.accion)}</td><td>${b.estado}</td></tr>`).join('')+'</tbody>';
+
+// Normativa
+$('#tnorm').innerHTML='<thead><tr><th>Norma</th><th>Órgano</th><th>Citada en</th></tr></thead><tbody>'+
+  D.normativa.map(n=>`<tr><td>${n.tipo} ${String(n.numero).padStart(3,'0')} de ${n.anio}</td><td>${esc(n.organo||'Por verificar')}</td><td>${n.evs.split(',').map(c=>`<button class="link" data-ev="${c}">${c}</button>`).join(' ')}</td></tr>`).join('')+'</tbody>';
+$('#tnorm').addEventListener('click',e=>{const b=e.target.closest('[data-ev]'); if(!b) return; $('#q').value=''; $('#fFactor').value=''; $('#fAbet').value=''; $('#fTipo').value=''; limit=400; render();
+  show('evidencias'); const el=[...document.querySelectorAll('details.ev')].find(d=>d.querySelector('.cd').textContent===b.dataset.ev); if(el){el.open=true; el.scrollIntoView({block:'start'});}});
+</script>
+</body>
+</html>
