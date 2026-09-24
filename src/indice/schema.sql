@@ -42,10 +42,11 @@ CREATE TABLE evidencia (
   titulo TEXT NOT NULL,
   tipo TEXT NOT NULL,              -- diapositiva, valoracion, logros, plan_mejora, normativa, documento, dato
   texto TEXT,
+  texto_ocr TEXT,                  -- texto leído por OCR en imágenes de la diapositiva que no está en 'texto'
   fuente TEXT,                     -- oficina que produce el dato
   archivo TEXT,
   pagina INTEGER,
-  sede TEXT,                       -- Fusagasugá, Facatativá, Programa
+  sede TEXT,                       -- Fusagasugá, Facatativá, Programa, Institución (presentaciones de la sesión de inicio)
   periodo TEXT,
   url_sharepoint TEXT,
   idioma TEXT DEFAULT 'es',

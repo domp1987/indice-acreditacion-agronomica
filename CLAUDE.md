@@ -12,23 +12,28 @@ Idioma del proyecto: español (código, comentarios, datos e interfaz). Los text
 
 ## Estado actual (paquete `indice`, tarea 1 terminada)
 
+- Fuentes (14 presentaciones, 329 páginas): los 12 factores (PDF + PPTX) y las 2 de la sesión de inicio (`Sesión de Inicio/2. Presentación Rectoría.pptx` y `4. Facultad de Ciencias Agropecuarias.pptx`, solo PPTX).
 - Base generada en `salida/indice_acreditacion.sqlite`:
-  - 240 evidencias con 492 etiquetas (245 extraídas + 247 inferidas).
+  - 292 evidencias: 240 de factores (`F..`) y 52 de la sesión de inicio (`S..`, sede `Institución`, sin etiquetas CNA: las debe asignar el comité). 148 tienen `texto_ocr`.
+  - 492 etiquetas (245 extraídas + 247 inferidas).
   - 3 marcos: CNA con 60 nodos, ABET-EAC con 24 nodos, REA-IA con 5 nodos.
-  - 227 mediciones, 54 cursos (150 créditos), 35 normas y 14 brechas.
-- `src/indice/schema.sql`: 13 tablas y 3 vistas.
+  - 227 mediciones, 54 cursos (150 créditos), 39 normas y 14 brechas.
+  - 83 gráficas (1.310 puntos) y 63 tablas de los PPTX.
+- `src/indice/schema.sql`: 16 tablas y 3 vistas.
+- `src/indice/fuentes.py`: inventario de presentaciones y su código (`Factor N. …` → `FNN`; `N. …` → `SNN`). Las que solo tienen PPTX se convierten a PDF con PowerPoint (`pptx_a_pdf.ps1`, automatización COM) en `salida/pdf_convertidos/`, con caché.
 - `src/indice/extraer.py`: extrae el texto por página con `pdftotext` (respaldo: pypdf, que altera el texto) y detecta el encabezado "Característica N.". Escribe `salida/diapositivas.json`.
-- `src/indice/cargar.py`: borra y recrea la base; carga marcos, nodos, correspondencias, evidencias, normativa (por regex), indicadores, cursos y brechas. Los datos manuales siguen escritos aquí (tarea 2).
-- `src/indice/pptx.py`: lee los PPTX (solo sus XML) y extrae los datos nativos de las gráficas y las celdas de las tablas → `salida/pptx.json`. Verifica que cada diapositiva visible coincida con su página del PDF. Se cargan en `grafica`, `grafica_dato` (formato largo) y `tabla_diapositiva` (celdas en JSON). Hoy: 79 gráficas (1.200 puntos) y 53 tablas. Los PPTX no tienen notas del orador y sus textos alternativos son casi todos automáticos, así que no se usan.
+- `src/indice/pptx.py`: lee los PPTX (solo sus XML) y extrae los datos nativos de las gráficas y las celdas de las tablas → `salida/pptx.json`. Verifica que cada diapositiva visible coincida con su página del PDF. Se cargan en `grafica`, `grafica_dato` (formato largo) y `tabla_diapositiva` (celdas en JSON). Los PPTX no tienen notas del orador y sus textos alternativos son casi todos automáticos, así que no se usan.
+- `src/indice/ocr.py`: renderiza cada página (pdftoppm, 150 ppp) y aplica el OCR integrado de Windows en español (`ocr_windows.ps1`; tesseract si no es Windows). Caché cruda en `salida/ocr.json` (la primera vez tarda ~10 min; se repite solo si cambia el PDF, o con `--rehacer-ocr`). Al cargar, `texto_nuevo` guarda en `evidencia.texto_ocr` solo las líneas con palabras que no estén ya en el texto del PDF, sin encabezados institucionales ni ruido. `--sin-ocr` lo omite.
+- `src/indice/cargar.py`: borra y recrea la base; carga marcos, nodos, correspondencias, evidencias, normativa (por regex), indicadores, cursos, brechas, gráficas y tablas. Los datos manuales siguen escritos aquí (tarea 2).
 - `src/indice/reproyectar.py`: etiquetas extraídas → etiquetas ABET inferidas vía correspondencias. Idempotente.
 - `src/indice/exportar.py`: `data.json` y `csv/` + `tablas_csv.zip` (UTF-8 con BOM).
 - `src/indice/tablero.py` y `plantillas/template.html`: tablero autocontenido; inyecta `data.json` en `__DATA__`, JavaScript puro, sin dependencias.
 - `indice.toml`: rutas (`pdf`, `salida`, `poppler` opcional). Hoy `pdf` apunta a `OneDrive_1_9-23-2026/`.
 - `legado/`: scripts del prototipo y su base (no versionada) para comparar. `tests/comparar_bases.py` compara dos bases por claves naturales.
 
-Flujo: `pip install -e .[dev]` y luego `indice todo` (o `extraer`, `cargar`, `reproyectar`, `exportar`, `tablero`). Pruebas: `pytest`.
+Flujo: `pip install -e .[dev]` y luego `indice todo` (o `extraer`, `ocr`, `cargar`, `reproyectar`, `exportar`, `tablero`). Pruebas: `pytest` (reutilizan las cachés de conversión y OCR de `salida/`).
 
-Requisitos: Python 3.11 o superior (usa `tomllib`) y poppler (`pdftotext`, `pdfinfo`). En este equipo: poppler portable 26.09 en `%LOCALAPPDATA%\Programs\poppler\...\Library\bin`, MinGit en `%LOCALAPPDATA%\Programs\MinGit\cmd` (ambos en el PATH de usuario) y el intérprete es `py -3.14`; ojo: `python` en el PATH es el de Inkscape.
+Requisitos: Python 3.11 o superior (usa `tomllib`) y poppler (`pdftotext`, `pdfinfo`, `pdftoppm`). Opcionales: PowerPoint (convertir PPTX sin PDF) y el OCR de Windows con el idioma es-ES (o tesseract con `spa`). En este equipo: poppler portable 26.09 en `%LOCALAPPDATA%\Programs\poppler\...\Library\bin`, MinGit en `%LOCALAPPDATA%\Programs\MinGit\cmd` (ambos en el PATH de usuario) y el intérprete es `py -3.14`; ojo: `python` en el PATH es el de Inkscape.
 
 Diferencia conocida con la base del prototipo: poppler 26.09 corta distinto las líneas en F05-P016, F07-P020 y F11-P006; por eso el `fuente` de F07-P020 pasó de "Dirección" a "Dirección de". El resto es idéntico. `evidencia.archivo` guarda ahora el nombre real del PDF ("Factor 1. PEP e Identidad Institucional.pdf").
 
@@ -64,7 +69,8 @@ Reglas de reproyección: una etiqueta CNA de tipo `extraccion` genera etiquetas 
 1. ~~Rutas fijas~~ (resuelto en la tarea 1 con `indice.toml` y la CLI).
 2. `cargar.py` borra y recrea la base en cada ejecución. Cualquier validación manual del comité se perdería.
 3. Los indicadores, cursos, brechas, valoraciones CNA y correspondencias están escritos a mano dentro de `cargar.py`.
-4. Los títulos de evidencias se derivan heurísticamente del texto de la diapositiva y algunos quedan pobres.
+4. Los títulos de evidencias se derivan heurísticamente del texto de la diapositiva y algunos quedan pobres (sobre todo en la sesión de inicio, donde se usan la sección y la primera línea útil o del OCR).
+4b. El `texto_ocr` tiene algo de ruido de fotos y logos; sirve para búsqueda, no como cita textual.
 5. La normativa se detecta por regex; el órgano emisor puede estar mal y hay exclusiones manuales.
 6. Las series de los indicadores se transcribieron a mano. Ya se pueden contrastar con `grafica_dato`: la de alcance de REA (F05-P027), retención y deserción, graduados, inscritos, admitidos y primer curso coinciden; las 48 valoraciones CNA coinciden con las tablas de valoración de cada factor. En la tarea 2, los indicadores deben apuntar a la serie de la gráfica en vez de repetir los números.
 7. Solo hay la prueba de aceptación del flujo (`tests/test_flujo.py`); faltan las de la tarea 4.
@@ -154,8 +160,8 @@ Debe generarse en español; más adelante se agregará una versión en inglés.
 
 ## Convenciones
 
-- Código de evidencia: `F{factor:02d}-P{pagina:03d}`. Nodos CNA: `F01`… y `C01`…`C48`. Nodos ABET: `C1`…`C8`, `SO1`…`SO7`, `C5a`…`C5d`, `C8a`…`C8d`, `PC`.
-- Sedes: `Fusagasugá`, `Facatativá` o `Programa` (agregado).
+- Código de evidencia: `F{factor:02d}-P{pagina:03d}` para factores y `S{n:02d}-P{pagina:03d}` para otras presentaciones ("N. Nombre.pptx", p. ej. sesión de inicio). Nodos CNA: `F01`… y `C01`…`C48`. Nodos ABET: `C1`…`C8`, `SO1`…`SO7`, `C5a`…`C5d`, `C8a`…`C8d`, `PC`.
+- Sedes: `Fusagasugá`, `Facatativá`, `Programa` (agregado) o `Institución` (datos de toda la universidad o la facultad, de la sesión de inicio).
 - Nunca inventes datos. Si un valor no está en los PDF o en las semillas, déjalo vacío y regístralo como pendiente.
 - Respeta la privacidad: los PDF contienen datos agregados de estudiantes y docentes. No agregues datos personales identificables al repositorio.
 - Mensajes de commit en español, en imperativo y breves.

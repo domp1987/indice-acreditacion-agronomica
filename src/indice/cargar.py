@@ -9,6 +9,7 @@ import sqlite3
 from pathlib import Path
 
 from indice.config import ESQUEMA
+from indice.ocr import texto_nuevo
 
 MARCO_CNA, MARCO_ABET, MARCO_REA = 1, 2, 3
 
@@ -158,6 +159,17 @@ def _titulo_de(s):
     return s['car_nombre'] or 'Diapositiva'
 
 
+def _titulo_presentacion(s):
+    """Presentaciones que no son de factor: 'SECCIÓN: primera línea informativa' (p. ej. '¿QUIÉNES SOMOS?: Misión Institucional')."""
+    lineas = [l.strip() for l in s['texto'].split('\n') if l.strip()]
+    utiles = [l for l in lineas if len(l) >= 4 and not _OMITIR_TITULO.search(l) and not re.fullmatch(r'[\d\s%.,$•|-]+', l)]
+    if not utiles:
+        return f"{s['nombre_fuente']}, diapositiva {s['pagina']}"
+    seccion = utiles[0]
+    resto = next((l for l in utiles[1:] if len(l) >= 12 and l.upper() != seccion.upper()), None)
+    return (f'{seccion}: {resto}' if resto else seccion)[:110]
+
+
 def _es_portada(t):
     if len(t) < 120 and ('Acreditación de Alta Calidad' in t or re.search(r'FACTOR\s*\d+\s*$', t.split('\n')[0] if t else '')):
         return True
@@ -166,35 +178,48 @@ def _es_portada(t):
 
 def _tipo_y_titulo(s):
     t = s['texto']; up = t.upper()
-    if 'VALORACIÓN INTERPRETATIVA' in up or 'Valoración Interpretativa' in t:
-        return 'valoracion', f'Valoración interpretativa del factor {s["factor"]}'
-    if 'LOGROS E' in up and 'IMPACTO' in up:
-        return 'logros', f'Logros e impacto del factor {s["factor"]}'
-    if 'PLAN DE' in up and 'MEJORAMIENTO' in up and 'Avance' in t:
-        return 'plan_mejora', f'Avance en el plan de mejoramiento, factor {s["factor"]}'
+    if s['factor']:
+        if 'VALORACIÓN INTERPRETATIVA' in up or 'Valoración Interpretativa' in t:
+            return 'valoracion', f'Valoración interpretativa del factor {s["factor"]}'
+        if 'LOGROS E' in up and 'IMPACTO' in up:
+            return 'logros', f'Logros e impacto del factor {s["factor"]}'
+        if 'PLAN DE' in up and 'MEJORAMIENTO' in up and 'Avance' in t:
+            return 'plan_mejora', f'Avance en el plan de mejoramiento, factor {s["factor"]}'
+    if not s['factor']:
+        return 'diapositiva', _titulo_presentacion(s)
     sub = _titulo_de(s)
     good = sub and len(sub) >= 18 and sub[0].isupper() and not sub.rstrip().endswith((',', ' que', ' de', ' y')) and sub != s['car_nombre']
     if s['car_nombre']:
         return 'diapositiva', f"{s['car_nombre'].rstrip('.')}: {sub}" if good else s['car_nombre'].rstrip('.')
-    return 'diapositiva', sub if good else f"Factor {s['factor']}, diapositiva {s['pagina']}"
+    origen = f"Factor {s['factor']}" if s['factor'] else s['nombre_fuente']
+    return 'diapositiva', sub if good else f"{origen}, diapositiva {s['pagina']}"
 
 
-def cargar_evidencias(cur, slides):
-    """Una evidencia por diapositiva (sin portadas). Devuelve {(factor, página): evidencia_id}."""
+def cargar_evidencias(cur, slides, ocr=None):
+    """Una evidencia por diapositiva (sin portadas). Devuelve {(fuente, página): evidencia_id}.
+
+    ocr: {(fuente, página): [líneas]} del OCR; se guarda solo lo que no está ya en el texto del PDF.
+    """
+    ocr = ocr or {}
     ev_by_page = {}
     for s in slides:
         t = s['texto']
         if _es_portada(t): continue
         tipo, titulo = _tipo_y_titulo(s)
+        texto_ocr = texto_nuevo(ocr.get((s['fuente'], s['pagina']), []), t) or None
+        if not s['factor'] and texto_ocr and ':' not in titulo:
+            # Diapositiva cuyo contenido es una imagen: el título se completa con la primera línea legible del OCR
+            extra = next((l for l in texto_ocr.split('\n') if len(l) >= 12), None)
+            if extra: titulo = (extra if titulo.endswith(f'diapositiva {s["pagina"]}') else f'{titulo}: {extra}')[:110]
         fuentes = re.findall(r'Fuente[.:]\s*([^\n]{3,80})', t)
-        cur.execute("INSERT INTO evidencia(codigo,titulo,tipo,texto,fuente,archivo,pagina,sede) VALUES (?,?,?,?,?,?,?,?)",
-                    (f'F{s["factor"]:02d}-P{s["pagina"]:03d}', titulo, tipo, t, fuentes[0].strip() if fuentes else None,
-                     s['archivo'], s['pagina'], 'Programa'))
-        eid = cur.lastrowid; ev_by_page[(s['factor'], s['pagina'])] = eid
+        cur.execute("INSERT INTO evidencia(codigo,titulo,tipo,texto,texto_ocr,fuente,archivo,pagina,sede) VALUES (?,?,?,?,?,?,?,?,?)",
+                    (f'{s["fuente"]}-P{s["pagina"]:03d}', titulo, tipo, t, texto_ocr,
+                     fuentes[0].strip() if fuentes else None, s['archivo'], s['pagina'], s['sede']))
+        eid = cur.lastrowid; ev_by_page[(s['fuente'], s['pagina'])] = eid
         # Etiquetado CNA extraído del encabezado de la diapositiva
-        if s['car']:
+        if s['car'] and s['car'] in CARACTERISTICAS:
             cur.execute("INSERT OR IGNORE INTO evidencia_nodo VALUES (?,?,?,?,?)", (eid, _nid(cur, MARCO_CNA, f'C{s["car"]:02d}'), 'principal', 'extraccion', 'validada'))
-        else:
+        elif s['factor']:
             cur.execute("INSERT OR IGNORE INTO evidencia_nodo VALUES (?,?,?,?,?)", (eid, _nid(cur, MARCO_CNA, f'F{s["factor"]:02d}'), 'principal', 'extraccion', 'validada'))
             if tipo == 'plan_mejora':
                 cur.execute("INSERT OR IGNORE INTO evidencia_nodo VALUES (?,?,?,?,?)", (eid, _nid(cur, MARCO_ABET, 'C4'), 'apoyo', 'inferida', 'propuesta'))
@@ -209,7 +234,7 @@ _NORMAS_MANUALES = [('Acuerdo', 11, 2019, 'Consejo Superior', 'Acuerdo 011 Abril
 
 
 def cargar_normativa(cur, slides, ev_by_page):
-    texto = {(s['factor'], s['pagina']): s['texto'] for s in slides}
+    texto = {(s['fuente'], s['pagina']): s['texto'] for s in slides}
     for (f, p), eid in ev_by_page.items():
         t = re.sub(r'\s+', ' ', texto[(f, p)])
         for m in _PATRON_NORMA.finditer(t):
@@ -241,7 +266,7 @@ def cargar_indicadores(cur, slides, ev_by_page):
     def ev(f, kw):
         # Primera diapositiva del factor que contiene el texto; None si esa diapositiva se omitió como portada
         for s in slides:
-            if s['factor'] == f and kw in s['texto']: return ev_by_page.get((f, s['pagina']))
+            if s['fuente'] == f'F{f:02d}' and kw in s['texto']: return ev_by_page.get((s['fuente'], s['pagina']))
 
     def ind(codigo, nombre, unidad, nodos, desc=None):
         cur.execute("INSERT INTO indicador(codigo,nombre,unidad,descripcion) VALUES (?,?,?,?)", (codigo, nombre, unidad, desc)); i = cur.lastrowid
@@ -372,9 +397,9 @@ def cargar_pptx(cur, pptx, ev_by_page):
     """Liga gráficas y tablas a la evidencia de su diapositiva. Devuelve las diapositivas sin evidencia."""
     huerfanas = []
     for d in pptx:
-        eid = ev_by_page.get((d['factor'], d['pagina']))
+        eid = ev_by_page.get((d['fuente'], d['pagina']))
         if eid is None:
-            huerfanas.append(f'F{d["factor"]:02d}-P{d["pagina"]:03d}'); continue
+            huerfanas.append(f'{d["fuente"]}-P{d["pagina"]:03d}'); continue
         for orden, g in enumerate(d['graficas'], 1):
             cur.execute("INSERT INTO grafica(evidencia_id,orden,titulo,tipo) VALUES (?,?,?,?)", (eid, orden, g['titulo'] or None, g['tipo']))
             gid = cur.lastrowid
@@ -386,12 +411,20 @@ def cargar_pptx(cur, pptx, ev_by_page):
     return huerfanas
 
 
-def cargar(db, diapositivas, pptx_json=None):
+def _leer_ocr(ocr_json):
+    if not ocr_json or not Path(ocr_json).exists(): return {}
+    cache = json.loads(Path(ocr_json).read_text(encoding='utf-8'))
+    return {(fuente, int(p)): lineas for fuente, c in cache.items() for p, lineas in c['paginas'].items()}
+
+
+def cargar(db, diapositivas, pptx_json=None, ocr_json=None):
     """Borra y recrea la base (la carga incremental es la tarea 3)."""
     db, diapositivas = Path(db), Path(diapositivas)
     if not diapositivas.exists():
         raise SystemExit(f'No existe {diapositivas}. Ejecuta primero: indice extraer')
     slides = json.loads(diapositivas.read_text(encoding='utf-8'))
+    if slides and 'fuente' not in slides[0]:
+        raise SystemExit(f'{diapositivas} es de una versión anterior. Ejecuta de nuevo: indice extraer')
     db.parent.mkdir(parents=True, exist_ok=True)
     if db.exists(): db.unlink()
     con = sqlite3.connect(db)
@@ -399,7 +432,7 @@ def cargar(db, diapositivas, pptx_json=None):
         cur = con.cursor()
         cur.executescript(ESQUEMA.read_text(encoding='utf-8'))
         cargar_marcos(cur); cargar_cna(cur); cargar_abet(cur); cargar_rea(cur); cargar_correspondencias(cur)
-        ev_by_page = cargar_evidencias(cur, slides)
+        ev_by_page = cargar_evidencias(cur, slides, _leer_ocr(ocr_json))
         cargar_normativa(cur, slides, ev_by_page)
         cargar_indicadores(cur, slides, ev_by_page)
         cargar_cursos(cur); cargar_brechas(cur)
@@ -409,7 +442,8 @@ def cargar(db, diapositivas, pptx_json=None):
                 print(f'Aviso: gráficas o tablas en diapositivas sin evidencia (portadas): {", ".join(huerfanas)}')
         con.commit()
         n = lambda q: cur.execute(q).fetchone()[0]
-        print(f'Carga: {n("SELECT COUNT(*) FROM evidencia")} evidencias, {n("SELECT COUNT(*) FROM evidencia_nodo")} etiquetas, '
+        print(f'Carga: {n("SELECT COUNT(*) FROM evidencia")} evidencias ({n("SELECT COUNT(*) FROM evidencia WHERE texto_ocr IS NOT NULL")} con texto OCR), '
+              f'{n("SELECT COUNT(*) FROM evidencia_nodo")} etiquetas, '
               f'{n("SELECT COUNT(*) FROM nodo")} nodos, {n("SELECT COUNT(*) FROM medicion")} mediciones, '
               f'{n("SELECT COUNT(*) FROM curso")} cursos ({n("SELECT SUM(creditos) FROM curso")} créditos), '
               f'{n("SELECT COUNT(*) FROM grafica")} gráficas ({n("SELECT COUNT(*) FROM grafica_dato")} puntos), '

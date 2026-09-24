@@ -15,13 +15,15 @@ class Rutas:
     pdf: Path
     salida: Path
     poppler: Path | None = None
-    pptx: Path | None = None
-
-    def __post_init__(self):
-        if self.pptx is None: self.pptx = self.pdf
 
     @property
     def pptx_json(self): return self.salida / 'pptx.json'
+
+    @property
+    def ocr_json(self): return self.salida / 'ocr.json'
+
+    @property
+    def pdf_convertidos(self): return self.salida / 'pdf_convertidos'
 
     @property
     def db(self): return self.salida / 'indice_acreditacion.sqlite'
@@ -59,9 +61,6 @@ def cargar_rutas(pdf=None, salida=None, config=None):
         return v if v.is_absolute() else (base / v).resolve()
 
     poppler = os.environ.get('INDICE_POPPLER') or None
-    carpeta_pdf = ruta(pdf, 'pdf', 'datos/pdf')
-    return Rutas(pdf=carpeta_pdf,
+    return Rutas(pdf=ruta(pdf, 'pdf', 'datos/pdf'),
                  salida=ruta(salida, 'salida', 'salida'),
-                 poppler=Path(poppler) if poppler else ruta(None, 'poppler', None),
-                 # Los PPTX suelen estar junto a los PDF; si se pasa --pdf, se buscan allí
-                 pptx=carpeta_pdf if pdf else ruta(None, 'pptx', None) or carpeta_pdf)
+                 poppler=Path(poppler) if poppler else ruta(None, 'poppler', None))

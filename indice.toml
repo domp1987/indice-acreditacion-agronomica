@@ -1,10 +1,9 @@
 # Configuración del índice. Las rutas relativas se resuelven desde esta carpeta.
 # Las opciones --pdf y --salida de la CLI tienen prioridad sobre estos valores.
 [rutas]
+# Carpeta de presentaciones: PDF y PPTX, incluidas subcarpetas ("Factor N. ..." y "N. ...")
 pdf = "OneDrive_1_9-23-2026"
 salida = "salida"
-# Carpeta de los PPTX (gráficas y tablas); por defecto, la misma de los PDF
-# pptx = "OneDrive_1_9-23-2026"
 
 # Carpeta con pdftotext y pdfinfo, solo si no están en el PATH.
 # También se puede indicar con la variable de entorno INDICE_POPPLER.

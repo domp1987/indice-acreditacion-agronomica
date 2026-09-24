@@ -21,7 +21,7 @@ indice = "indice.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-indice = ["schema.sql"]
+indice = ["schema.sql", "*.ps1"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

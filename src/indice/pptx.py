@@ -15,7 +15,6 @@ NS = {'p': 'http://schemas.openxmlformats.org/presentationml/2006/main',
       'c': 'http://schemas.openxmlformats.org/drawingml/2006/chart',
       'rel': 'http://schemas.openxmlformats.org/package/2006/relationships'}
 R_ID = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id'
-PATRON_FACTOR = re.compile(r'Factor[ _](\d+)', re.I)
 
 
 def _rels(z, parte):
@@ -96,32 +95,32 @@ def _palabras(t):
     return set(re.findall(r'[a-záéíóúñü]{4,}', t.lower()))
 
 
-def extraer_pptx(carpeta, destino, diapositivas_pdf=None):
+def extraer_pptx(fuentes, destino, diapositivas_pdf=None):
     """Escribe pptx.json. Si se da el texto del PDF, verifica que cada diapositiva visible coincida con su página."""
     pdf = {}
     if diapositivas_pdf and Path(diapositivas_pdf).exists():
-        pdf = {(s['factor'], s['pagina']): s['texto'] for s in json.loads(Path(diapositivas_pdf).read_text(encoding='utf-8'))}
-    archivos = sorted((int(m.group(1)), f) for f in Path(carpeta).glob('*.pptx') if (m := PATRON_FACTOR.match(f.name)))
-    if not archivos:
-        print(f'Aviso: no hay PPTX de factores en {carpeta}; se omiten gráficas y tablas.')
+        pdf = {(s['fuente'], s['pagina']): s['texto'] for s in json.loads(Path(diapositivas_pdf).read_text(encoding='utf-8'))}
+    con_pptx = [f for f in fuentes if f.pptx]
+    if not con_pptx:
+        print('Aviso: no hay PPTX; se omiten gráficas y tablas.')
         return []
     out = []; dudosas = []
-    for factor, ruta in archivos:
+    for f in con_pptx:
         pagina = 0
-        for d in leer_pptx(ruta):
+        for d in leer_pptx(f.pptx):
             if d['oculta']: continue  # las ocultas no se exportan al PDF
             pagina += 1
-            if (factor, pagina) in pdf:
-                a, b = _palabras(d['texto']), _palabras(pdf[(factor, pagina)])
+            if (f.codigo, pagina) in pdf:
+                a, b = _palabras(d['texto']), _palabras(pdf[(f.codigo, pagina)])
                 if a and b and len(a & b) / len(a | b) < 0.3:
-                    dudosas.append(f'F{factor:02d}-P{pagina:03d}')
+                    dudosas.append(f'{f.codigo}-P{pagina:03d}')
             if d['graficas'] or d['tablas']:
-                out.append(dict(factor=factor, archivo=ruta.name, pagina=pagina, graficas=d['graficas'], tablas=d['tablas'],
+                out.append(dict(fuente=f.codigo, archivo=f.pptx.name, pagina=pagina, graficas=d['graficas'], tablas=d['tablas'],
                                 graficas_vacias=d['graficas_vacias']))
     destino = Path(destino)
     destino.write_text(json.dumps(out, ensure_ascii=False), encoding='utf-8')
     ng = sum(len(d['graficas']) for d in out); nt = sum(len(d['tablas']) for d in out)
-    print(f'Extracción PPTX: {ng} gráficas y {nt} tablas en {len(out)} diapositivas de {len(archivos)} archivos → {destino}')
+    print(f'Extracción PPTX: {ng} gráficas y {nt} tablas en {len(out)} diapositivas de {len(con_pptx)} archivos → {destino}')
     if dudosas:
         print(f'Aviso: {len(dudosas)} diapositivas no se parecen a su página del PDF (revisar orden): {", ".join(dudosas[:10])}')
     return out

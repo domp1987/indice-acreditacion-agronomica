@@ -4,7 +4,8 @@ Indexa la evidencia de la autoevaluación CNA en una base SQLite y la reproyecta
 
 ## Requisitos
 - Python 3.11 o superior.
-- poppler (`pdftotext`, `pdfinfo`) en el PATH, o su carpeta en `indice.toml` (`poppler = ...`) o en la variable `INDICE_POPPLER`. En Windows sirve la versión portable de <https://github.com/oschwartz10612/poppler-windows>.
+- Opcional: PowerPoint (para presentaciones sin PDF) y el OCR de Windows con español instalado, o tesseract con `spa`.
+- poppler (`pdftotext`, `pdfinfo`, `pdftoppm`) en el PATH, o su carpeta en `indice.toml` (`poppler = ...`) o en la variable `INDICE_POPPLER`. En Windows sirve la versión portable de <https://github.com/oschwartz10612/poppler-windows>.
 - Si no hay poppler, se puede usar `--motor pypdf` (`pip install -e .[pypdf]`), pero el texto sale distinto y la base cambia.
 
 ## Instalación
@@ -18,15 +19,19 @@ La carpeta de PDF y la de salida se configuran en `indice.toml`; `--pdf` y `--sa
 ```
 indice todo                 # flujo completo
 indice extraer --pdf datos/pdf
+indice ocr                  # solo el OCR (con caché)
 indice cargar
 indice reproyectar
 indice exportar
 indice tablero
 ```
 
-`extraer` lee el texto de los PDF y, de los PPTX de la misma carpeta, los datos de las gráficas y las tablas (el PDF solo conserva la imagen de la gráfica).
+`extraer` recorre la carpeta de presentaciones (con subcarpetas) y obtiene:
+- el texto de cada página del PDF (si una presentación solo tiene PPTX, se convierte con PowerPoint);
+- los datos de las gráficas y las celdas de las tablas de los PPTX (el PDF solo conserva la imagen de la gráfica);
+- el texto dentro de imágenes, con el OCR de Windows (o tesseract). La primera vez tarda unos 10 minutos; después usa la caché. `--sin-ocr` lo omite y `indice ocr --rehacer-ocr` lo repite.
 
-Productos en `salida/`: `diapositivas.json`, `pptx.json`, `indice_acreditacion.sqlite`, `data.json`, `csv/` y `tablas_csv.zip` (UTF-8 con BOM, para Excel o Power BI) e `indice_acreditacion_abet.html` (tablero autocontenido).
+Productos en `salida/`: `diapositivas.json`, `pptx.json`, `ocr.json`, `pdf_convertidos/`, `indice_acreditacion.sqlite`, `data.json`, `csv/` y `tablas_csv.zip` (UTF-8 con BOM, para Excel o Power BI) e `indice_acreditacion_abet.html` (tablero autocontenido).
 
 ## Pruebas
 ```
@@ -37,7 +42,7 @@ pytest
 ## Estructura
 ```
 indice.toml            configuración de rutas
-src/indice/            extraer, cargar, reproyectar, exportar, tablero, cli; schema.sql
+src/indice/            fuentes, extraer, pptx, ocr, cargar, reproyectar, exportar, tablero, cli; schema.sql; *.ps1
 plantillas/            template.html del tablero
 datos/semillas/        datos manuales (tarea 2, pendiente)
 tests/

@@ -22,12 +22,15 @@ def datos_tablero(c):
         a['indicadores'] = q("SELECT i.codigo,i.nombre FROM indicador_nodo x JOIN indicador i ON i.id=x.indicador_id WHERE x.nodo_id=?", a['id'])
     cna = q("""SELECT n.codigo,n.nombre,n.tipo,p.codigo padre FROM nodo n LEFT JOIN nodo p ON p.id=n.padre_id
                JOIN marco m ON m.id=n.marco_id AND m.codigo='CNA' ORDER BY n.orden""")
-    ev = q("SELECT id,codigo,titulo,tipo,texto,fuente,archivo,pagina FROM evidencia ORDER BY codigo")
+    ev = q("SELECT id,codigo,titulo,tipo,texto,texto_ocr,fuente,archivo,pagina FROM evidencia ORDER BY codigo")
     tags = {}
     for r in q("SELECT en.evidencia_id,n.codigo,m.codigo marco,en.rol,en.origen FROM evidencia_nodo en JOIN nodo n ON n.id=en.nodo_id JOIN marco m ON m.id=n.marco_id"):
         tags.setdefault(r['evidencia_id'], []).append([r['marco'], r['codigo'], r['rol'], r['origen']])
     for e in ev:
-        e['tags'] = tags.get(e.pop('id'), []); e['texto'] = (e['texto'] or '')[:2200]
+        e['tags'] = tags.get(e.pop('id'), [])
+        ocr = e.pop('texto_ocr')
+        # El tablero muestra y busca en 'texto'; el OCR se agrega al final, marcado, para que también se encuentre
+        e['texto'] = (e['texto'] or '')[:2200] + (f'\n[Texto en imágenes (OCR)]\n{ocr[:800]}' if ocr else '')
     ind = q("SELECT id,codigo,nombre,unidad FROM indicador")
     for i in ind:
         i['m'] = q("SELECT periodo,sede,valor,desagregacion d,nota FROM medicion WHERE indicador_id=? ORDER BY id", i.pop('id'))

@@ -1,4 +1,4 @@
-"""Extrae el texto por página de los PDF de factores CNA y detecta la característica de cada diapositiva."""
+"""Extrae el texto por página de los PDF de las presentaciones y detecta la característica CNA de cada diapositiva."""
 import json
 import os
 import re
@@ -7,26 +7,25 @@ import subprocess
 import sys
 from pathlib import Path
 
-PATRON_FACTOR = re.compile(r'Factor[ _](\d+)', re.I)
 PATRON_CARACTERISTICA = re.compile(r'Caracter[ií]stica\s*(\d+)\.?\s*\n?\s*([^\n]+(?:\n[a-záéíóúñ][^\n]+)?)')
 
 
-def _binario(nombre, carpeta):
+def binario(nombre, carpeta):
     if carpeta:
         exe = Path(carpeta) / (nombre + ('.exe' if os.name == 'nt' else ''))
         if exe.exists(): return str(exe)
     return shutil.which(nombre)
 
 
-def _ejecutar(args):
+def ejecutar(args):
     # pdfinfo escribe algunas fechas en la codificación local de Windows aunque se pida UTF-8
     return subprocess.run(args, capture_output=True, text=True, encoding='utf-8', errors='replace', check=True).stdout
 
 
 def _paginas_pdftotext(pdf, pdfinfo, pdftotext):
-    n = int(re.search(r'Pages:\s+(\d+)', _ejecutar([pdfinfo, '-enc', 'UTF-8', str(pdf)])).group(1))
+    n = int(re.search(r'Pages:\s+(\d+)', ejecutar([pdfinfo, '-enc', 'UTF-8', str(pdf)])).group(1))
     for p in range(1, n + 1):
-        yield p, _ejecutar([pdftotext, '-enc', 'UTF-8', '-f', str(p), '-l', str(p), str(pdf), '-'])
+        yield p, ejecutar([pdftotext, '-enc', 'UTF-8', '-f', str(p), '-l', str(p), str(pdf), '-'])
 
 
 def _paginas_pypdf(pdf):
@@ -38,7 +37,7 @@ def _paginas_pypdf(pdf):
 def elegir_motor(motor, poppler=None):
     """Devuelve una función pdf -> (página, texto). 'auto' prefiere pdftotext, que es con el que se construyó la base."""
     if motor in ('auto', 'pdftotext'):
-        pdfinfo, pdftotext = _binario('pdfinfo', poppler), _binario('pdftotext', poppler)
+        pdfinfo, pdftotext = binario('pdfinfo', poppler), binario('pdftotext', poppler)
         if pdfinfo and pdftotext:
             return 'pdftotext', lambda pdf: _paginas_pdftotext(pdf, pdfinfo, pdftotext)
         if motor == 'pdftotext':
@@ -52,26 +51,21 @@ def elegir_motor(motor, poppler=None):
     return 'pypdf', _paginas_pypdf
 
 
-def listar_pdf(carpeta):
-    pdfs = [(int(m.group(1)), f) for f in Path(carpeta).glob('*.pdf') if (m := PATRON_FACTOR.match(f.name))]
-    if not pdfs:
-        raise SystemExit(f'No hay PDF de factores ("Factor N...pdf") en {carpeta}')
-    return sorted(pdfs)
-
-
-def extraer(carpeta_pdf, destino, motor='auto', poppler=None):
+def extraer(fuentes, destino, motor='auto', poppler=None):
+    """Una entrada por página de cada fuente con PDF: fuente, factor, archivo, página, característica y texto."""
     nombre_motor, paginas = elegir_motor(motor, poppler)
     out = []
-    for factor, pdf in listar_pdf(carpeta_pdf):
-        for p, t in paginas(pdf):
+    for f in fuentes:
+        if not f.pdf: continue
+        for p, t in paginas(f.pdf):
             t = re.sub(r'www\.ucundinamarca\.edu\.co.*', '', t)
             m = PATRON_CARACTERISTICA.search(t)
-            out.append(dict(factor=factor, archivo=pdf.name, pagina=p,
+            out.append(dict(fuente=f.codigo, factor=f.factor, nombre_fuente=f.nombre, archivo=f.archivo, sede=f.sede, pagina=p,
                             car=int(m.group(1)) if m else None,
                             car_nombre=re.sub(r'\s+', ' ', m.group(2)).strip() if m else None,
                             texto=re.sub(r'[ \t]+', ' ', re.sub(r'\n\s*\n+', '\n', t)).strip()))
     destino = Path(destino)
     destino.parent.mkdir(parents=True, exist_ok=True)
     destino.write_text(json.dumps(out, ensure_ascii=False), encoding='utf-8')
-    print(f'Extracción ({nombre_motor}): {len(out)} páginas de {len({d["archivo"] for d in out})} PDF → {destino}')
+    print(f'Extracción ({nombre_motor}): {len(out)} páginas de {len({d["fuente"] for d in out})} presentaciones → {destino}')
     return out
