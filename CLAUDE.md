@@ -10,25 +10,26 @@ Este proyecto indexa toda la evidencia CNA en una base relacional donde los fact
 
 Idioma del proyecto: español (código, comentarios, datos e interfaz). Los textos de los criterios ABET están parafraseados en español y no deben copiarse literalmente del documento oficial.
 
-## Estado actual (prototipo funcional)
+## Estado actual (paquete `indice`, tarea 1 terminada)
 
-- `indice_acreditacion.sqlite`: base poblada.
-  - 240 evidencias con 492 etiquetas.
+- Base generada en `salida/indice_acreditacion.sqlite`:
+  - 240 evidencias con 492 etiquetas (245 extraídas + 247 inferidas).
   - 3 marcos: CNA con 60 nodos, ABET-EAC con 24 nodos, REA-IA con 5 nodos.
-  - 224 mediciones, 50 cursos (150 créditos), 35 normas y 14 brechas.
-- `schema.sql`: 13 tablas y 3 vistas.
-- `extract.py`: extrae el texto por página de los PDF con `pdftotext` y detecta el encabezado "Característica N." de cada diapositiva.
-- `build_db.py`: crea el esquema y carga todo:
-  - los marcos, las correspondencias y las evidencias;
-  - la reproyección inferida y la normativa (por regex);
-  - los indicadores y los cursos, cargados a mano;
-  - las brechas.
-- `export.py`: genera `data.json` (insumo del tablero) y `tablas_csv.zip` (una tabla por CSV, UTF-8 con BOM, para Power BI o Excel).
-- `build_html.py` y `template.html`: generan el tablero autocontenido. Inyectan `data.json` en el marcador `__DATA__` de la plantilla, en JavaScript puro, sin dependencias.
+  - 224 mediciones, 54 cursos (150 créditos), 35 normas y 14 brechas.
+- `src/indice/schema.sql`: 13 tablas y 3 vistas.
+- `src/indice/extraer.py`: extrae el texto por página con `pdftotext` (respaldo: pypdf, que altera el texto) y detecta el encabezado "Característica N.". Escribe `salida/diapositivas.json`.
+- `src/indice/cargar.py`: borra y recrea la base; carga marcos, nodos, correspondencias, evidencias, normativa (por regex), indicadores, cursos y brechas. Los datos manuales siguen escritos aquí (tarea 2).
+- `src/indice/reproyectar.py`: etiquetas extraídas → etiquetas ABET inferidas vía correspondencias. Idempotente.
+- `src/indice/exportar.py`: `data.json` y `csv/` + `tablas_csv.zip` (UTF-8 con BOM).
+- `src/indice/tablero.py` y `plantillas/template.html`: tablero autocontenido; inyecta `data.json` en `__DATA__`, JavaScript puro, sin dependencias.
+- `indice.toml`: rutas (`pdf`, `salida`, `poppler` opcional). Hoy `pdf` apunta a `OneDrive_1_9-23-2026/`.
+- `legado/`: scripts del prototipo y su base (no versionada) para comparar. `tests/comparar_bases.py` compara dos bases por claves naturales.
 
-Flujo actual: `python3 extract.py && python3 build_db.py && python3 export.py && python3 build_html.py`
+Flujo: `pip install -e .[dev]` y luego `indice todo` (o `extraer`, `cargar`, `reproyectar`, `exportar`, `tablero`). Pruebas: `pytest`.
 
-Requisitos: Python 3.10 o superior (solo biblioteca estándar) y poppler-utils (`pdftotext`, `pdfinfo`). Playwright es opcional, para capturas de prueba.
+Requisitos: Python 3.11 o superior (usa `tomllib`) y poppler (`pdftotext`, `pdfinfo`). En este equipo: poppler portable 26.09 en `%LOCALAPPDATA%\Programs\poppler\...\Library\bin`, MinGit en `%LOCALAPPDATA%\Programs\MinGit\cmd` (ambos en el PATH de usuario) y el intérprete es `py -3.14`; ojo: `python` en el PATH es el de Inkscape.
+
+Diferencia conocida con la base del prototipo: poppler 26.09 corta distinto las líneas en F05-P016, F07-P020 y F11-P006; por eso el `fuente` de F07-P020 pasó de "Dirección" a "Dirección de". El resto es idéntico. `evidencia.archivo` guarda ahora el nombre real del PDF ("Factor 1. PEP e Identidad Institucional.pdf").
 
 ## Modelo de datos
 
@@ -59,17 +60,19 @@ Reglas de reproyección: una etiqueta CNA de tipo `extraccion` genera etiquetas 
 
 ## Deuda técnica conocida
 
-1. Rutas fijas: `extract.py` lee `/mnt/user-data/uploads/Factor_*.pdf` y los demás scripts usan el directorio actual.
-2. `build_db.py` borra y recrea la base en cada ejecución. Cualquier validación manual del comité se perdería.
-3. Los indicadores, cursos, brechas, valoraciones CNA y correspondencias están escritos a mano dentro de `build_db.py`.
+1. ~~Rutas fijas~~ (resuelto en la tarea 1 con `indice.toml` y la CLI).
+2. `cargar.py` borra y recrea la base en cada ejecución. Cualquier validación manual del comité se perdería.
+3. Los indicadores, cursos, brechas, valoraciones CNA y correspondencias están escritos a mano dentro de `cargar.py`.
 4. Los títulos de evidencias se derivan heurísticamente del texto de la diapositiva y algunos quedan pobres.
 5. La normativa se detecta por regex; el órgano emisor puede estar mal y hay exclusiones manuales.
 6. Las series de las gráficas de los PDF se transcribieron a mano. La del alcance de REA se leyó de la imagen de F05-P027: el orden de barras es 2025-2, 2025-1, 2024-2, 2024-1, 2023-2.
-7. No hay pruebas.
+7. Solo hay la prueba de aceptación del flujo (`tests/test_flujo.py`); faltan las de la tarea 4.
 
 ## Tareas priorizadas
 
-### 1. Estructura del repositorio y configuración
+### 1. Estructura del repositorio y configuración — HECHA
+Se implementó en la raíz (sin carpeta `acreditacion/`), con `argparse`, `indice.toml` para las rutas y `salida/` para los productos. Los PDF se leen desde la carpeta de OneDrive en lugar de copiarlos a `datos/pdf/`. Plan original:
+
 Reorganiza el proyecto en paquete. Propuesta:
 
 ```
@@ -87,7 +90,7 @@ Usa una CLI con `argparse` o `typer`: `indice extraer --pdf datos/pdf`, `indice 
 **Criterio de aceptación:** el flujo completo corre desde una carpeta limpia con un solo comando.
 
 ### 2. Sacar los datos manuales a semillas
-Mueve a `datos/semillas/` todo lo que hoy está escrito a mano en `build_db.py`: nodos CNA y ABET, correspondencias, REA, cursos, brechas, indicadores y valoraciones CNA.
+Mueve a `datos/semillas/` todo lo que hoy está escrito a mano en `cargar.py`: nodos CNA y ABET, correspondencias, REA, cursos, brechas, indicadores y valoraciones CNA.
 
 **Criterio de aceptación:** la base generada es idéntica a la actual (mismos conteos y mismas vistas).
 
