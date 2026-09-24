@@ -59,7 +59,7 @@ def test_conteos(con):
     assert n("SELECT COUNT(*) FROM evidencia WHERE codigo LIKE 'S%'") == 52       # sesión de inicio (Rectoría y Facultad)
     assert n('SELECT COUNT(*) FROM evidencia_nodo') == 492
     assert n('SELECT COUNT(*) FROM nodo') == 89
-    assert n('SELECT COUNT(*) FROM medicion') == 227   # 224 del prototipo + 3 de la corrección de F04-P006
+    assert n('SELECT COUNT(*) FROM medicion') == 299   # 224 del prototipo + 3 (corrección F04-P006) + 72 (ponderaciones y factores CNA)
     assert n('SELECT COUNT(*) FROM curso') == 54
     assert n('SELECT SUM(creditos) FROM curso') == 150
 
@@ -115,13 +115,35 @@ def test_igual_al_prototipo(salida):
     # Diferencias esperadas: poppler 26.09 corta distinto las líneas de 3 diapositivas; la graduación acumulada
     # del factor 4 se corrigió con la gráfica del PPTX; y se agregaron las presentaciones de la sesión de inicio
     # (evidencias S.., con su normativa). El resto debe ser idéntico.
-    assert set(difs) <= {'evidencia', 'evidencia.texto', 'medicion', 'v_inconsistencias', 'normativa', 'normativa_mencion'}
+    assert set(difs) <= {'evidencia', 'evidencia.texto', 'medicion', 'indicador', 'v_inconsistencias', 'normativa', 'normativa_mencion'}
     assert {r[0] for r in difs.get('evidencia.texto', ([], []))[1] if not es_sesion(r)} <= {'F05-P016', 'F07-P020', 'F11-P006'}
     assert {r[0] for r in difs.get('evidencia', ([], []))[1] if not es_sesion(r)} <= {'F07-P020'}
+    # Mediciones: corrección de F04-P006, vínculos de evidencia que el prototipo no resolvía o resolvía mal
+    # (retención y deserción, series de Facatativá, valoraciones CNA) e indicadores nuevos de las tablas de valoración
     solo_a, solo_b = difs.get('medicion', ([], []))
-    assert {r[0] for r in solo_a + solo_b} <= {'GRAD_ACUM', 'GRAD_ACUM_NBC'}
-    assert {r[5] for r in solo_a + solo_b} == {'F04-P006'}
+    corregidas = {'GRAD_ACUM', 'GRAD_ACUM_NBC', 'RET', 'DES', 'INSC', 'ADM', 'PRIM', 'CNA_VAL'}
+    assert {r[0] for r in solo_a} <= corregidas
+    assert {r[0] for r in solo_b} <= corregidas | {'CNA_POND', 'CNA_VAL_FACTOR', 'CNA_CUMPL_FACTOR'}
+    assert all(r[0] != 'GRAD_ACUM' or r[5] == 'F04-P006' for r in solo_a + solo_b)
+    assert set(difs.get('indicador', ([], []))[1]) <= {r for r in difs.get('indicador', ([], []))[1] if r[0].startswith('CNA_')}
     # Normativa: solo se agrega (nada del prototipo se pierde) y las menciones nuevas son de la sesión de inicio
     assert not difs.get('normativa', ([], []))[0]
     solo_a, solo_b = difs.get('normativa_mencion', ([], []))
     assert not solo_a and all(es_sesion(r) for r in solo_b)
+
+
+def test_mediciones_ligadas_a_su_evidencia(con):
+    # Toda medición cita la diapositiva de donde sale su valor
+    sin = con.execute('SELECT DISTINCT i.codigo FROM medicion m JOIN indicador i ON i.id=m.indicador_id WHERE m.evidencia_id IS NULL').fetchall()
+    assert sin == []
+    # Las series de Facatativá están en F06-P016 y las de Fusagasugá en F06-P015
+    filas = con.execute("""SELECT DISTINCT m.sede, e.codigo FROM medicion m JOIN indicador i ON i.id=m.indicador_id
+                           JOIN evidencia e ON e.id=m.evidencia_id WHERE i.codigo IN ('INSC','ADM','PRIM')""").fetchall()
+    assert sorted(filas) == [('Facatativá', 'F06-P016'), ('Fusagasugá', 'F06-P015')]
+
+
+def test_ponderaciones_cna(con):
+    # En cada factor las ponderaciones de sus características suman 100 %
+    sumas = con.execute("""SELECT p.codigo, SUM(m.valor) FROM medicion m JOIN indicador i ON i.id=m.indicador_id AND i.codigo='CNA_POND'
+                           JOIN nodo n ON n.codigo=m.desagregacion AND n.marco_id=1 JOIN nodo p ON p.id=n.padre_id GROUP BY p.codigo""").fetchall()
+    assert len(sumas) == 12 and all(abs(s - 100) < 0.01 for _, s in sumas)

@@ -10,14 +10,15 @@ Este proyecto indexa toda la evidencia CNA en una base relacional donde los fact
 
 Idioma del proyecto: español (código, comentarios, datos e interfaz). Los textos de los criterios ABET están parafraseados en español y no deben copiarse literalmente del documento oficial.
 
-## Estado actual (paquete `indice`, tarea 1 terminada)
+## Estado actual (paquete `indice`, tareas 1 y 2 terminadas)
 
 - Fuentes (14 presentaciones, 329 páginas): los 12 factores (PDF + PPTX) y las 2 de la sesión de inicio (`Sesión de Inicio/2. Presentación Rectoría.pptx` y `4. Facultad de Ciencias Agropecuarias.pptx`, solo PPTX).
 - Base generada en `salida/indice_acreditacion.sqlite`:
   - 292 evidencias: 240 de factores (`F..`) y 52 de la sesión de inicio (`S..`, sede `Institución`, sin etiquetas CNA: las debe asignar el comité). 148 tienen `texto_ocr`.
   - 492 etiquetas (245 extraídas + 247 inferidas).
   - 3 marcos: CNA con 60 nodos, ABET-EAC con 24 nodos, REA-IA con 5 nodos.
-  - 227 mediciones, 54 cursos (150 créditos), 39 normas y 14 brechas.
+  - 31 indicadores y 299 mediciones, todas ligadas a la diapositiva de donde sale el valor; 54 cursos (150 créditos), 39 normas y 14 brechas.
+  - Desde las tablas de valoración: ponderación de las 48 características (`CNA_POND`), valoración y % de cumplimiento de los 12 factores (`CNA_VAL_FACTOR`, `CNA_CUMPL_FACTOR`). En cada factor las ponderaciones suman 100 % y el promedio ponderado coincide con la valoración del factor.
   - 83 gráficas (1.310 puntos) y 63 tablas de los PPTX.
 - `src/indice/schema.sql`: 16 tablas y 3 vistas.
 - `src/indice/fuentes.py`: inventario de presentaciones y su código (`Factor N. …` → `FNN`; `N. …` → `SNN`). Las que solo tienen PPTX se convierten a PDF con PowerPoint (`pptx_a_pdf.ps1`, automatización COM) en `salida/pdf_convertidos/`, con caché.
@@ -74,7 +75,7 @@ Reglas de reproyección: una etiqueta CNA de tipo `extraccion` genera etiquetas 
 4. Los títulos de evidencias se derivan heurísticamente del texto de la diapositiva y algunos quedan pobres (sobre todo en la sesión de inicio, donde se usan la sección y la primera línea útil o del OCR).
 4b. El `texto_ocr` tiene algo de ruido de fotos y logos; sirve para búsqueda, no como cita textual.
 5. La normativa se detecta por regex; el órgano emisor puede estar mal y hay exclusiones manuales.
-6. Las series de los indicadores se transcribieron a mano. Ya se pueden contrastar con `grafica_dato`: la de alcance de REA (F05-P027), retención y deserción, graduados, inscritos, admitidos y primer curso coinciden; las 48 valoraciones CNA coinciden con las tablas de valoración de cada factor. En la tarea 2, los indicadores deben apuntar a la serie de la gráfica en vez de repetir los números.
+6. Vínculos corregidos respecto al prototipo: retención y deserción no tenían evidencia (la búsqueda usaba un espacio que no existe) → F06-P004; las series de Facatativá de inscritos, admitidos y primer curso apuntaban a F06-P015 (Fusagasugá) → F06-P016. Las series de los indicadores se transcribieron a mano. Ya se pueden contrastar con `grafica_dato`: la de alcance de REA (F05-P027), retención y deserción, graduados, inscritos, admitidos y primer curso coinciden; las 48 valoraciones CNA coinciden con las tablas de valoración de cada factor. En la tarea 2, los indicadores deben apuntar a la serie de la gráfica en vez de repetir los números.
 7. Solo hay la prueba de aceptación del flujo (`tests/test_flujo.py`); faltan las de la tarea 4.
 
 ## Tareas priorizadas
