@@ -136,6 +136,36 @@ CREATE TABLE brecha (
   estado TEXT NOT NULL DEFAULT 'abierta' CHECK (estado IN ('abierta','en_curso','cerrada'))
 );
 
+-- Gráficas nativas de los PPTX (el PDF solo conserva la imagen). Formato largo: una fila por punto
+CREATE TABLE grafica (
+  id INTEGER PRIMARY KEY,
+  evidencia_id INTEGER NOT NULL REFERENCES evidencia(id),
+  orden INTEGER NOT NULL,          -- posición de la gráfica dentro de la diapositiva
+  titulo TEXT,
+  tipo TEXT,                       -- barChart, lineChart, pieChart... (varios si es combinada)
+  UNIQUE (evidencia_id, orden)
+);
+CREATE TABLE grafica_dato (
+  grafica_id INTEGER NOT NULL REFERENCES grafica(id),
+  serie_orden INTEGER NOT NULL,
+  serie TEXT NOT NULL,
+  punto_orden INTEGER NOT NULL,
+  categoria TEXT NOT NULL,         -- periodo, sede, grupo... tal como está en la gráfica
+  valor REAL NOT NULL,             -- valor exacto de la gráfica (proporciones 0-1 sin convertir)
+  PRIMARY KEY (grafica_id, serie_orden, punto_orden)
+);
+
+-- Tablas de las diapositivas; su forma es irregular (encabezados combinados), por eso las celdas van en JSON
+CREATE TABLE tabla_diapositiva (
+  id INTEGER PRIMARY KEY,
+  evidencia_id INTEGER NOT NULL REFERENCES evidencia(id),
+  orden INTEGER NOT NULL,
+  filas INTEGER NOT NULL,
+  columnas INTEGER NOT NULL,
+  celdas TEXT NOT NULL CHECK (json_valid(celdas)),   -- lista de filas, cada una lista de textos
+  UNIQUE (evidencia_id, orden)
+);
+
 -- Vistas
 CREATE VIEW v_cobertura_abet AS
 SELECT n.codigo, n.nombre, n.tipo,

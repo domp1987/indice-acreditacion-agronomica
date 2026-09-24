@@ -24,7 +24,9 @@ indice exportar
 indice tablero
 ```
 
-Productos en `salida/`: `diapositivas.json`, `indice_acreditacion.sqlite`, `data.json`, `csv/` y `tablas_csv.zip` (UTF-8 con BOM, para Excel o Power BI) e `indice_acreditacion_abet.html` (tablero autocontenido).
+`extraer` lee el texto de los PDF y, de los PPTX de la misma carpeta, los datos de las gráficas y las tablas (el PDF solo conserva la imagen de la gráfica).
+
+Productos en `salida/`: `diapositivas.json`, `pptx.json`, `indice_acreditacion.sqlite`, `data.json`, `csv/` y `tablas_csv.zip` (UTF-8 con BOM, para Excel o Power BI) e `indice_acreditacion_abet.html` (tablero autocontenido).
 
 ## Pruebas
 ```

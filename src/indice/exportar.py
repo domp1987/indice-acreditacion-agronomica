@@ -6,7 +6,7 @@ import zipfile
 from pathlib import Path
 
 TABLAS = ['marco', 'nodo', 'correspondencia', 'evidencia', 'evidencia_nodo', 'indicador', 'medicion', 'indicador_nodo',
-          'curso', 'curso_outcome', 'normativa', 'normativa_mencion', 'brecha']
+          'curso', 'curso_outcome', 'normativa', 'normativa_mencion', 'brecha', 'grafica', 'grafica_dato', 'tabla_diapositiva']
 
 
 def datos_tablero(c):

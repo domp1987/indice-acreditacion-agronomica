@@ -261,9 +261,11 @@ def cargar_indicadores(cur, slides, ev_by_page):
     i = ind('GRAD_ACUM', 'Tasa de graduación acumulada (cohorte 2015-1)', '%', [((1, 'C27'), 'principal'), ((2, 'C1'), 'principal')])
     e6 = ev(6, '32,9% en S12'); e4 = ev(4, '18,7% en S12')
     med(i, [('S12', 32.9), ('S13', 39.4), ('S14', 44.3)], evid=e6, nota='Factor 6')
-    med(i, [('S12', 18.71), ('S14', 34.33)], evid=e4, nota='Factor 4')
+    # Factor 4 según los datos de la gráfica del PPTX (F04-P006). El prototipo leía 27,45 % como la media
+    # nacional en S14, pero en la gráfica es el valor del programa en S13.
+    med(i, [('S12', 18.71), ('S13', 27.45), ('S14', 34.33)], evid=e4, nota='Factor 4')
     i = ind('GRAD_ACUM_NBC', 'Graduación acumulada, media nacional NBC Agronomía', '%', [((2, 'C1'), 'apoyo')])
-    med(i, [('S12', 25.1), ('S13', 28.1), ('S14', 31.1)], evid=e6, nota='Factor 6'); med(i, [('S14', 27.45)], evid=e4, nota='Factor 4')
+    med(i, [('S12', 25.1), ('S13', 28.1), ('S14', 31.1)], evid=e6, nota='Factor 6'); med(i, [('S12', 25.06), ('S13', 28.12), ('S14', 31.1)], evid=e4, nota='Factor 4')
     ei = ev(6, 'Inscritos')
     for nm, cod, fz, fc in [('Inscritos', 'INSC', [90, 45, 76, 96, 106, 89, 92, 117, 132, 104, 122, 96], [103, 52, 118, 149, 134, 115, 116, 119, 158, 104, 147, 130]),
                             ('Admitidos', 'ADM', [56, 42, 40, 41, 41, 40, 44, 41, 49, 41, 43, 43], [41, 36, 39, 35, 40, 40, 41, 42, 50, 43, 44, 42]),
@@ -365,7 +367,26 @@ def cargar_brechas(cur):
         cur.execute("INSERT INTO brecha(nodo_id,titulo,descripcion,severidad,accion) VALUES (?,?,?,?,?)", (_nid(cur, MARCO_ABET, n), t, d, s, a))
 
 
-def cargar(db, diapositivas):
+# ---------- Gráficas y tablas de los PPTX ----------
+def cargar_pptx(cur, pptx, ev_by_page):
+    """Liga gráficas y tablas a la evidencia de su diapositiva. Devuelve las diapositivas sin evidencia."""
+    huerfanas = []
+    for d in pptx:
+        eid = ev_by_page.get((d['factor'], d['pagina']))
+        if eid is None:
+            huerfanas.append(f'F{d["factor"]:02d}-P{d["pagina"]:03d}'); continue
+        for orden, g in enumerate(d['graficas'], 1):
+            cur.execute("INSERT INTO grafica(evidencia_id,orden,titulo,tipo) VALUES (?,?,?,?)", (eid, orden, g['titulo'] or None, g['tipo']))
+            gid = cur.lastrowid
+            cur.executemany("INSERT INTO grafica_dato VALUES (?,?,?,?,?,?)",
+                            [(gid, so, s['nombre'], po, cat, v) for so, s in enumerate(g['series'], 1) for po, (cat, v) in enumerate(s['puntos'], 1)])
+        for orden, t in enumerate(d['tablas'], 1):
+            cur.execute("INSERT INTO tabla_diapositiva(evidencia_id,orden,filas,columnas,celdas) VALUES (?,?,?,?,?)",
+                        (eid, orden, len(t), max((len(f) for f in t), default=0), json.dumps(t, ensure_ascii=False)))
+    return huerfanas
+
+
+def cargar(db, diapositivas, pptx_json=None):
     """Borra y recrea la base (la carga incremental es la tarea 3)."""
     db, diapositivas = Path(db), Path(diapositivas)
     if not diapositivas.exists():
@@ -382,10 +403,16 @@ def cargar(db, diapositivas):
         cargar_normativa(cur, slides, ev_by_page)
         cargar_indicadores(cur, slides, ev_by_page)
         cargar_cursos(cur); cargar_brechas(cur)
+        if pptx_json and Path(pptx_json).exists():
+            huerfanas = cargar_pptx(cur, json.loads(Path(pptx_json).read_text(encoding='utf-8')), ev_by_page)
+            if huerfanas:
+                print(f'Aviso: gráficas o tablas en diapositivas sin evidencia (portadas): {", ".join(huerfanas)}')
         con.commit()
         n = lambda q: cur.execute(q).fetchone()[0]
         print(f'Carga: {n("SELECT COUNT(*) FROM evidencia")} evidencias, {n("SELECT COUNT(*) FROM evidencia_nodo")} etiquetas, '
               f'{n("SELECT COUNT(*) FROM nodo")} nodos, {n("SELECT COUNT(*) FROM medicion")} mediciones, '
-              f'{n("SELECT COUNT(*) FROM curso")} cursos ({n("SELECT SUM(creditos) FROM curso")} créditos) → {db}')
+              f'{n("SELECT COUNT(*) FROM curso")} cursos ({n("SELECT SUM(creditos) FROM curso")} créditos), '
+              f'{n("SELECT COUNT(*) FROM grafica")} gráficas ({n("SELECT COUNT(*) FROM grafica_dato")} puntos), '
+              f'{n("SELECT COUNT(*) FROM tabla_diapositiva")} tablas → {db}')
     finally:
         con.close()

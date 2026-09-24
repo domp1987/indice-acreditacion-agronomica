@@ -15,10 +15,11 @@ Idioma del proyecto: español (código, comentarios, datos e interfaz). Los text
 - Base generada en `salida/indice_acreditacion.sqlite`:
   - 240 evidencias con 492 etiquetas (245 extraídas + 247 inferidas).
   - 3 marcos: CNA con 60 nodos, ABET-EAC con 24 nodos, REA-IA con 5 nodos.
-  - 224 mediciones, 54 cursos (150 créditos), 35 normas y 14 brechas.
+  - 227 mediciones, 54 cursos (150 créditos), 35 normas y 14 brechas.
 - `src/indice/schema.sql`: 13 tablas y 3 vistas.
 - `src/indice/extraer.py`: extrae el texto por página con `pdftotext` (respaldo: pypdf, que altera el texto) y detecta el encabezado "Característica N.". Escribe `salida/diapositivas.json`.
 - `src/indice/cargar.py`: borra y recrea la base; carga marcos, nodos, correspondencias, evidencias, normativa (por regex), indicadores, cursos y brechas. Los datos manuales siguen escritos aquí (tarea 2).
+- `src/indice/pptx.py`: lee los PPTX (solo sus XML) y extrae los datos nativos de las gráficas y las celdas de las tablas → `salida/pptx.json`. Verifica que cada diapositiva visible coincida con su página del PDF. Se cargan en `grafica`, `grafica_dato` (formato largo) y `tabla_diapositiva` (celdas en JSON). Hoy: 79 gráficas (1.200 puntos) y 53 tablas. Los PPTX no tienen notas del orador y sus textos alternativos son casi todos automáticos, así que no se usan.
 - `src/indice/reproyectar.py`: etiquetas extraídas → etiquetas ABET inferidas vía correspondencias. Idempotente.
 - `src/indice/exportar.py`: `data.json` y `csv/` + `tablas_csv.zip` (UTF-8 con BOM).
 - `src/indice/tablero.py` y `plantillas/template.html`: tablero autocontenido; inyecta `data.json` en `__DATA__`, JavaScript puro, sin dependencias.
@@ -56,7 +57,7 @@ Reglas de reproyección: una etiqueta CNA de tipo `extraccion` genera etiquetas 
 - **Criterios 2 y 3.** No existen PEOs. Los 5 REA no cubren SO2 (diseño), SO6 (experimentación) ni SO7 (aprendizaje autónomo).
 - **Criterio 4.** El "% de alcance de REA" es una medición agregada; ABET pide evaluación directa por indicador de desempeño, con rúbricas y metas.
 - **Criterio 7.** Disparidad entre sedes: 26 frente a 9 laboratorios.
-- **Datos.** La graduación acumulada en S14 aparece como 44,3 % en el Factor 6 y como 34,33 % en el Factor 4. `v_inconsistencias` lo detecta.
+- **Datos.** La graduación acumulada del programa difiere entre factores en los tres semestres: Factor 6 = 32,9 / 39,4 / 44,3 % y Factor 4 = 18,71 / 27,45 / 34,33 % (S12 / S13 / S14). La media nacional NBC coincide en ambos (25,1 / 28,1 / 31,1 %). `v_inconsistencias` lo detecta. El prototipo tomaba 27,45 % como media NBC en S14; la gráfica del PPTX muestra que es el programa en S13 (corregido).
 
 ## Deuda técnica conocida
 
@@ -65,7 +66,7 @@ Reglas de reproyección: una etiqueta CNA de tipo `extraccion` genera etiquetas 
 3. Los indicadores, cursos, brechas, valoraciones CNA y correspondencias están escritos a mano dentro de `cargar.py`.
 4. Los títulos de evidencias se derivan heurísticamente del texto de la diapositiva y algunos quedan pobres.
 5. La normativa se detecta por regex; el órgano emisor puede estar mal y hay exclusiones manuales.
-6. Las series de las gráficas de los PDF se transcribieron a mano. La del alcance de REA se leyó de la imagen de F05-P027: el orden de barras es 2025-2, 2025-1, 2024-2, 2024-1, 2023-2.
+6. Las series de los indicadores se transcribieron a mano. Ya se pueden contrastar con `grafica_dato`: la de alcance de REA (F05-P027), retención y deserción, graduados, inscritos, admitidos y primer curso coinciden; las 48 valoraciones CNA coinciden con las tablas de valoración de cada factor. En la tarea 2, los indicadores deben apuntar a la serie de la gráfica en vez de repetir los números.
 7. Solo hay la prueba de aceptación del flujo (`tests/test_flujo.py`); faltan las de la tarea 4.
 
 ## Tareas priorizadas
@@ -93,6 +94,8 @@ Usa una CLI con `argparse` o `typer`: `indice extraer --pdf datos/pdf`, `indice 
 Mueve a `datos/semillas/` todo lo que hoy está escrito a mano en `cargar.py`: nodos CNA y ABET, correspondencias, REA, cursos, brechas, indicadores y valoraciones CNA.
 
 **Criterio de aceptación:** la base generada es idéntica a la actual (mismos conteos y mismas vistas).
+
+Datos que ya están en las tablas del PPTX y aún no en la base: la ponderación (%) de cada característica y la valoración y el grado de cumplimiento de cada factor (tablas de 7 columnas en las diapositivas de valoración). Sirven como semilla verificable en lugar de valores escritos a mano.
 
 ### 3. Carga incremental que preserve la validación humana
 Reemplaza el borrado y recreado por un *upsert* con claves naturales: `evidencia.codigo`, `(marco, nodo.codigo)` y `(origen, destino)`. Las etiquetas y correspondencias en estado `validada` o `descartada` no se tocan al recargar. Agrega columnas `creado_en`, `actualizado_en` y `validado_por` donde aplique.
