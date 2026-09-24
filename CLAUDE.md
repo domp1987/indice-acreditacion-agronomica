@@ -114,7 +114,8 @@ Pruebas en `tests/test_incremental.py`: idempotencia, decisiones del comité que
 
 Reemplaza el borrado y recreado por un *upsert* con claves naturales: `evidencia.codigo`, `(marco, nodo.codigo)` y `(origen, destino)`. Las etiquetas y correspondencias en estado `validada` o `descartada` no se tocan al recargar. Agrega columnas `creado_en`, `actualizado_en` y `validado_por` donde aplique.
 
-### 4. Pruebas (pytest)
+### 4. Pruebas (pytest) — CUBIERTA
+Todos los puntos están cubiertos en `tests/` (semillas: 48 características, 12 factores, 150 créditos, correspondencias entre marcos distintos, nodos ABET con padre; flujo: `v_inconsistencias`; incremental: idempotencia de la reproyección). 24 pruebas. Lista original:
 Como mínimo, verificar:
 - 48 características y 12 factores CNA;
 - la suma de créditos de `curso` es 150;
