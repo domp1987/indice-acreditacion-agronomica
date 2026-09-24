@@ -24,7 +24,9 @@ Idioma del proyecto: español (código, comentarios, datos e interfaz). Los text
 - `src/indice/extraer.py`: extrae el texto por página con `pdftotext` (respaldo: pypdf, que altera el texto) y detecta el encabezado "Característica N.". Escribe `salida/diapositivas.json`.
 - `src/indice/pptx.py`: lee los PPTX (solo sus XML) y extrae los datos nativos de las gráficas y las celdas de las tablas → `salida/pptx.json`. Verifica que cada diapositiva visible coincida con su página del PDF. Se cargan en `grafica`, `grafica_dato` (formato largo) y `tabla_diapositiva` (celdas en JSON). Los PPTX no tienen notas del orador y sus textos alternativos son casi todos automáticos, así que no se usan.
 - `src/indice/ocr.py`: renderiza cada página (pdftoppm, 150 ppp) y aplica el OCR integrado de Windows en español (`ocr_windows.ps1`; tesseract si no es Windows). Caché cruda en `salida/ocr.json` (la primera vez tarda ~10 min; se repite solo si cambia el PDF, o con `--rehacer-ocr`). Al cargar, `texto_nuevo` guarda en `evidencia.texto_ocr` solo las líneas con palabras que no estén ya en el texto del PDF, sin encabezados institucionales ni ruido. `--sin-ocr` lo omite.
-- `src/indice/cargar.py`: borra y recrea la base; carga marcos, nodos, correspondencias, evidencias, normativa (por regex), indicadores, cursos, brechas, gráficas y tablas. Los datos manuales siguen escritos aquí (tarea 2).
+- `datos/semillas/*.csv` (versionadas): todo lo que no sale de las presentaciones — `marcos`, `nodos`, `correspondencias`, `indicadores`, `indicador_nodos`, `mediciones` (con el código de evidencia de donde sale cada valor), `cursos`, `brechas`, `normativa_manual` y `normativa_excluir`. UTF-8, celda vacía = NULL, el orden de filas es el de carga.
+- `src/indice/semillas.py`: lee las semillas, convierte tipos y valida referencias (nodos, marcos, indicadores) antes de tocar la base, con errores legibles.
+- `src/indice/cargar.py`: borra y recrea la base; carga semillas, evidencias (diapositivas + OCR), normativa (regex + semillas), gráficas y tablas. No contiene datos.
 - `src/indice/reproyectar.py`: etiquetas extraídas → etiquetas ABET inferidas vía correspondencias. Idempotente.
 - `src/indice/exportar.py`: `data.json` y `csv/` + `tablas_csv.zip` (UTF-8 con BOM).
 - `src/indice/tablero.py` y `plantillas/template.html`: tablero autocontenido; inyecta `data.json` en `__DATA__`, JavaScript puro, sin dependencias.
@@ -33,7 +35,7 @@ Idioma del proyecto: español (código, comentarios, datos e interfaz). Los text
 
 Flujo: `pip install -e .[dev]` y luego `indice todo` (o `extraer`, `ocr`, `cargar`, `reproyectar`, `exportar`, `tablero`). Pruebas: `pytest` (reutilizan las cachés de conversión y OCR de `salida/`).
 
-Requisitos: Python 3.11 o superior (usa `tomllib`) y poppler (`pdftotext`, `pdfinfo`, `pdftoppm`). Opcionales: PowerPoint (convertir PPTX sin PDF) y el OCR de Windows con el idioma es-ES (o tesseract con `spa`). En este equipo: poppler portable 26.09 en `%LOCALAPPDATA%\Programs\poppler\...\Library\bin`, MinGit en `%LOCALAPPDATA%\Programs\MinGit\cmd` (ambos en el PATH de usuario) y el intérprete es `py -3.14`; ojo: `python` en el PATH es el de Inkscape.
+Requisitos: Python 3.11 o superior (usa `tomllib`) y poppler (`pdftotext`, `pdfinfo`, `pdftoppm`). `binario()` ignora el `pdftotext` de xpdf (el que trae Git para Windows en `/mingw64/bin`), que parte el texto distinto y cambiaba la base según el orden del PATH. Opcionales: PowerPoint (convertir PPTX sin PDF) y el OCR de Windows con el idioma es-ES (o tesseract con `spa`). En este equipo: poppler portable 26.09 en `%LOCALAPPDATA%\Programs\poppler\...\Library\bin`, MinGit en `%LOCALAPPDATA%\Programs\MinGit\cmd` (ambos en el PATH de usuario) y el intérprete es `py -3.14`; ojo: `python` en el PATH es el de Inkscape.
 
 Diferencia conocida con la base del prototipo: poppler 26.09 corta distinto las líneas en F05-P016, F07-P020 y F11-P006; por eso el `fuente` de F07-P020 pasó de "Dirección" a "Dirección de". El resto es idéntico. `evidencia.archivo` guarda ahora el nombre real del PDF ("Factor 1. PEP e Identidad Institucional.pdf").
 
@@ -68,7 +70,7 @@ Reglas de reproyección: una etiqueta CNA de tipo `extraccion` genera etiquetas 
 
 1. ~~Rutas fijas~~ (resuelto en la tarea 1 con `indice.toml` y la CLI).
 2. `cargar.py` borra y recrea la base en cada ejecución. Cualquier validación manual del comité se perdería.
-3. Los indicadores, cursos, brechas, valoraciones CNA y correspondencias están escritos a mano dentro de `cargar.py`.
+3. ~~Datos escritos a mano en el código~~ (resuelto en la tarea 2: `datos/semillas/`).
 4. Los títulos de evidencias se derivan heurísticamente del texto de la diapositiva y algunos quedan pobres (sobre todo en la sesión de inicio, donde se usan la sección y la primera línea útil o del OCR).
 4b. El `texto_ocr` tiene algo de ruido de fotos y logos; sirve para búsqueda, no como cita textual.
 5. La normativa se detecta por regex; el órgano emisor puede estar mal y hay exclusiones manuales.
@@ -96,7 +98,9 @@ Usa una CLI con `argparse` o `typer`: `indice extraer --pdf datos/pdf`, `indice 
 
 **Criterio de aceptación:** el flujo completo corre desde una carpeta limpia con un solo comando.
 
-### 2. Sacar los datos manuales a semillas
+### 2. Sacar los datos manuales a semillas — HECHA
+Semillas en CSV (sin dependencias; YAML habría requerido PyYAML). La base generada es idéntica a la anterior, incluso en los ids internos. Plan original:
+
 Mueve a `datos/semillas/` todo lo que hoy está escrito a mano en `cargar.py`: nodos CNA y ABET, correspondencias, REA, cursos, brechas, indicadores y valoraciones CNA.
 
 **Criterio de aceptación:** la base generada es idéntica a la actual (mismos conteos y mismas vistas).

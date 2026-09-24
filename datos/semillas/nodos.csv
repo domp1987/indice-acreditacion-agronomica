@@ -1,0 +1,90 @@
+marco,codigo,nombre,tipo,padre,orden,descripcion
+CNA,F01,Proyecto educativo del programa e identidad institucional,factor,,100,
+CNA,F02,Estudiantes,factor,,200,
+CNA,F03,Profesores,factor,,300,
+CNA,F04,Egresados,factor,,400,
+CNA,F05,Aspectos académicos y resultados de aprendizaje,factor,,500,
+CNA,F06,Permanencia y graduación,factor,,600,
+CNA,F07,Interacción con el entorno nacional e internacional,factor,,700,
+CNA,F08,"Aportes de la investigación, la innovación, el desarrollo tecnológico y la creación",factor,,800,
+CNA,F09,Bienestar de la comunidad académica del programa,factor,,900,
+CNA,F10,Medios educativos y ambientes de aprendizaje,factor,,1000,
+CNA,F11,"Organización, administración y financiación del programa académico",factor,,1100,
+CNA,F12,Recursos físicos y tecnológicos,factor,,1200,
+CNA,C01,Proyecto educativo del programa,caracteristica,F01,101,
+CNA,C02,Relevancia académica y pertinencia social del programa,caracteristica,F01,102,
+CNA,C03,Participación en actividades de formación integral,caracteristica,F02,203,
+CNA,C04,Orientación y seguimiento a estudiantes,caracteristica,F02,204,
+CNA,C05,Capacidad de trabajo autónomo,caracteristica,F02,205,
+CNA,C06,Reglamento estudiantil y política académica,caracteristica,F02,206,
+CNA,C07,Estímulos y apoyos para estudiantes,caracteristica,F02,207,
+CNA,C08,"Selección, vinculación y permanencia",caracteristica,F03,308,
+CNA,C09,Estatuto profesoral,caracteristica,F03,309,
+CNA,C10,"Número, dedicación, nivel de formación y experiencia",caracteristica,F03,310,
+CNA,C11,Desarrollo profesoral,caracteristica,F03,311,
+CNA,C12,Estímulos a la trayectoria profesoral,caracteristica,F03,312,
+CNA,C13,"Producción, pertinencia, utilización e impacto de material docente",caracteristica,F03,313,
+CNA,C14,Remuneración por méritos,caracteristica,F03,314,
+CNA,C15,Evaluación de profesores,caracteristica,F03,315,
+CNA,C16,Seguimiento a graduados,caracteristica,F04,416,
+CNA,C17,Impacto de los graduados en el medio social y académico,caracteristica,F04,417,
+CNA,C18,Integralidad de los aspectos curriculares,caracteristica,F05,518,
+CNA,C19,Flexibilidad de los aspectos curriculares,caracteristica,F05,519,
+CNA,C20,Interdisciplinariedad,caracteristica,F05,520,
+CNA,C21,Estrategias pedagógicas,caracteristica,F05,521,
+CNA,C22,Sistema de evaluación de estudiantes,caracteristica,F05,522,
+CNA,C23,Resultados de aprendizaje,caracteristica,F05,523,
+CNA,C24,Competencias,caracteristica,F05,524,
+CNA,C25,Evaluación y autorregulación del programa,caracteristica,F05,525,
+CNA,C26,Vinculación e interacción social,caracteristica,F05,526,
+CNA,C27,"Políticas, estrategias y estructura para la permanencia y la graduación",caracteristica,F06,627,
+CNA,C28,Caracterización de estudiantes y sistema de alertas tempranas,caracteristica,F06,628,
+CNA,C29,Ajustes a los aspectos curriculares,caracteristica,F06,629,
+CNA,C30,Mecanismos de selección,caracteristica,F06,630,
+CNA,C31,Inserción del programa en contextos académicos nacionales e internacionales,caracteristica,F07,731,
+CNA,C32,Relaciones externas de profesores y estudiantes,caracteristica,F07,732,
+CNA,C33,Habilidades comunicativas en una segunda lengua,caracteristica,F07,733,
+CNA,C34,"Formación para la investigación, el desarrollo tecnológico, la innovación y la creación",caracteristica,F08,834,
+CNA,C35,"Compromiso con la investigación, el desarrollo tecnológico, la innovación y la creación",caracteristica,F08,835,
+CNA,C36,Programas y servicios,caracteristica,F09,936,
+CNA,C37,Participación y seguimiento,caracteristica,F09,937,
+CNA,C38,Estrategias y recursos de apoyo a profesores,caracteristica,F10,1038,
+CNA,C39,Estrategias y recursos de apoyo a estudiantes,caracteristica,F10,1039,
+CNA,C40,Recursos bibliográficos y de información,caracteristica,F10,1040,
+CNA,C41,Organización y administración,caracteristica,F11,1141,
+CNA,C42,Dirección y gestión,caracteristica,F11,1142,
+CNA,C43,Sistemas de comunicación e información,caracteristica,F11,1143,
+CNA,C44,Estudiantes y capacidad institucional,caracteristica,F11,1144,
+CNA,C45,Financiación del programa,caracteristica,F11,1145,
+CNA,C46,Aseguramiento de la alta calidad y mejora continua,caracteristica,F11,1146,
+CNA,C47,Recursos de infraestructura física y tecnológica,caracteristica,F12,1247,
+CNA,C48,Recursos informáticos y de comunicación,caracteristica,F12,1248,
+ABET-EAC,C1,Estudiantes,criterio,,1,"Evaluación y seguimiento del desempeño, consejería, políticas de admisión, transferencia y homologación, verificación de requisitos de grado."
+ABET-EAC,C2,Objetivos educacionales del programa (PEOs),criterio,,2,"Objetivos publicados, coherentes con la misión y las necesidades de los grupos de interés, con proceso documentado de revisión periódica."
+ABET-EAC,C3,Resultados de los estudiantes (Student Outcomes),criterio,,3,"Resultados 1 a 7 más los que defina el programa, con proceso documentado de revisión."
+ABET-EAC,SO1,Resolver problemas complejos de ingeniería,outcome,C3,4,"Identificar, formular y resolver problemas complejos aplicando principios de ingeniería, ciencia y matemáticas."
+ABET-EAC,SO2,Diseño de ingeniería,outcome,C3,5,"Aplicar diseño de ingeniería para producir soluciones a necesidades específicas considerando salud, seguridad, bienestar y factores globales, culturales, sociales, ambientales y económicos."
+ABET-EAC,SO3,Comunicación efectiva,outcome,C3,6,Comunicarse efectivamente con públicos diversos.
+ABET-EAC,SO4,Ética y responsabilidad profesional,outcome,C3,7,"Reconocer responsabilidades éticas y profesionales y emitir juicios informados considerando impactos globales, económicos, ambientales y sociales."
+ABET-EAC,SO5,Trabajo en equipo,outcome,C3,8,"Funcionar eficazmente en equipos que colaboran, lideran, fijan metas, planifican y cumplen objetivos."
+ABET-EAC,SO6,Experimentación y análisis de datos,outcome,C3,9,"Diseñar y conducir experimentación, analizar e interpretar datos y usar juicio ingenieril para concluir."
+ABET-EAC,SO7,Aprendizaje autónomo,outcome,C3,10,"Adquirir y aplicar nuevo conocimiento según se necesite, con estrategias de aprendizaje apropiadas."
+ABET-EAC,C4,Mejora continua,criterio,,11,"Procesos documentados y aplicados de evaluación y valoración del logro de los Student Outcomes, cuyos resultados se usan para mejorar el programa."
+ABET-EAC,C5,Currículo,criterio,,12,"Contenido adecuado en cada área, coherente con PEOs y Student Outcomes."
+ABET-EAC,C5a,Matemáticas y ciencias básicas (mínimo 30 créditos semestrales),subcriterio,C5,13,
+ABET-EAC,C5b,Temas de ingeniería (mínimo 45 créditos semestrales),subcriterio,C5,14,"Ciencias de la ingeniería y diseño de ingeniería, con uso de herramientas modernas."
+ABET-EAC,C5c,Componente de educación amplia,subcriterio,C5,15,
+ABET-EAC,C5d,Experiencia de diseño mayor (culminante),subcriterio,C5,16,"Proyecto de diseño que integra conocimientos previos, con estándares y restricciones múltiples, obligatorio para todos."
+ABET-EAC,C6,Profesores,criterio,,17,"Número suficiente, competencias para cubrir todas las áreas, continuidad y estabilidad, autoridad sobre el programa."
+ABET-EAC,C7,Instalaciones,criterio,,18,"Aulas, laboratorios y equipos adecuados para el logro de los Student Outcomes, incluida la seguridad."
+ABET-EAC,C8,Apoyo institucional,criterio,,19,
+ABET-EAC,C8a,Calidad y continuidad del programa,subcriterio,C8,20,
+ABET-EAC,C8b,"Atraer, retener y desarrollar profesores",subcriterio,C8,21,
+ABET-EAC,C8c,Infraestructura y equipos,subcriterio,C8,22,
+ABET-EAC,C8d,Ambiente respetuoso,subcriterio,C8,23,
+ABET-EAC,PC,Criterios específicos del programa (por confirmar con ABET),criterio,,24,
+REA-IA,REA1,REA1,rea,,1,"Aplicar coherentemente herramientas comunicativas en procesos de interacción social, con sentido crítico y transformador del entorno."
+REA-IA,REA2,REA2,rea,,2,"Aplicar herramientas matemáticas que faciliten el análisis, diseño, seguimiento y evaluación de sistemas productivos e investigativos."
+REA-IA,REA3,REA3,rea,,3,"Desempeñarse honestamente como persona con principios, valores, actitudes y comportamientos propios del profesional UCundinamarca."
+REA-IA,REA4,REA4,rea,,4,"Identificar y analizar conceptos, funcionalidad y elementos biológicos de un sistema de producción agrícola y sus interacciones."
+REA-IA,REA5,REA5,rea,,5,"Liderar ética y solidariamente procesos de transformación de las comunidades, con alternativas viables y respetuosas del ambiente y la multiculturalidad."

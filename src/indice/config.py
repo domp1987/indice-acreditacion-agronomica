@@ -14,6 +14,7 @@ PLANTILLA = PROYECTO / 'plantillas' / 'template.html'
 class Rutas:
     pdf: Path
     salida: Path
+    semillas: Path
     poppler: Path | None = None
 
     @property
@@ -63,4 +64,5 @@ def cargar_rutas(pdf=None, salida=None, config=None):
     poppler = os.environ.get('INDICE_POPPLER') or None
     return Rutas(pdf=ruta(pdf, 'pdf', 'datos/pdf'),
                  salida=ruta(salida, 'salida', 'salida'),
+                 semillas=ruta(None, 'semillas', 'datos/semillas'),
                  poppler=Path(poppler) if poppler else ruta(None, 'poppler', None))

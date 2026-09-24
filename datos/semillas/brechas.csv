@@ -1,0 +1,15 @@
+marco,nodo,titulo,descripcion,severidad,accion,responsable,estado
+ABET-EAC,C5b,Temas de ingeniería muy por debajo del mínimo,Siendo generosos suman 14 créditos frente a 45. La mayor parte de la ingeniería aplicada es ciencia agronómica.,alta,"Incluir ciencias de la ingeniería (fluidos, termodinámica, estructuras, maquinaria) en la resignificación del CMA",,abierta
+ABET-EAC,C5a,Matemáticas insuficientes,Solo 7 créditos de matemáticas (Matemática aplicada y Modelos estadísticos) y 2 de física.,alta,"Agregar cálculo diferencial, integral y ecuaciones diferenciales; ampliar física",,abierta
+ABET-EAC,C5d,No hay experiencia de diseño obligatoria para todos,"La opción de grado admite monografía, pasantía, créditos de especialización u obra artística.",alta,Convertir Profundización III en proyecto de diseño integrador obligatorio,,abierta
+ABET-EAC,C6,Baja estabilidad del cuerpo docente,1 gestor de planta de 53; la mayoría con contratos ocasionales de 4 u 11 meses.,alta,Plan de vinculación de planta ligado al programa,,abierta
+ABET-EAC,C6,Pocas competencias docentes en ingeniería,El área de ciencias de la ingeniería tiene un magíster en TIG y un especialista en SIG.,alta,"Vincular ingenieros agrícolas, civiles o mecánicos con posgrado",,abierta
+ABET-EAC,C2,No existen objetivos educacionales (PEOs),"Hay misión, visión y perfiles, pero no objetivos a 3-5 años del egreso.",media,Redactar PEOs y validarlos con egresados y empleadores,,abierta
+ABET-EAC,SO2,Diseño de ingeniería sin resultado de aprendizaje propio,Ningún REA cubre el proceso de diseño de ingeniería.,alta,Reformular REA alineados a los 7 Student Outcomes,,abierta
+ABET-EAC,SO6,Experimentación sin resultado de aprendizaje propio,"Solo evidencia indirecta (semilleros, competencia PC1 de Saber Pro).",media,Definir indicador de desempeño en cursos con laboratorio,,abierta
+ABET-EAC,SO7,Aprendizaje autónomo sin resultado de aprendizaje propio,"Existe la característica CNA de trabajo autónomo, pero no un REA medible.",media,Definir indicador de desempeño,,abierta
+ABET-EAC,C4,"Medición de REA agregada, no directa por indicador",El porcentaje de alcance de REA no equivale a evaluación directa con rúbricas y metas.,media,"Rúbricas por indicador de desempeño, metas y actas de cierre del ciclo",,abierta
+ABET-EAC,C7,Disparidad de infraestructura entre sedes,26 laboratorios en Fusagasugá frente a 9 en Facatativá; 70.400 m² frente a 12.400 m².,media,Demostrar logro equivalente de resultados en ambas sedes,,abierta
+ABET-EAC,C1,Cifras inconsistentes de graduación acumulada,"Factor 6 reporta 44,3% en S14 y Factor 4 reporta 34,3% para la misma medida.",media,Unificar fuente y cohorte de referencia,,abierta
+ABET-EAC,C1,Falta procedimiento documentado de verificación de requisitos de grado,"Existe el reglamento, pero no la auditoría estudiante por estudiante que pide ABET.",baja,Documentar el procedimiento de Admisiones y Registro,,abierta
+ABET-EAC,PC,Criterios específicos del programa sin confirmar,"Por el nombre, podrían aplicar los criterios de ingeniería agrícola.",alta,Consulta formal con ABET antes de la Readiness Review,,abierta

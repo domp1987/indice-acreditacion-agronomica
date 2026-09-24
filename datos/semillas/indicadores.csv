@@ -1,0 +1,29 @@
+codigo,nombre,unidad,descripcion
+RET,Tasa de retención,%,
+DES,Tasa de deserción,%,
+GRAD,Graduados por periodo,personas,
+GRAD_ACUM,Tasa de graduación acumulada (cohorte 2015-1),%,
+GRAD_ACUM_NBC,"Graduación acumulada, media nacional NBC Agronomía",%,
+INSC,Inscritos,personas,
+ADM,Admitidos,personas,
+PRIM,Matriculados primer curso,personas,
+ALC_REA1,Porcentaje de alcance de REA1,%,Medición agregada del programa; ABET pide evaluación directa por indicador de desempeño
+ALC_REA2,Porcentaje de alcance de REA2,%,Medición agregada del programa; ABET pide evaluación directa por indicador de desempeño
+ALC_REA3,Porcentaje de alcance de REA3,%,Medición agregada del programa; ABET pide evaluación directa por indicador de desempeño
+ALC_REA4,Porcentaje de alcance de REA4,%,Medición agregada del programa; ABET pide evaluación directa por indicador de desempeño
+ALC_REA5,Porcentaje de alcance de REA5,%,Medición agregada del programa; ABET pide evaluación directa por indicador de desempeño
+SP_PROG,Saber Pro puntaje global - programa,puntos,
+SP_INST,Saber Pro puntaje global - institución,puntos,
+SP_REF,Saber Pro puntaje global - grupo de referencia NBC,puntos,
+EST,Estudiantes matriculados,personas,
+GC,Gestores del conocimiento,personas,
+GC_DOC,Gestores con doctorado,%,
+GC_MAE,Gestores con maestría,%,
+GC_ESP,Gestores con especialización,%,
+GC_PLANTA,Gestores de planta,personas,ABET exige continuidad y estabilidad del cuerpo docente
+GC_OCAS,Gestores tiempo completo ocasional,personas,
+LABS,Laboratorios,espacios,
+AREA,Área de la sede,m²,
+PPTO,Ejecución presupuestal del programa,COP,
+EMPL,Graduados valorados por empleadores,%,
+CNA_VAL,Valoración CNA de la característica (autoevaluación),escala 0-5,

@@ -2,7 +2,6 @@
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -10,11 +9,31 @@ from pathlib import Path
 PATRON_CARACTERISTICA = re.compile(r'Caracter[ií]stica\s*(\d+)\.?\s*\n?\s*([^\n]+(?:\n[a-záéíóúñ][^\n]+)?)')
 
 
+_ES_POPPLER = {}
+
+
+def _es_poppler(exe):
+    # xpdf (p. ej. el que trae Git para Windows en /mingw64/bin) usa los mismos nombres pero parte el texto
+    # distinto, y la base cambiaría según qué programa aparezca primero en el PATH
+    if exe not in _ES_POPPLER:
+        r = subprocess.run([exe, '-v'], capture_output=True, text=True, encoding='utf-8', errors='replace')
+        _ES_POPPLER[exe] = 'poppler' in (r.stdout + r.stderr).lower()
+    return _ES_POPPLER[exe]
+
+
 def binario(nombre, carpeta):
-    if carpeta:
-        exe = Path(carpeta) / (nombre + ('.exe' if os.name == 'nt' else ''))
-        if exe.exists(): return str(exe)
-    return shutil.which(nombre)
+    """Ruta de la herramienta de poppler: primero la carpeta configurada y luego el PATH, ignorando xpdf."""
+    exe_nombre = nombre + ('.exe' if os.name == 'nt' else '')
+    candidatos = [Path(carpeta) / exe_nombre] if carpeta else []
+    candidatos += [Path(d) / exe_nombre for d in os.environ.get('PATH', '').split(os.pathsep) if d]
+    descartados = []
+    for exe in candidatos:
+        if not exe.is_file(): continue
+        if _es_poppler(str(exe)): return str(exe)
+        descartados.append(str(exe))
+    if descartados:
+        print(f'Aviso: se ignora {descartados[0]} porque no es de poppler (xpdf parte el texto distinto).', file=sys.stderr)
+    return None
 
 
 def ejecutar(args):

@@ -1,0 +1,55 @@
+nombre,componente_cma,creditos,periodo,categoria_abet,confianza,nota
+Razonamiento argumentativo,Institucional,2,,educacion_general,alta,
+"Ciencia, tecnología e innovación I",Institucional,2,,educacion_general,alta,
+"Ciencia, tecnología e innovación II",Institucional,2,,educacion_general,alta,
+"Ciencia, tecnología e innovación III",Institucional,2,,educacion_general,alta,
+Comunicación y pensamiento crítico I,Institucional,2,,educacion_general,alta,
+Comunicación y pensamiento crítico II,Institucional,2,,educacion_general,alta,
+Emprendimiento e innovación I,Institucional,2,,educacion_general,alta,
+Emprendimiento e innovación II,Institucional,2,,educacion_general,alta,
+Ciudadanía siglo 21,Institucional,1,,educacion_general,alta,
+Segunda lengua I,Institucional,2,,educacion_general,alta,
+Segunda lengua II,Institucional,2,,educacion_general,alta,
+Segunda lengua III,Institucional,2,,educacion_general,alta,
+Segunda lengua IV,Institucional,2,,educacion_general,alta,
+Cátedra Generación Siglo 21,Institucional,2,,educacion_general,alta,
+Matemática aplicada,Ciencias básicas,3,,matematicas,alta,Único curso de matemáticas; no se evidencia cálculo diferencial e integral
+Física,Ciencias básicas,2,,ciencias_basicas,alta,Intensidad baja para un programa de ingeniería
+Química,Ciencias básicas,3,,ciencias_basicas,alta,
+Bioquímica,Ciencias básicas,3,,ciencias_basicas,alta,
+Ecología y recursos naturales,Ciencias básicas,3,,ciencias_basicas,media,
+Morfología y taxonomía vegetal,Ciencias básicas,4,,ciencias_basicas,media,
+Topografía,Ciencias básicas,2,,ingenieria,media,Clasificado por el programa como ciencia básica
+Agroclimatología,Ciencias básicas de ingeniería,2,,ingenieria,baja,Validar contenido: puede ser ciencia básica
+Geología y pedología,Ciencias básicas de ingeniería,2,,ciencias_basicas,media,
+Suelos,Ciencias básicas de ingeniería,3,,ingenieria,baja,Validar si incluye mecánica o física de suelos
+Modelos estadísticos aplicados,Ciencias básicas de ingeniería,4,,matematicas,alta,
+Biología celular y molecular,Ciencias básicas de ingeniería,4,,ciencias_basicas,alta,
+Genética,Ciencias básicas de ingeniería,3,,ciencias_basicas,alta,
+Introducción a las ciencias agrarias,Ingeniería aplicada,2,,otro,alta,
+"Hidráulica, riegos y drenajes",Ingeniería aplicada,3,,ingenieria,alta,
+Maquinaria y mecanización agrícola,Ingeniería aplicada,2,,ingenieria,alta,
+Poscosecha,Ingeniería aplicada,2,,ingenieria,baja,Validar componente de ingeniería de procesos
+Fitomejoramiento,Ingeniería aplicada,3,,otro,media,Ciencia agronómica aplicada
+Manejo de la fertilidad agrícola,Ingeniería aplicada,3,,otro,media,Ciencia agronómica aplicada
+Manejo de arvenses,Ingeniería aplicada,3,,otro,media,Ciencia agronómica aplicada
+Microbiología agrícola,Ingeniería aplicada,3,,otro,media,Ciencia agronómica aplicada
+Fitopatología,Ingeniería aplicada,3,,otro,media,Ciencia agronómica aplicada
+MIPE,Ingeniería aplicada,4,,otro,media,Ciencia agronómica aplicada
+Producción de cultivos,Ingeniería aplicada,4,,otro,media,Ciencia agronómica aplicada
+Fisiología vegetal,Ingeniería aplicada,3,,otro,media,Ciencia agronómica aplicada
+Fisiología de cultivos y semillas,Ingeniería aplicada,3,,otro,media,Ciencia agronómica aplicada
+Propagación vegetal,Ingeniería aplicada,2,,otro,media,Ciencia agronómica aplicada
+Entomología agrícola,Ingeniería aplicada,5,,otro,media,Ciencia agronómica aplicada
+Agroecología,Ingeniería aplicada,3,,otro,media,Ciencia agronómica aplicada
+Electiva I,Ingeniería aplicada,2,,por_definir,baja,
+Electiva II,Ingeniería aplicada,2,,por_definir,baja,
+Profundización I,Ingeniería aplicada,5,,por_definir,baja,Líneas SPAS / EDRT
+Profundización II,Ingeniería aplicada,5,,por_definir,baja,Líneas SPAS / EDRT
+Profundización III,Ingeniería aplicada,10,,por_definir,baja,Candidato natural a experiencia de diseño mayor (C5d)
+Opción de grado,Ingeniería aplicada,1,,otro,media,"Hoy admite monografía, pasantía, especialización u obra artística"
+Sociología y desarrollo rural,Formación complementaria,2,,educacion_general,media,
+Economía y administración agrícola,Formación complementaria,2,,educacion_general,media,
+Mercadeo agrícola,Formación complementaria,3,,educacion_general,media,
+Extensión rural,Formación complementaria,3,,educacion_general,media,
+Formulación y evaluación de proyectos,Formación complementaria,2,,educacion_general,baja,Podría aportar a diseño (SO2) según contenido
