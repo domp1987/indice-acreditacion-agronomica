@@ -10,7 +10,7 @@ Este proyecto indexa toda la evidencia CNA en una base relacional donde los fact
 
 Idioma del proyecto: español (código, comentarios, datos e interfaz). Los textos de los criterios ABET están parafraseados en español y no deben copiarse literalmente del documento oficial.
 
-## Estado actual (paquete `indice`, tareas 1 y 2 terminadas)
+## Estado actual (paquete `indice`, tareas 1, 2 y 3 terminadas)
 
 - Fuentes (14 presentaciones, 329 páginas): los 12 factores (PDF + PPTX) y las 2 de la sesión de inicio (`Sesión de Inicio/2. Presentación Rectoría.pptx` y `4. Facultad de Ciencias Agropecuarias.pptx`, solo PPTX).
 - Base generada en `salida/indice_acreditacion.sqlite`:
@@ -27,8 +27,9 @@ Idioma del proyecto: español (código, comentarios, datos e interfaz). Los text
 - `src/indice/ocr.py`: renderiza cada página (pdftoppm, 150 ppp) y aplica el OCR integrado de Windows en español (`ocr_windows.ps1`; tesseract si no es Windows). Caché cruda en `salida/ocr.json` (la primera vez tarda ~10 min; se repite solo si cambia el PDF, o con `--rehacer-ocr`). Al cargar, `texto_nuevo` guarda en `evidencia.texto_ocr` solo las líneas con palabras que no estén ya en el texto del PDF, sin encabezados institucionales ni ruido. `--sin-ocr` lo omite.
 - `datos/semillas/*.csv` (versionadas): todo lo que no sale de las presentaciones — `marcos`, `nodos`, `correspondencias`, `indicadores`, `indicador_nodos`, `mediciones` (con el código de evidencia de donde sale cada valor), `cursos`, `brechas`, `normativa_manual` y `normativa_excluir`. UTF-8, celda vacía = NULL, el orden de filas es el de carga.
 - `src/indice/semillas.py`: lee las semillas, convierte tipos y valida referencias (nodos, marcos, indicadores) antes de tocar la base, con errores legibles.
-- `src/indice/cargar.py`: borra y recrea la base; carga semillas, evidencias (diapositivas + OCR), normativa (regex + semillas), gráficas y tablas. No contiene datos.
-- `src/indice/reproyectar.py`: etiquetas extraídas → etiquetas ABET inferidas vía correspondencias. Idempotente.
+- `src/indice/cargar.py`: **carga incremental**. Marcos, nodos, correspondencias y evidencias se actualizan por clave natural (`evidencia.codigo`, `(marco, nodo.codigo)`, `(origen, destino)`) y conservan su id; las evidencias que desaparecen de las fuentes quedan `obsoleta` (se excluyen de cobertura y del tablero). Normativa, indicadores, mediciones, cursos, brechas, gráficas y tablas se reconstruyen en cada carga (su verdad son semillas y presentaciones: **las brechas se editan en `brechas.csv`, no en la base**). Esquema versionado en `meta.version_esquema` (hoy 2): una base de versión anterior se respalda como `*.respaldo-vN.sqlite` y se crea de nuevo; `--reconstruir` lo fuerza.
+- **Decisión del comité** = fila con `validado_por` no nulo (correspondencia o etiqueta, en estado validada o descartada) o etiqueta de origen `manual`. Ni `cargar` ni `reproyectar` la modifican o borran; si las semillas la contradicen, se conserva y se avisa. `creado_en`/`actualizado_en` (UTC) solo cambian cuando cambia el contenido.
+- `src/indice/reproyectar.py`: sincroniza las etiquetas inferidas (agrega, corrige el rol, retira las que ya no se deducen) desde las etiquetas de extracción y las correspondencias no descartadas; incluye la regla "plan de mejoramiento → C4 apoyo". Si varias correspondencias llegan al mismo nodo gana el rol más fuerte. Idempotente.
 - `src/indice/exportar.py`: `data.json` y `csv/` + `tablas_csv.zip` (UTF-8 con BOM).
 - `src/indice/tablero.py` y `plantillas/template.html`: tablero autocontenido; inyecta `data.json` en `__DATA__`, JavaScript puro, sin dependencias.
 - `indice.toml`: rutas (`pdf`, `salida`, `poppler` opcional). Hoy `pdf` apunta a `OneDrive_1_9-23-2026/`.
@@ -70,7 +71,7 @@ Reglas de reproyección: una etiqueta CNA de tipo `extraccion` genera etiquetas 
 ## Deuda técnica conocida
 
 1. ~~Rutas fijas~~ (resuelto en la tarea 1 con `indice.toml` y la CLI).
-2. `cargar.py` borra y recrea la base en cada ejecución. Cualquier validación manual del comité se perdería.
+2. ~~La carga borraba la base~~ (resuelto en la tarea 3: carga incremental). Pendiente: si el comité corrige títulos o textos de evidencias en la base, la siguiente carga los sobrescribe; hace falta un campo propio (p. ej. `titulo_revisado`) o hacerlo en semillas.
 3. ~~Datos escritos a mano en el código~~ (resuelto en la tarea 2: `datos/semillas/`).
 4. Los títulos de evidencias se derivan heurísticamente del texto de la diapositiva y algunos quedan pobres (sobre todo en la sesión de inicio, donde se usan la sección y la primera línea útil o del OCR).
 4b. El `texto_ocr` tiene algo de ruido de fotos y logos; sirve para búsqueda, no como cita textual.
@@ -108,7 +109,9 @@ Mueve a `datos/semillas/` todo lo que hoy está escrito a mano en `cargar.py`: n
 
 Datos que ya están en las tablas del PPTX y aún no en la base: la ponderación (%) de cada característica y la valoración y el grado de cumplimiento de cada factor (tablas de 7 columnas en las diapositivas de valoración). Sirven como semilla verificable en lugar de valores escritos a mano.
 
-### 3. Carga incremental que preserve la validación humana
+### 3. Carga incremental que preserve la validación humana — HECHA
+Pruebas en `tests/test_incremental.py`: idempotencia, decisiones del comité que sobreviven a una recarga, diapositiva retirada y restaurada, cambio en semillas frente a una decisión y migración desde la base del prototipo. Plan original:
+
 Reemplaza el borrado y recreado por un *upsert* con claves naturales: `evidencia.codigo`, `(marco, nodo.codigo)` y `(origen, destino)`. Las etiquetas y correspondencias en estado `validada` o `descartada` no se tocan al recargar. Agrega columnas `creado_en`, `actualizado_en` y `validado_por` donde aplique.
 
 ### 4. Pruebas (pytest)

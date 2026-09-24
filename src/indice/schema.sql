@@ -2,6 +2,18 @@
 -- Programa Ingeniería Agronómica, UCundinamarca (Fusagasugá / ALD Facatativá)
 PRAGMA foreign_keys = ON;
 
+-- Versión del esquema, para migrar bases existentes sin perder las decisiones del comité
+CREATE TABLE meta (
+  clave TEXT PRIMARY KEY,
+  valor TEXT NOT NULL
+);
+INSERT INTO meta VALUES ('version_esquema', '2');
+
+-- Convenciones de la carga incremental (cargar.py, reproyectar.py):
+--   creado_en / actualizado_en: fecha UTC de alta y del último cambio real de contenido.
+--   validado_por / validado_en: quién y cuándo decidió el comité. Una fila con validado_por no nulo,
+--   o una etiqueta de origen 'manual', es una decisión humana: la carga nunca la modifica ni la borra.
+
 -- Marcos de acreditación o de referencia (CNA, ABET, resultados del programa, etc.)
 CREATE TABLE marco (
   id INTEGER PRIMARY KEY,
@@ -21,6 +33,8 @@ CREATE TABLE nodo (
   tipo TEXT NOT NULL,              -- factor, caracteristica, criterio, subcriterio, outcome, rea
   padre_id INTEGER REFERENCES nodo(id),
   orden INTEGER,
+  creado_en TEXT,
+  actualizado_en TEXT,
   UNIQUE (marco_id, codigo)
 );
 
@@ -32,6 +46,10 @@ CREATE TABLE correspondencia (
   tipo TEXT NOT NULL CHECK (tipo IN ('equivalente','parcial','apoyo')),
   estado TEXT NOT NULL DEFAULT 'propuesta' CHECK (estado IN ('propuesta','validada','descartada')),
   nota TEXT,
+  validado_por TEXT,
+  validado_en TEXT,
+  creado_en TEXT,
+  actualizado_en TEXT,
   UNIQUE (origen_id, destino_id)
 );
 
@@ -51,8 +69,10 @@ CREATE TABLE evidencia (
   url_sharepoint TEXT,
   idioma TEXT DEFAULT 'es',
   responsable TEXT,
-  estado_revision TEXT NOT NULL DEFAULT 'sin_revisar'
-    CHECK (estado_revision IN ('sin_revisar','revisada','requiere_traduccion','obsoleta'))
+  estado_revision TEXT NOT NULL DEFAULT 'sin_revisar'   -- 'obsoleta': la diapositiva ya no está en las fuentes
+    CHECK (estado_revision IN ('sin_revisar','revisada','requiere_traduccion','obsoleta')),
+  creado_en TEXT,
+  actualizado_en TEXT
 );
 
 -- Etiquetado evidencia <-> nodo. origen: extraccion (del PDF), inferida (vía correspondencia), manual
@@ -62,6 +82,10 @@ CREATE TABLE evidencia_nodo (
   rol TEXT NOT NULL CHECK (rol IN ('principal','parcial','apoyo')),
   origen TEXT NOT NULL CHECK (origen IN ('extraccion','inferida','manual')),
   estado TEXT NOT NULL DEFAULT 'propuesta' CHECK (estado IN ('propuesta','validada','descartada')),
+  validado_por TEXT,
+  validado_en TEXT,
+  creado_en TEXT,
+  actualizado_en TEXT,
   PRIMARY KEY (evidencia_id, nodo_id)
 );
 
@@ -176,6 +200,7 @@ SELECT n.codigo, n.nombre, n.tipo,
   (SELECT COUNT(*) FROM brecha b WHERE b.nodo_id=n.id AND b.estado<>'cerrada') AS brechas_abiertas
 FROM nodo n JOIN marco m ON m.id=n.marco_id AND m.codigo='ABET-EAC'
 LEFT JOIN evidencia_nodo en ON en.nodo_id=n.id AND en.estado<>'descartada'
+  AND en.evidencia_id NOT IN (SELECT id FROM evidencia WHERE estado_revision='obsoleta')
 GROUP BY n.id ORDER BY n.orden;
 
 CREATE VIEW v_creditos_abet AS

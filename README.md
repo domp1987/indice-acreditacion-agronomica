@@ -20,7 +20,7 @@ La carpeta de PDF y la de salida se configuran en `indice.toml`; `--pdf` y `--sa
 indice todo                 # flujo completo
 indice extraer --pdf datos/pdf
 indice ocr                  # solo el OCR (con caché)
-indice cargar
+indice cargar               # incremental: conserva las decisiones del comité (--reconstruir la crea de nuevo)
 indice reproyectar
 indice exportar
 indice tablero

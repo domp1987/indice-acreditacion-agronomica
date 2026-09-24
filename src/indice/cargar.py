@@ -1,8 +1,11 @@
-"""Crea la base y la carga desde lo extraído de las presentaciones y las semillas (datos/semillas/*.csv).
+"""Carga incremental de la base desde lo extraído de las presentaciones y las semillas (datos/semillas/*.csv).
 
-Orden: marcos, nodos y correspondencias (semillas) → evidencias (diapositivas) → normativa (regex + semillas)
-→ indicadores y mediciones, cursos y brechas (semillas) → gráficas y tablas (PPTX).
-La reproyección CNA → ABET vive en reproyectar.py.
+- Marcos, nodos, correspondencias y evidencias se actualizan por clave natural y conservan su id.
+- Las decisiones del comité (validado_por no nulo, u origen 'manual') nunca se modifican ni se borran.
+- Las evidencias que ya no están en las fuentes quedan 'obsoleta'.
+- Normativa, indicadores, mediciones, cursos, brechas, gráficas y tablas se reconstruyen: su fuente de verdad
+  son las semillas y las presentaciones.
+La reproyección CNA → ABET (etiquetas inferidas) vive en reproyectar.py.
 """
 import json
 import re
@@ -26,18 +29,52 @@ class Nodos:
 
 
 # ---------- Marcos, nodos y correspondencias ----------
-def cargar_marcos(cur, semillas):
-    cur.executemany("INSERT INTO marco(id,codigo,nombre,version,descripcion) VALUES (:id,:codigo,:nombre,:version,:descripcion)", semillas['marcos'])
-    marco_id = {m['codigo']: m['id'] for m in semillas['marcos']}
-    ids = {}
+AHORA = "strftime('%Y-%m-%dT%H:%M:%SZ','now')"
+
+
+def sincronizar_marcos(cur, semillas, avisos):
+    """Upsert de marcos, nodos y correspondencias por clave natural. Respeta las decisiones del comité."""
+    for m in semillas['marcos']:
+        cur.execute("""INSERT INTO marco(id,codigo,nombre,version,descripcion) VALUES (:id,:codigo,:nombre,:version,:descripcion)
+                       ON CONFLICT(codigo) DO UPDATE SET nombre=excluded.nombre, version=excluded.version, descripcion=excluded.descripcion""", m)
+    marco_id = dict(cur.execute('SELECT codigo, id FROM marco'))
     for n in semillas['nodos']:
-        cur.execute("INSERT INTO nodo(marco_id,codigo,nombre,descripcion,tipo,padre_id,orden) VALUES (?,?,?,?,?,?,?)",
-                    (marco_id[n['marco']], n['codigo'], n['nombre'], n['descripcion'], n['tipo'],
-                     ids[(n['marco'], n['padre'])] if n['padre'] else None, n['orden']))
-        ids[(n['marco'], n['codigo'])] = cur.lastrowid
-    for c in semillas['correspondencias']:
-        cur.execute("INSERT INTO correspondencia(origen_id,destino_id,tipo,nota) VALUES (?,?,?,?)",
-                    (ids[(c['marco_origen'], c['origen'])], ids[(c['marco_destino'], c['destino'])], c['tipo'], c['nota']))
+        cur.execute(f"""INSERT INTO nodo(marco_id,codigo,nombre,descripcion,tipo,orden,creado_en,actualizado_en)
+                        VALUES (?,?,?,?,?,?,{AHORA},{AHORA})
+                        ON CONFLICT(marco_id,codigo) DO UPDATE SET nombre=excluded.nombre, descripcion=excluded.descripcion,
+                          tipo=excluded.tipo, orden=excluded.orden, actualizado_en={AHORA}
+                        WHERE nombre IS NOT excluded.nombre OR descripcion IS NOT excluded.descripcion
+                          OR tipo IS NOT excluded.tipo OR orden IS NOT excluded.orden""",
+                    (marco_id[n['marco']], n['codigo'], n['nombre'], n['descripcion'], n['tipo'], n['orden']))
+    ids = {(m, c): i for i, m, c in cur.execute('SELECT n.id, m.codigo, n.codigo FROM nodo n JOIN marco m ON m.id=n.marco_id')}
+    for n in semillas['nodos']:
+        padre = ids[(n['marco'], n['padre'])] if n['padre'] else None
+        cur.execute(f'UPDATE nodo SET padre_id=?, actualizado_en={AHORA} WHERE id=? AND padre_id IS NOT ?', (padre, ids[(n['marco'], n['codigo'])], padre))
+    sobrantes = set(ids) - {(n['marco'], n['codigo']) for n in semillas['nodos']}
+    if sobrantes:
+        avisos.append(f'nodos que ya no están en las semillas (se conservan): {", ".join(sorted("/".join(k) for k in sobrantes))}')
+
+    deseadas = {(ids[(c['marco_origen'], c['origen'])], ids[(c['marco_destino'], c['destino'])]): (c['tipo'], c['nota'])
+                for c in semillas['correspondencias']}
+    existentes = {(o, d): (i, t, nota, vp) for i, o, d, t, nota, vp in
+                  cur.execute('SELECT id, origen_id, destino_id, tipo, nota, validado_por FROM correspondencia')}
+    for clave, (tipo, nota) in deseadas.items():
+        if clave not in existentes:
+            cur.execute(f'INSERT INTO correspondencia(origen_id,destino_id,tipo,nota,creado_en,actualizado_en) VALUES (?,?,?,?,{AHORA},{AHORA})',
+                        (*clave, tipo, nota))
+            continue
+        i, t0, nota0, validado_por = existentes[clave]
+        if (t0, nota0) == (tipo, nota): continue
+        if validado_por:
+            avisos.append(f'correspondencia {i}: las semillas cambian el tipo a "{tipo}", pero el comité ya decidió ({validado_por}); se conserva')
+        else:
+            cur.execute(f'UPDATE correspondencia SET tipo=?, nota=?, actualizado_en={AHORA} WHERE id=?', (tipo, nota, i))
+    for clave, (i, *_, validado_por) in existentes.items():
+        if clave in deseadas: continue
+        if validado_por:
+            avisos.append(f'correspondencia {i} ya no está en las semillas, pero el comité la decidió ({validado_por}); se conserva')
+        else:
+            cur.execute('DELETE FROM correspondencia WHERE id=?', (i,))   # sus etiquetas inferidas las retira reproyectar
 
 
 # ---------- Evidencias desde las diapositivas ----------
@@ -88,13 +125,20 @@ def _tipo_y_titulo(s):
     return 'diapositiva', sub if good else f"Factor {s['factor']}, diapositiva {s['pagina']}"
 
 
-def cargar_evidencias(cur, nodos, slides, ocr=None):
-    """Una evidencia por diapositiva (sin portadas). Devuelve {código de evidencia: id}.
+_CAMPOS_EVIDENCIA = ['titulo', 'tipo', 'texto', 'texto_ocr', 'fuente', 'archivo', 'pagina', 'sede']
 
+
+def sincronizar_evidencias(cur, nodos, slides, ocr=None):
+    """Upsert de una evidencia por diapositiva (sin portadas) y de sus etiquetas CNA de extracción.
+
+    Las evidencias conservan su id. Las que ya no aparecen quedan 'obsoleta' (no se borran: pueden tener
+    decisiones del comité). Devuelve ({código: id} de las vigentes, resumen de cambios).
     ocr: {(fuente, página): [líneas]} del OCR; se guarda solo lo que no está ya en el texto del PDF.
     """
     ocr = ocr or {}
     ev_ids = {}
+    nuevas = actualizadas = 0
+    etiquetas = {}   # {evidencia_id: nodo_id} de origen extracción, deseadas
     for s in slides:
         t = s['texto']
         if _es_portada(t): continue
@@ -106,18 +150,39 @@ def cargar_evidencias(cur, nodos, slides, ocr=None):
             if extra: titulo = (extra if titulo.endswith(f'diapositiva {s["pagina"]}') else f'{titulo}: {extra}')[:110]
         fuentes = re.findall(r'Fuente[.:]\s*([^\n]{3,80})', t)
         codigo = f'{s["fuente"]}-P{s["pagina"]:03d}'
-        cur.execute("INSERT INTO evidencia(codigo,titulo,tipo,texto,texto_ocr,fuente,archivo,pagina,sede) VALUES (?,?,?,?,?,?,?,?,?)",
-                    (codigo, titulo, tipo, t, texto_ocr, fuentes[0].strip() if fuentes else None, s['archivo'], s['pagina'], s['sede']))
-        eid = ev_ids[codigo] = cur.lastrowid
+        valores = dict(codigo=codigo, titulo=titulo, tipo=tipo, texto=t, texto_ocr=texto_ocr,
+                       fuente=fuentes[0].strip() if fuentes else None, archivo=s['archivo'], pagina=s['pagina'], sede=s['sede'])
+        existe = cur.execute('SELECT id FROM evidencia WHERE codigo=?', (codigo,)).fetchone()
+        cur.execute(f"""INSERT INTO evidencia(codigo,{','.join(_CAMPOS_EVIDENCIA)},creado_en,actualizado_en)
+                        VALUES (:codigo,{','.join(':' + c for c in _CAMPOS_EVIDENCIA)},{AHORA},{AHORA})
+                        ON CONFLICT(codigo) DO UPDATE SET {', '.join(f'{c}=excluded.{c}' for c in _CAMPOS_EVIDENCIA)},
+                          estado_revision=CASE WHEN estado_revision='obsoleta' THEN 'sin_revisar' ELSE estado_revision END,
+                          actualizado_en={AHORA}
+                        WHERE estado_revision='obsoleta' OR {' OR '.join(f'{c} IS NOT excluded.{c}' for c in _CAMPOS_EVIDENCIA)}""",
+                    valores)
+        if not existe: nuevas += 1
+        elif cur.rowcount: actualizadas += 1
+        eid = ev_ids[codigo] = existe[0] if existe else cur.lastrowid
         # Etiquetado CNA extraído del encabezado de la diapositiva
         car = f'C{s["car"]:02d}' if s['car'] else None
-        if car in nodos.caracteristicas:
-            cur.execute("INSERT OR IGNORE INTO evidencia_nodo VALUES (?,?,?,?,?)", (eid, nodos('CNA', car), 'principal', 'extraccion', 'validada'))
-        elif s['factor']:
-            cur.execute("INSERT OR IGNORE INTO evidencia_nodo VALUES (?,?,?,?,?)", (eid, nodos('CNA', f'F{s["factor"]:02d}'), 'principal', 'extraccion', 'validada'))
-            if tipo == 'plan_mejora':
-                cur.execute("INSERT OR IGNORE INTO evidencia_nodo VALUES (?,?,?,?,?)", (eid, nodos('ABET-EAC', 'C4'), 'apoyo', 'inferida', 'propuesta'))
-    return ev_ids
+        if car in nodos.caracteristicas: etiquetas[eid] = nodos('CNA', car)
+        elif s['factor']: etiquetas[eid] = nodos('CNA', f'F{s["factor"]:02d}')
+
+    # Evidencias que ya no están en las fuentes
+    vigentes = set(ev_ids.values())
+    obsoletas = [i for (i,) in cur.execute("SELECT id FROM evidencia WHERE estado_revision<>'obsoleta'").fetchall() if i not in vigentes]
+    cur.executemany(f"UPDATE evidencia SET estado_revision='obsoleta', actualizado_en={AHORA} WHERE id=?", [(i,) for i in obsoletas])
+
+    # Etiquetas de extracción: se agregan las nuevas y se retiran las que ya no salen del encabezado, salvo
+    # decisiones del comité. Si ya existe una etiqueta (p. ej. manual) en ese par, prevalece la existente.
+    existentes = set(cur.execute("SELECT evidencia_id, nodo_id FROM evidencia_nodo WHERE origen='extraccion'").fetchall())
+    deseadas = set(etiquetas.items())
+    cur.executemany(f"""INSERT OR IGNORE INTO evidencia_nodo(evidencia_id,nodo_id,rol,origen,estado,creado_en,actualizado_en)
+                        VALUES (?,?,'principal','extraccion','validada',{AHORA},{AHORA})""", sorted(deseadas - existentes))
+    retirar = sorted((e, n) for e, n in existentes - deseadas if e in vigentes)
+    cur.executemany("DELETE FROM evidencia_nodo WHERE evidencia_id=? AND nodo_id=? AND origen='extraccion' AND validado_por IS NULL", retirar)
+    return ev_ids, dict(nuevas=nuevas, actualizadas=actualizadas, obsoletas=len(obsoletas),
+                        etiquetas_nuevas=len(deseadas - existentes), etiquetas_retiradas=len(retirar))
 
 
 # ---------- Normativa ----------
@@ -199,40 +264,82 @@ def _leer_ocr(ocr_json):
     return {(fuente, int(p)): lineas for fuente, c in cache.items() for p, lineas in c['paginas'].items()}
 
 
-def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None):
-    """Borra y recrea la base (la carga incremental es la tarea 3)."""
-    db, diapositivas = Path(db), Path(diapositivas)
+VERSION_ESQUEMA = 2
+# Tablas que son copia directa de semillas o del PPTX: se vacían y se vuelven a llenar en cada carga
+# (hijas antes que padres). Su fuente de verdad son los CSV y las presentaciones, no la base.
+DERIVADAS = ['grafica_dato', 'grafica', 'tabla_diapositiva', 'normativa_mencion', 'normativa',
+             'medicion', 'indicador_nodo', 'indicador', 'curso_outcome', 'curso', 'brecha']
+
+
+def version_esquema(con):
+    try:
+        return int(con.execute("SELECT valor FROM meta WHERE clave='version_esquema'").fetchone()[0])
+    except sqlite3.OperationalError:
+        return 1   # bases anteriores a la carga incremental (sin tabla meta)
+
+
+def abrir_base(db, reconstruir=False):
+    """Abre la base; la crea si no existe. Una base de esquema anterior (o con --reconstruir) se respalda y se crea de nuevo."""
+    db = Path(db)
+    db.parent.mkdir(parents=True, exist_ok=True)
+    if db.exists():
+        con = sqlite3.connect(db)
+        v = version_esquema(con)
+        con.close()
+        if reconstruir or v < VERSION_ESQUEMA:
+            respaldo = db.with_name(f'{db.stem}.respaldo-v{v}.sqlite')
+            db.replace(respaldo)
+            motivo = 'se pidió reconstruir' if reconstruir else f'su esquema es v{v} (actual v{VERSION_ESQUEMA})'
+            print(f'La base se crea de nuevo porque {motivo}; la anterior queda en {respaldo.name}')
+        elif v > VERSION_ESQUEMA:
+            raise SystemExit(f'{db} tiene un esquema más nuevo (v{v}) que este programa (v{VERSION_ESQUEMA}). Actualiza el paquete.')
+    nueva = not db.exists()
+    con = sqlite3.connect(db)
+    con.execute('PRAGMA foreign_keys = ON')
+    if nueva:
+        con.executescript(ESQUEMA.read_text(encoding='utf-8'))
+    return con
+
+
+def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, reconstruir=False):
+    """Carga incremental: actualiza la base sin perder las decisiones del comité (ver schema.sql)."""
+    diapositivas = Path(diapositivas)
     if not diapositivas.exists():
         raise SystemExit(f'No existe {diapositivas}. Ejecuta primero: indice extraer')
     slides = json.loads(diapositivas.read_text(encoding='utf-8'))
     if slides and 'fuente' not in slides[0]:
         raise SystemExit(f'{diapositivas} es de una versión anterior. Ejecuta de nuevo: indice extraer')
-    semillas = leer_todas(semillas_dir)   # valida antes de borrar la base
-    db.parent.mkdir(parents=True, exist_ok=True)
-    if db.exists(): db.unlink()
-    con = sqlite3.connect(db)
+    semillas = leer_todas(semillas_dir)   # valida antes de tocar la base
+    con = abrir_base(db, reconstruir)
+    avisos = []
     try:
         cur = con.cursor()
-        cur.executescript(ESQUEMA.read_text(encoding='utf-8'))
-        cargar_marcos(cur, semillas)
+        sincronizar_marcos(cur, semillas, avisos)
         nodos = Nodos(cur)
-        ev_ids = cargar_evidencias(cur, nodos, slides, _leer_ocr(ocr_json))
+        ev_ids, cambios = sincronizar_evidencias(cur, nodos, slides, _leer_ocr(ocr_json))
+        for t in DERIVADAS:
+            cur.execute(f'DELETE FROM {t}')
         cargar_normativa(cur, slides, ev_ids, semillas)
         faltantes = cargar_indicadores(cur, nodos, ev_ids, semillas)
         if faltantes:
-            print(f'Aviso: mediciones.csv cita evidencias que no existen (quedan sin vínculo): {", ".join(sorted(faltantes))}')
+            avisos.append(f'mediciones.csv cita evidencias que no existen (quedan sin vínculo): {", ".join(sorted(faltantes))}')
         cargar_cursos_y_brechas(cur, nodos, semillas)
         if pptx_json and Path(pptx_json).exists():
             huerfanas = cargar_pptx(cur, json.loads(Path(pptx_json).read_text(encoding='utf-8')), ev_ids)
             if huerfanas:
-                print(f'Aviso: gráficas o tablas en diapositivas sin evidencia (portadas): {", ".join(huerfanas)}')
+                avisos.append(f'gráficas o tablas en diapositivas sin evidencia (portadas): {", ".join(huerfanas)}')
         con.commit()
+        for a in avisos: print(f'Aviso: {a}')
         n = lambda q: cur.execute(q).fetchone()[0]
-        print(f'Carga: {n("SELECT COUNT(*) FROM evidencia")} evidencias ({n("SELECT COUNT(*) FROM evidencia WHERE texto_ocr IS NOT NULL")} con texto OCR), '
-              f'{n("SELECT COUNT(*) FROM evidencia_nodo")} etiquetas, '
+        vigentes = n("SELECT COUNT(*) FROM evidencia WHERE estado_revision<>'obsoleta'")
+        print(f'Carga: {vigentes} evidencias vigentes '
+              f'({cambios["nuevas"]} nuevas, {cambios["actualizadas"]} actualizadas, {cambios["obsoletas"]} pasan a obsoletas; '
+              f'{n("SELECT COUNT(*) FROM evidencia WHERE texto_ocr IS NOT NULL")} con texto OCR), '
+              f'{n("SELECT COUNT(*) FROM evidencia_nodo")} etiquetas (extracción: +{cambios["etiquetas_nuevas"]} −{cambios["etiquetas_retiradas"]}), '
               f'{n("SELECT COUNT(*) FROM nodo")} nodos, {n("SELECT COUNT(*) FROM medicion")} mediciones, '
               f'{n("SELECT COUNT(*) FROM curso")} cursos ({n("SELECT SUM(creditos) FROM curso")} créditos), '
               f'{n("SELECT COUNT(*) FROM grafica")} gráficas ({n("SELECT COUNT(*) FROM grafica_dato")} puntos), '
               f'{n("SELECT COUNT(*) FROM tabla_diapositiva")} tablas → {db}')
+        return cambios
     finally:
         con.close()
