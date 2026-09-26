@@ -51,7 +51,7 @@ def test_todos_los_pad_estan_relacionados():
     if not rutas.pads_json.exists(): pytest.skip('falta salida/pads.json')
     import json
     pads = json.loads(rutas.pads_json.read_text(encoding='utf-8'))
-    assert len(pads) == 50
+    assert len(pads) == 53
     assert {p['codigo'] for p in pads} <= relacion
 
 
@@ -59,9 +59,29 @@ def test_todos_los_pad_estan_relacionados():
 def test_pad_en_la_base():
     con = sqlite3.connect(rutas.db)
     n = lambda q: con.execute(q).fetchone()[0]
-    assert n('SELECT COUNT(*) FROM pad') == 50
-    assert n("SELECT COUNT(*) FROM evidencia WHERE tipo='pad'") == 50
+    assert n('SELECT COUNT(*) FROM pad') == 53
+    assert n("SELECT COUNT(*) FROM evidencia WHERE tipo='pad'") == 53
     assert n("SELECT COUNT(*) FROM v_pad_curso WHERE estado='créditos distintos'") == 0
-    assert n("SELECT COUNT(DISTINCT curso) FROM v_pad_curso WHERE estado='ok'") == 37
-    assert n('SELECT COUNT(*) FROM curso WHERE periodo IS NOT NULL') == 37
+    assert n("SELECT COUNT(DISTINCT curso) FROM v_pad_curso WHERE estado='ok'") == 40
+    assert n('SELECT COUNT(*) FROM curso WHERE periodo IS NOT NULL') == 40
+    # Solo los cursos institucionales quedan sin PAD
+    assert {c for (c,) in con.execute("SELECT curso FROM v_pad_curso WHERE estado='sin PAD'")} == {c for (c,) in con.execute("SELECT nombre FROM curso WHERE componente_cma='Institucional'")}
     con.close()
+
+
+V2026 = rutas.pads / 'Hidraulica CAD602020207.pdf'
+
+
+@pytest.mark.skipif(not V2026.exists(), reason='falta el PAD de Hidráulica')
+def test_variante_2026_por_semanas():
+    p = leer_pad(V2026)
+    assert (p['codigo'], p['creditos'], p['semestre'], p['relacion_creditos']) == ('CAD602020207', 3, 2, '1-2')
+    assert [r['peso'] for r in p['rea']] == [32.0, 36.0, 32.0]
+    assert [f['fase'].split('.')[0] for f in p['fases']] == [f'Fase {i}' for i in range(1, 10)]
+    acts = [a for e in p['experiencias'] for a in e['actividades']]
+    assert len(acts) == 8 and all(a.get('descripcion') for a in acts)
+    primera = acts[0]
+    assert primera['lugares'] == ['LABORATORIO', 'EN CUNDINAMARCA'] and primera['instrumentos'] == ['Tarea']
+    assert primera['fase'] == 'FASE 4. PARTICIPACIÓN; FASE 5. COLABORACIÓN Y COCREACIÓN'
+    assert '[Semana 2]' in primera['descripcion_instrumentos']        # lo evaluado en la segunda semana
+    assert len(p['bibliografia']) >= 14 and p['bibliografia'][0]['url'].startswith('https://')

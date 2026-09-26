@@ -268,11 +268,12 @@ def cargar_pptx(cur, pptx, ev_ids):
 
 
 # ---------- Planes de Aprendizaje Digital (PAD) ----------
-def evidencias_pad(pads):
-    """Cada PAD como evidencia 'PAD-<código>' (tipo 'pad') con su texto completo, para búsqueda y etiquetado."""
+def evidencias_pad(pads, del_plan=()):
+    """Cada PAD como evidencia 'PAD-<código>' (tipo 'pad') con su texto completo, para búsqueda y etiquetado.
+    del_plan: códigos de PAD ligados a un curso del plan (algunos vienen de otro programa, p. ej. cursos comunes)."""
     out = []
     for p in pads:
-        del_programa = normalizar_texto(p.get('programa') or '') == 'ingenieria agronomica'
+        del_programa = p['codigo'] in del_plan or normalizar_texto(p.get('programa') or '') == 'ingenieria agronomica'
         out.append(dict(codigo=f'PAD-{p["codigo"]}', titulo=f'PAD {p["nombre"]} ({p["codigo"]})'[:110], tipo='pad',
                         texto=p['texto'], texto_ocr=None, fuente='Plan de Aprendizaje Digital', archivo=p['archivo'],
                         pagina=None, sede='Programa' if del_programa else 'Institución'))
@@ -298,12 +299,14 @@ def cargar_pads(cur, pads, ev_ids, semillas):
         if p['codigo'] not in relacion:
             avisos.append(f'PAD {p["codigo"]} ({p["nombre"]}) no está en pad_curso.csv')
         cur.execute("""INSERT INTO pad(codigo,evidencia_id,curso_id,nombre,programa,plantilla,idioma,semestre,creditos,prerrequisitos,
-                                       justificacion,rea_general,acciones,archivo,paginas) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                                       justificacion,rea_general,acciones,archivo,paginas,relacion_creditos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                     (p['codigo'], ev_ids.get(f'PAD-{p["codigo"]}'), curso_id.get(curso) if curso else None, p['nombre'], p['programa'],
                      p['plantilla'], p['idioma'], p['semestre'], p['creditos'], p['prerrequisitos'], p['justificacion'], p['rea_general'],
-                     _json(p['acciones']), p['archivo'], p['paginas']))
+                     _json(p['acciones']), p['archivo'], p['paginas'], p.get('relacion_creditos')))
         pid = cur.lastrowid
-        cur.executemany('INSERT OR IGNORE INTO pad_rea VALUES (?,?,?)', [(pid, r['consecutivo'], r['texto']) for r in p['rea']])
+        cur.executemany('INSERT OR IGNORE INTO pad_rea(pad_id,consecutivo,texto,peso) VALUES (?,?,?,?)',
+                        [(pid, r['consecutivo'], r['texto'], r.get('peso')) for r in p['rea']])
+        cur.executemany('INSERT INTO pad_fase VALUES (?,?,?,?)', [(pid, k, f['fase'], f['descripcion']) for k, f in enumerate(p.get('fases') or [], 1)])
         for i, e in enumerate(p['experiencias'], 1):
             cur.execute("""INSERT INTO pad_experiencia(pad_id,orden,tipo,nombre,rea,descripcion,dimensiones,integrantes,competencias,
                                                        componentes,unidad_regional,lineas_translocales) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
@@ -314,13 +317,13 @@ def cargar_pads(cur, pads, ev_ids, semillas):
             for j, a in enumerate(e['actividades'], 1):
                 cur.execute("""INSERT INTO pad_actividad(experiencia_id,orden,etapa,nombre,descripcion,trabajo_estudiante,trabajo_profesor,
                                    semana_inicio,duracion_semanas,fase,tipo_actividad,lugares,instrumentos,descripcion_instrumentos,
-                                   recursos_cgca,recursos_externos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                                   recursos_cgca,recursos_externos,analisis_retroalimentacion) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                             (eid, j, a.get('etapa'), a.get('nombre'), a.get('descripcion'), a.get('trabajo_estudiante'), a.get('trabajo_profesor'),
                              _semanas(a.get('semana_inicio')), _semanas(a.get('duracion')), a.get('fase'), a.get('tipo_actividad'),
                              _json(a.get('lugares')), _json(a.get('instrumentos')), a.get('descripcion_instrumentos'),
-                             _json(a.get('recursos_cgca')), _json(a.get('recursos_externos'))))
-        cur.executemany('INSERT INTO pad_bibliografia VALUES (?,?,?,?,?,?,?,?,?)',
-                        [(pid, k, b.get('autor'), b['titulo'], b.get('anio'), b.get('editorial'), b.get('edicion'), b.get('isbn'), b.get('identificador'))
+                             _json(a.get('recursos_cgca')), _json(a.get('recursos_externos')), a.get('analisis_retroalimentacion')))
+        cur.executemany('INSERT INTO pad_bibliografia(pad_id,orden,autor,titulo,anio,editorial,edicion,isbn,identificador,url) VALUES (?,?,?,?,?,?,?,?,?,?)',
+                        [(pid, k, b.get('autor'), b['titulo'], b.get('anio'), b.get('editorial'), b.get('edicion'), b.get('isbn'), b.get('identificador'), b.get('url'))
                          for k, b in enumerate(p['bibliografia'], 1)])
         cur.executemany('INSERT INTO pad_recurso VALUES (?,?,?,?,?)',
                         [(pid, k, r['nombre'], r.get('tipo'), r.get('area')) for k, r in enumerate(p['recursos'], 1)])
@@ -338,12 +341,12 @@ def _leer_ocr(ocr_json):
     return {(fuente, int(p)): lineas for fuente, c in cache.items() for p, lineas in c['paginas'].items()}
 
 
-VERSION_ESQUEMA = 3
+VERSION_ESQUEMA = 4
 # Migraciones que agregan tablas sin tocar los datos existentes: {versión destino: script}
-MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql'}
+MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql', 4: PAQUETE / 'esquema_pad_v4.sql'}
 # Tablas que son copia directa de semillas, presentaciones o PAD: se vacían y se vuelven a llenar en cada carga
 # (hijas antes que padres). Su fuente de verdad son los CSV y los documentos, no la base.
-DERIVADAS = ['pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad',
+DERIVADAS = ['pad_fase', 'pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad',
              'grafica_dato', 'grafica', 'tabla_diapositiva', 'normativa_mencion', 'normativa',
              'medicion', 'indicador_nodo', 'indicador', 'curso_outcome', 'curso', 'brecha']
 
@@ -413,7 +416,7 @@ def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, recons
         sincronizar_marcos(cur, semillas, avisos)
         nodos = Nodos(cur)
         pads = json.loads(Path(pads_json).read_text(encoding='utf-8')) if pads_json and Path(pads_json).exists() else []
-        ev_pads = evidencias_pad(pads)
+        ev_pads = evidencias_pad(pads, {x['pad'] for x in semillas['pad_curso'] if x['curso']})
         ev_ids, cambios = sincronizar_evidencias(cur, nodos, slides, _leer_ocr(ocr_json), adicionales=ev_pads)
         for t in DERIVADAS:
             cur.execute(f'DELETE FROM {t}')

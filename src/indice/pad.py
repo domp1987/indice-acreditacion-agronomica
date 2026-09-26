@@ -117,6 +117,30 @@ def _segmentos(lineas, columnas):
     return [Seg(s[0].p, s[0].x0, min(w.y0 for w in s), s[-1].x1, max(w.y1 for w in s), ' '.join(w.t for w in s), s) for s in segs]
 
 
+FRASES_ETIQUETA = [['Descripción', 'de', 'la', 'actividad'], ['Descripción', 'de', 'la']]
+
+
+def _separar_frases(segs):
+    """Separa etiquetas que el PDF deja pegadas a otro texto en la misma línea ('PLATAFORMA EDUCATIVA Descripción de la
+    actividad' → dos segmentos), usando las palabras del segmento."""
+    out = []
+    for s in segs:
+        ws = s.palabras or []
+        corte = None
+        for frase in FRASES_ETIQUETA:
+            for i in range(len(ws) - len(frase) + 1):
+                if [w.t for w in ws[i:i + len(frase)]] == frase and (i > 0 or i + len(frase) < len(ws)):
+                    corte = (i, i + len(frase)); break
+            if corte: break
+        if not corte:
+            out.append(s); continue
+        for a_, b_ in ((0, corte[0]), corte, (corte[1], len(ws))):
+            parte = ws[a_:b_]
+            if parte:
+                out.append(Seg(s.p, parte[0].x0, min(w.y0 for w in parte), parte[-1].x1, max(w.y1 for w in parte), ' '.join(w.t for w in parte), parte))
+    return out
+
+
 def _celdas(segs, tolerancia_x=2.0):
     """Agrupa segmentos de la misma columna (mismo x0) y verticalmente contiguos en celdas de varias líneas."""
     celdas = []
@@ -193,7 +217,18 @@ ETIQUETAS_IZQ = {
     'unidad regional': 'unidad_regional', 'lineas translocales': 'lineas_translocales',
     'postulados persona transhumana': 'postulados', 'mejoras': 'mejoras', 'transformaciones': 'transformaciones',
     'semana inicio': 'semana_inicio', 'descripcion de la fase': 'fase',
+    # variante 2026 (actividades desglosadas por semana)
+    'lugar': 'lugares', 'fase': 'fase', 'trabajo del creador de oportunidades estudiante': 'trabajo_estudiante',
+    'descripcion de la fase 7 y 8': 'analisis_retroalimentacion',
 }
+# Etiquetas de la columna central (variante 2026): su valor es la celda a la derecha
+ETIQUETAS_MEDIO = {'descripcion de la actividad': 'descripcion'}
+# Marcadores dentro de una actividad (variante 2026)
+MARCA_SEMANA = re.compile(r'^Trabajo en la semana (\d+)', re.I)
+MARCA_RECURSOS = re.compile(r'^Fase \d+\.\s*Socializaci.*Recursos', re.I)
+MARCA_RECOLECCION = re.compile(r'^Fase \d+\.\s*Recolecci', re.I)
+TIPO_INSTRUMENTO = re.compile(r'^(Tarea|Taller|Foro|Cuestionario|Consulta|Encuesta|Wiki|Base de datos|Lecci[oó]n|Glosario|Portafolio|R[uú]brica|Otro)$', re.I)
+SIN_ELEMENTOS = re.compile(r'^(No hay elementos registrados|Sin recursos registrados|No hay datos)$', re.I)
 ETIQUETAS_DER = {
     'integrantes': 'integrantes', 'componentes genericos asociados': 'componentes', 'semana inicio': 'semana_inicio',
     'duracion': 'duracion', 'tipo actividad': 'tipo_actividad', 'descripcion de los instrumentos': 'descripcion_instrumentos',
@@ -250,19 +285,43 @@ def _bloque_bajo(celdas, titulo, hasta):
 def _rea_especificos(celdas):
     """Números de consecutivo y texto; cada línea de texto va al número más cercano en altura."""
     bloque = _bloque_bajo(celdas, 'rea especific', ['para el logro', 'vive una experiencia', 'soluciona un problema'])
-    numeros, lineas = [], []
+    bloque = [c for c in bloque if not normalizar(c.t).startswith('fases del mca')]
+    numeros, lineas, pesos = [], [], []
     for c in bloque:
-        if normalizar(c.t) in ('consecutivo', 'nombre', 'consecutivo nombre'): continue
+        if normalizar(c.t) in ('consecutivo', 'nombre', 'consecutivo nombre', 'porcentaje'): continue
         for s in c.lineas:
-            if re.fullmatch(r'\d{1,2}', s.t.strip()): numeros.append(s)
-            elif normalizar(s.t) not in ('nombre', 'consecutivo'): lineas.append(s)
+            t = s.t.strip()
+            if re.fullmatch(r'\d{1,2}', t): numeros.append(s)
+            elif re.fullmatch(r'\d+([.,]\d+)?\s*%', t): pesos.append(s)   # variante 2026: peso del REA
+            elif normalizar(t) not in ('nombre', 'consecutivo', 'porcentaje', 'total'): lineas.append(s)
     if not numeros:
         return [dict(consecutivo=1, texto=_limpio(' '.join(s.t for s in lineas)))] if lineas else []
-    rea = {}
+    rea, peso = {}, {}
     for s in sorted(lineas, key=lambda s: (s.p, s.y0)):
         n = min(numeros, key=lambda k: (k.p != s.p, abs(k.yc - s.yc)))
         rea.setdefault(int(n.t), []).append(s.t)
-    return [dict(consecutivo=k, texto=_limpio(' '.join(v))) for k, v in sorted(rea.items())]
+    for s in pesos:
+        n = min(numeros, key=lambda k: (k.p != s.p, abs(k.yc - s.yc)))
+        if abs(n.yc - s.yc) < 8: peso[int(n.t)] = float(s.t.strip().rstrip('%').strip().replace(',', '.'))
+    return [dict(consecutivo=k, texto=_limpio(' '.join(v)), peso=peso.get(k)) for k, v in sorted(rea.items())]
+
+
+def _fases_mca(segs):
+    """Tabla 'Fases del MCA' (variante 2026): fase y descripción de lo que ocurre en ella en este CADI."""
+    enc = next((s for s in segs if normalizar(s.t) == 'fases del mca'), None)
+    if not enc: return []
+    fin = next(((s.p, s.y0) for s in sorted(segs, key=lambda s: (s.p, s.y0))
+                if (s.p, s.y0) > (enc.p, enc.y1) and normalizar(s.t) in ('vive una experiencia', 'soluciona un problema')), (1e9, 0))
+    cuerpo = [s for s in segs if (enc.p, enc.y1) < (s.p, s.y0) < fin and normalizar(s.t) not in ('fase', 'descripcion')]
+    if not cuerpo or all(SIN_ELEMENTOS.match(s.t.strip()) for s in cuerpo): return []
+    x_desc = min((s.x0 for s in cuerpo if len(s.t) > 60), default=250) - 5
+    anclas = [s for s in cuerpo if s.x0 < x_desc and re.match(r'Fase \d+', s.t)]
+    filas = [dict(_a=a, fase=[], descripcion=[]) for a in anclas]
+    if not filas: return []
+    for s in sorted(cuerpo, key=lambda s: (s.p, s.y0, s.x0)):
+        f = min(filas, key=lambda f: (f['_a'].p != s.p, abs(f['_a'].yc - s.yc)))
+        f['fase' if s.x0 < x_desc else 'descripcion'].append(s.t)
+    return [dict(fase=_limpio(' '.join(f['fase'])), descripcion=_limpio(' '.join(f['descripcion'])) or None) for f in filas]
 
 
 def _tabla(segs, encabezados, parar):
@@ -281,8 +340,12 @@ def _tabla(segs, encabezados, parar):
     inicios = [g[0] for g in grupos]
     if len(inicios) == len(enc):
         mapa = {x: k for x, (k, _) in zip(inicios, enc)}
-    else:   # columnas vacías: cada grupo va al encabezado más cercano por la izquierda
-        mapa = {x: min(enc, key=lambda kv: abs(kv[1].x0 - x) if kv[1].x0 <= x + 200 else 1e9)[0] for x in inicios}
+    else:   # columnas vacías o líneas envueltas: cada grupo va al encabezado cuyo centro está más cerca del centro del grupo
+        centros = {}
+        for s in cuerpo:
+            g = max(x for x in inicios if x <= s.x0 + 0.5)
+            centros.setdefault(g, []).append((s.x0 + s.x1) / 2)
+        mapa = {x: min(enc, key=lambda kv: abs((kv[1].x0 + kv[1].x1) / 2 - sum(centros[x]) / len(centros[x])))[0] for x in inicios}
 
     def columna(s):
         return mapa[max(x for x in inicios if x <= s.x0 + 0.5)]
@@ -306,7 +369,7 @@ def _bibliografia(celdas, segs):
     """Bibliografía: encabezados Autor / Nombre o Título / Año / ISBN o Estandarizado (y Editorial en V2)."""
     out = []
     claves = {'autor': 'autor', 'nombre': 'titulo', 'titulo': 'titulo', 'ttulo': 'titulo', 'ano': 'anio', 'ao': 'anio',
-              'isbn': 'isbn', 'estandarizado': 'identificador', 'editorial': 'editorial', 'e v': 'edicion'}
+              'isbn': 'isbn', 'estandarizado': 'identificador', 'editorial': 'editorial', 'e v': 'edicion', 'url': 'url'}
     for a in (s for s in segs if normalizar(s.t) == 'autor'):
         encabezados = {}
         for s in segs:
@@ -317,7 +380,9 @@ def _bibliografia(celdas, segs):
         if 'titulo' not in encabezados or 'anio' not in encabezados: continue
         pares = _tabla(segs, encabezados, lambda s: normalizar(s.t).startswith(('recursos', 'bibliografia', 'nombre del recurso')))
         for f in _filas_por_ancla(pares, 'anio'):
-            f['anio'] = _entero((f.get('anio') or '').replace(',', '').replace('.', ''))
+            f['anio'] = _entero((f.get('anio') or '').replace(',', '').replace('.', '')) or None
+            if f.get('url'): f['url'] = f['url'].replace(' ', '')   # las URL largas se parten en varias líneas
+            if f.get('isbn') in ('-', ''): f['isbn'] = None
             if f.get('titulo'): out.append(f)
     return out
 
@@ -348,7 +413,7 @@ def _filas_v19(celdas, segs):
     zona = sorted((s for s in segs if s.x1 < 132 and s.t.strip() not in ('•', '¿')), key=lambda s: (s.p, s.y0))
     grupos = []
     for s in zona:
-        if grupos and grupos[-1][-1].p == s.p and s.y0 - grupos[-1][-1].y1 <= 0.6 * s.h: grupos[-1].append(s)
+        if grupos and grupos[-1][-1].p == s.p and s.y0 - grupos[-1][-1].y1 <= 1.3 * s.h: grupos[-1].append(s)
         else: grupos.append([s])
     etiquetas = []
     for g in grupos:
@@ -361,17 +426,50 @@ def _filas_v19(celdas, segs):
             else:
                 i += 1
     der = [(k, c) for c in celdas if c.x0 > x_etiqueta + 150 and (k := _etiqueta(c.t.replace('\n', ' '), ETIQUETAS_DER))]
-    # Títulos que abren registros, en orden
+    # Etiquetas de la columna central (variante 2026), centradas y en una o dos líneas
+    corto = sorted((s for s in segs if 150 <= s.x0 and s.x1 <= 362 and len(s.t) < 30), key=lambda s: (s.p, s.y0, s.x0))
+    medio, previo = [], None
+    for s in corto:
+        debajo = previo and previo.p == s.p and 0 <= s.y0 - previo.y1 <= 0.6 * s.h and abs((s.x0 + s.x1) - (previo.x0 + previo.x1)) < 80
+        al_lado = previo and previo.p == s.p and abs(s.yc - previo.yc) < 2 and 0 <= s.x0 - previo.x1 < 8
+        if debajo or al_lado:
+            if (k := _etiqueta(previo.t + ' ' + s.t, ETIQUETAS_MEDIO)):
+                medio.append((k, Celda([previo, s]))); previo = None; continue
+        if (k := _etiqueta(s.t, ETIQUETAS_MEDIO)):
+            medio.append((k, Celda([s]))); previo = None; continue
+        previo = s
+    # Títulos que abren registros, en orden, y marcadores internos de la actividad (variante 2026)
     titulos = [c for c in celdas if TITULO.match(c.t) or normalizar(c.t) in SECCIONES]
-    etiq_celdas = {id(c) for _, c in der} | {id(c) for c in titulos}
-    valores = [c for c in celdas if id(c) not in etiq_celdas and c.x1 >= 132 and c.x0 > x_etiqueta + 50 and c.t.strip() not in ('•', '¿')]
+    marcas = [Celda([s]) for s in segs if MARCA_SEMANA.match(s.t) or MARCA_RECURSOS.match(s.t) or MARCA_RECOLECCION.match(s.t)]
+    ids_marcas = {id(s) for m in marcas for s in m.lineas}
+    etiq_celdas = {id(c) for _, c in der} | {id(c) for c in titulos} | {id(c) for c in celdas if any(id(x) in ids_marcas for x in c.lineas)}
+    etiq_segs = {id(s) for _, c in medio for s in c.lineas}
+    valores = [c for c in celdas if id(c) not in etiq_celdas and c.x1 >= 132 and c.x0 > x_etiqueta + 50
+               and c.t.strip() not in ('•', '¿') and not any(id(s) in etiq_segs for s in c.lineas)]
 
-    # Asigna cada celda de valor a una etiqueta izquierda: la que tiene su centro dentro de la celda;
-    # si ninguna (continuación tras un salto de página), la última etiqueta anterior.
     def pos(c): return (c.p, c.y0)
     # Lo que sigue a la bibliografía son tablas propias, no valores de la última etiqueta
     limite = min((pos(c) for c in titulos if normalizar(c.t) == 'bibliografia'), default=(1e9, 0))
     valores = [v for v in valores if pos(v) < limite]
+    # Bloques de recursos y de recolección de datos: van desde su marcador hasta el siguiente título, marcador o etiqueta
+    fronteras = sorted([pos(c) for c in titulos + marcas] + [pos(c) for _, c in etiquetas + der + medio] + [limite])
+    bloques = {}
+    for m in marcas:
+        if MARCA_SEMANA.match(m.t): continue
+        fin = next((f for f in fronteras if f > (m.p, m.y1 - 1)), limite)
+        bloques[id(m)] = [s for s in segs if (m.p, m.y1 - 1) < pos(s) < fin and s.t.strip() not in ('•',)]
+    en_bloque = {id(s) for ss in bloques.values() for s in ss}
+    valores = [v for v in valores if not any(id(s) in en_bloque for s in v.lineas)]
+    # Valores de las etiquetas centrales: la celda a su derecha que contiene su centro
+    centrales = {}
+    for k, m in medio:
+        cerca = [v for v in valores if v.p == m.p and v.x0 > m.x1 + 3 and v.y0 - 4 <= m.yc <= v.y1 + 4]
+        centrales[id(m)] = cerca
+    usadas = {id(v) for vs in centrales.values() for v in vs}
+    valores = [v for v in valores if id(v) not in usadas]
+
+    # Asigna cada celda de valor a una etiqueta izquierda: la que tiene su centro dentro de la celda;
+    # si ninguna (continuación tras un salto de página), la última etiqueta anterior.
     asignadas = {id(c): [] for _, c in etiquetas}
     for v in valores:
         if v.x0 > x_etiqueta + 250 and any(abs(v.yc - d.yc) < 30 and v.p == d.p and v.x0 > d.x1 for _, d in der):
@@ -390,11 +488,54 @@ def _filas_v19(celdas, segs):
             derechos[id(d)] = [v for v in cerca if v.x0 < x + 150]
 
     # Recorre títulos y etiquetas en orden de lectura
-    eventos = sorted([('titulo', c.t, c) for c in titulos] + [('izq', k, c) for k, c in etiquetas] + [('der', k, c) for k, c in der],
+    eventos = sorted([('titulo', c.t, c) for c in titulos] + [('izq', k, c) for k, c in etiquetas] + [('der', k, c) for k, c in der]
+                     + [('medio', k, c) for k, c in medio] + [('marca', c.t, c) for c in marcas],
                      key=lambda e: (e[2].p, e[2].y0, e[2].x0))
     experiencias, acciones = [], {}
-    seccion, exp, etapa, act = None, None, None, None
+    seccion, exp, etapa, act, semana = None, None, None, None, None
+
+    def acumular(destino, k, valor):
+        """Una actividad desglosada por semanas repite campos: los textos se unen y las listas se extienden."""
+        if not valor: return
+        if k == 'lugares' and isinstance(valor, list):
+            # en la variante 2026 la descripción de la semana a veces se cuela en la columna de lugares
+            largos = [x for x in valor if len(x) > 70]
+            valor = [x for x in valor if len(x) <= 70]
+            if largos: acumular(destino, 'descripcion', ' '.join(largos))
+            if not valor: return
+        if k == 'fase':
+            previas = [x.strip() for x in re.split(r'[;,]', destino.get('fase') or '') if x.strip()]
+            nuevas = re.findall(r'FASE \d+\.\s*[A-ZÁÉÍÓÚÑ]{2,}(?:\s+(?:Y|[A-ZÁÉÍÓÚÑ]{2,}))*', valor)
+            destino[k] = '; '.join(previas + [x for x in nuevas if x not in previas]) or valor
+            return
+        if isinstance(valor, list):
+            destino[k] = destino.get(k) or []
+            destino[k] += [x for x in valor if x not in destino[k]]
+        elif destino.get(k) and k not in ('semana_inicio', 'duracion'):
+            destino[k] = f'{destino[k]} {valor}' if k != 'fase' else f'{destino[k]}; {valor}'
+        else:
+            destino[k] = valor
+
     for tipo, k, c in eventos:
+        if tipo == 'marca':
+            if act is None: continue
+            if (m := MARCA_SEMANA.match(k)):
+                semana = m.group(1); continue
+            ss = sorted(bloques.get(id(c), []), key=lambda s: (s.p, s.y0, s.x0))
+            ss = [s for s in ss if not SIN_ELEMENTOS.match(s.t.strip())]
+            if MARCA_RECOLECCION.match(k):
+                tipos = [s.t.strip() for s in ss if s.x1 < 132 and TIPO_INSTRUMENTO.match(s.t.strip())]
+                acumular(act, 'instrumentos', tipos)
+                texto = _limpio(' '.join(s.t for s in ss if not (s.x1 < 132 and s.t.strip() in tipos)))
+                if texto: acumular(act, 'descripcion_instrumentos', f'[Semana {semana}] {texto}' if semana else texto)
+            else:
+                acumular(act, 'recursos_externos', _lista([Celda([s]) for s in ss], []))
+            continue
+        if tipo == 'medio':
+            if act is not None:
+                texto = _parrafo(sorted(centrales.get(id(c), []), key=pos))
+                if texto: acumular(act, k, f'[Semana {semana}] {texto}' if semana else texto)
+            continue
         if tipo == 'titulo':
             n = normalizar(k)
             if n in SECCIONES:
@@ -409,7 +550,7 @@ def _filas_v19(celdas, segs):
             elif k.lower().startswith('etapa'):
                 etapa = titulo; act = None
             elif k.lower().startswith(('actividad', 'nombre de la actividad')) and exp is not None:
-                act = dict(nombre=titulo, etapa=etapa); exp['actividades'].append(act)
+                act = dict(nombre=titulo, etapa=etapa); exp['actividades'].append(act); semana = None
             continue
         destino = act if act is not None else exp
         if seccion == 'acciones' or k in ('postulados', 'mejoras', 'transformaciones', 'descripcion_transformaciones'):
@@ -421,7 +562,7 @@ def _filas_v19(celdas, segs):
                 valor = _lista(vals, vinetas)
                 if k == 'competencia':
                     destino.setdefault('competencias', []).extend(valor); continue
-                destino[k] = valor
+                acumular(destino, k, valor)
             else:
                 texto = _parrafo(vals)
                 if k == 'semana_inicio' and texto and (m := re.search(r'(Semana|Week)\s+\d+', texto)):
@@ -429,7 +570,9 @@ def _filas_v19(celdas, segs):
                     resto = _limpio(texto.replace(m.group(), '', 1))
                     texto = m.group()
                     if resto and not destino.get('trabajo_profesor'): destino['trabajo_profesor'] = resto
-                destino[k] = texto
+                if k == 'trabajo_estudiante' and texto and semana and act is not None and destino is act:
+                    texto = f'[Semana {semana}] {texto}'
+                acumular(destino, k, texto)
         else:
             vals = derechos.get(id(c), [])
             if k == 'componentes':
@@ -604,7 +747,7 @@ def leer_pad(pdf, poppler=None):
         raise SystemExit('Se necesita pdftotext de poppler para leer los PAD.')
     palabras = _palabras(pdf, pdftotext)
     lineas = _lineas(palabras)
-    segs = _segmentos(lineas, _columnas(lineas))
+    segs = _separar_frases(_segmentos(lineas, _columnas(lineas)))
     celdas = _celdas(segs)
     primera = ' '.join(s.t for s in segs if s.p == 1 and s.y0 < 60)
     plantilla = 'V2' if re.search(r'DIGITAL V2\b', primera) else 'V1.9'
@@ -629,7 +772,8 @@ def leer_pad(pdf, poppler=None):
         semestre=_entero(enc.get('semestre')), creditos=_entero(enc.get('creditos')),
         prerrequisitos=None if normalizar(enc.get('prerrequisitos') or '') in ('', 'ninguno', 'no aplica') else enc.get('prerrequisitos'),
         justificacion=_parrafo([c for c in justificacion if not normalizar(c.t).startswith(('libertad', 'la libertad'))]),
-        rea_general=_parrafo(rea_general), rea=_rea_especificos(celdas),
+        rea_general=_parrafo(rea_general), rea=_rea_especificos(celdas), fases=_fases_mca(segs),
+        relacion_creditos=enc.get('relacion_creditos'),
         experiencias=experiencias, acciones=acciones,
         bibliografia=_bibliografia(celdas, segs), recursos=_recursos_externos(celdas, segs),
         paginas=max(s.p for s in segs), texto=_texto_completo(pdf, pdftotext))

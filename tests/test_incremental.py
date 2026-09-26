@@ -133,10 +133,10 @@ def test_cambio_en_semillas_respeta_la_decision(base, tmp_path):
 
 
 def test_migra_v2_sin_perder_decisiones(base):
-    """Una base v2 con decisiones del comité pasa a v3 agregando las tablas de PAD, sin recrearse."""
+    """Una base v2 con decisiones del comité pasa a la versión actual agregando las tablas de PAD, sin recrearse."""
     con = sqlite3.connect(base / 'base.sqlite')
     decidir(con)
-    for t in ['pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad']:
+    for t in ['pad_fase', 'pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad']:
         con.execute(f'DROP TABLE {t}')
     for v in ['v_pad_curso', 'v_pad_lugar', 'v_pad_instrumento']:
         con.execute(f'DROP VIEW {v}')
