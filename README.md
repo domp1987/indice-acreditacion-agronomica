@@ -25,6 +25,7 @@ indice cargar               # incremental: conserva las decisiones del comité (
 indice reproyectar
 indice exportar
 indice tablero
+indice validar --abrir      # interfaz web local del comité (http://127.0.0.1:8765)
 ```
 
 `extraer` recorre la carpeta de presentaciones (con subcarpetas) y obtiene:

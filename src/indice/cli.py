@@ -13,6 +13,7 @@ from indice.pad import extraer_pads
 from indice.pptx import extraer_pptx
 from indice.reproyectar import reproyectar
 from indice.tablero import tablero
+from indice.validacion import validar
 
 
 def main(argv=None):
@@ -45,6 +46,9 @@ def main(argv=None):
     sub.add_parser('exportar', parents=[comun], help='genera data.json y los CSV')
     sub.add_parser('tablero', parents=[comun], help='genera el tablero HTML autocontenido')
     sub.add_parser('todo', parents=[comun, con_pdf, motor, con_ocr, con_carga], help='ejecuta el flujo completo')
+    v = sub.add_parser('validar', parents=[comun], help='abre la interfaz web local para que el comité valide correspondencias y etiquetas')
+    v.add_argument('--puerto', type=int, default=8765)
+    v.add_argument('--abrir', action='store_true', help='abre el navegador')
     args = p.parse_args(argv)
 
     r = cargar_rutas(pdf=getattr(args, 'pdf', None), salida=args.salida, config=args.config)
@@ -65,6 +69,7 @@ def main(argv=None):
         elif paso == 'reproyectar': reproyectar(r.db)
         elif paso == 'exportar': exportar(r.db, r.data_json, r.csv, r.csv_zip)
         elif paso == 'tablero': tablero(r.data_json, PLANTILLA, r.tablero)
+        elif paso == 'validar': validar(r.db, args.puerto, args.abrir)
     return 0
 
 
