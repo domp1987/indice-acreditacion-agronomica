@@ -4,6 +4,8 @@ Solo biblioteca estándar (http.server + sqlite3). Escucha en 127.0.0.1: no es a
 Cada decisión queda en la tabla 'decision' (ver decisiones.py). Uso: indice validar [--puerto 8765] [--abrir]
 """
 import html
+import json
+import re
 import sqlite3
 import threading
 import urllib.parse
@@ -40,7 +42,7 @@ button.peligro{color:var(--desc);border-color:var(--desc)}.barra{position:sticky
 padding:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:10px}.aviso{background:var(--marca);border:1px solid var(--borde);
 padding:8px 12px;border-radius:6px;margin-bottom:12px}.error{border-color:var(--desc);color:var(--desc)}
 pre{white-space:pre-wrap;font:13px/1.4 ui-monospace,Consolas,monospace;max-height:420px;overflow:auto}
-a{color:var(--acento)}.paginas a,.paginas b{margin-right:8px}
+a{color:var(--acento)}mark{background:var(--marca);color:inherit}details summary{cursor:pointer}.paginas a,.paginas b{margin-right:8px}
 @media (max-width:700px){main{padding:10px}th:nth-child(n+5),td:nth-child(n+5){display:none}}
 """
 
@@ -71,7 +73,7 @@ class Pagina:
         return f"""<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{e(titulo)} · Validación ABET</title><style>{CSS}</style></head><body>
 <header><b>Validación del comité</b><nav><a href="/">Resumen</a><a href="/correspondencias">Correspondencias</a>
-<a href="/etiquetas">Etiquetas</a><a href="/evidencias">Evidencias</a><a href="/auditoria">Auditoría</a></nav>
+<a href="/etiquetas">Etiquetas</a><a href="/evidencias">Evidencias</a><a href="/cursos">Cursos</a><a href="/auditoria">Auditoría</a></nav>
 <span class="suave">Validador: {e(self.validador) if self.validador else '<i>sin definir</i>'}</span></header>
 <main>{aviso}<h1>{e(titulo)}</h1>{cuerpo}</main></body></html>"""
 
@@ -224,6 +226,106 @@ de ella (salvo las ya decididas). La columna "Evidencias" cuenta las diapositiva
 <div class="panel"><h2>Texto</h2><pre>{e(texto or '')}</pre>{f'<h2>Texto en imágenes (OCR)</h2><pre>{e(ocr)}</pre>' if ocr else ''}</div>"""
         return self.marco(cod, cuerpo)
 
+    # ---------- Cursos y PAD ----------
+    def cursos(self):
+        texto = self.p.get('q', '').strip()
+        like = f'%{texto}%'
+        # Un PAD coincide si el texto aparece en su nombre, código, REA, actividades o bibliografía
+        coincide = """(?='' OR p.nombre LIKE ? OR p.codigo LIKE ? OR p.rea_general LIKE ?
+            OR EXISTS (SELECT 1 FROM pad_rea r WHERE r.pad_id=p.id AND r.texto LIKE ?)
+            OR EXISTS (SELECT 1 FROM pad_experiencia x JOIN pad_actividad a ON a.experiencia_id=x.id WHERE x.pad_id=p.id
+                       AND (a.nombre LIKE ? OR a.descripcion LIKE ? OR a.trabajo_estudiante LIKE ? OR a.lugares LIKE ?
+                            OR a.instrumentos LIKE ? OR a.descripcion_instrumentos LIKE ? OR x.nombre LIKE ? OR x.descripcion LIKE ?))
+            OR EXISTS (SELECT 1 FROM pad_bibliografia b WHERE b.pad_id=p.id AND (b.titulo LIKE ? OR b.autor LIKE ?)))"""
+        args = (texto, like, like, like, like, like, like, like, like, like, like, like, like, like, like)
+        filas = self.q(f"""SELECT p.codigo, p.nombre, c.nombre, p.programa, p.semestre, p.creditos, c.creditos,
+                (SELECT COUNT(*) FROM pad_rea r WHERE r.pad_id=p.id),
+                (SELECT COUNT(*) FROM pad_experiencia x JOIN pad_actividad a ON a.experiencia_id=x.id WHERE x.pad_id=p.id),
+                (SELECT COUNT(*) FROM pad_bibliografia b WHERE b.pad_id=p.id)
+            FROM pad p LEFT JOIN curso c ON c.id=p.curso_id WHERE {coincide}
+            ORDER BY c.id IS NULL, p.semestre, p.nombre""", *args)
+        sin_pad = [] if texto else self.q("SELECT curso, creditos_plan FROM v_pad_curso WHERE estado='sin PAD' ORDER BY curso")
+
+        def fila(cod, nom, curso, prog, sem, cr, cr_plan, nrea, nact, nbib):
+            aviso = f' <span class="chip descartada" title="créditos del plan">plan {cr_plan}</span>' if cr_plan and cr != cr_plan else ''
+            return f"""<tr><td class="num">{sem if sem is not None else ''}</td><td><a href="/curso{_qs({}, pad=cod, q=texto)}">{e(nom)}</a>
+<div class="suave">{e(cod)}</div></td><td>{e(curso or '')}<div class="suave">{e('' if curso else (prog or '').title())}</div></td>
+<td class="num">{cr if cr is not None else ''}{aviso}</td><td class="num">{nrea}</td><td class="num">{nact}</td><td class="num">{nbib}</td></tr>"""
+        del_plan = ''.join(fila(*f) for f in filas if f[2])
+        otros = ''.join(fila(*f) for f in filas if not f[2])
+        cab = '<tr><th>Sem.</th><th>PAD</th><th>Curso del plan</th><th>Créditos</th><th>REA</th><th>Actividades</th><th>Bibliografía</th></tr>'
+        cuerpo = f"""<form class="filtros panel" method="get"><label style="flex:1;min-width:260px">Buscar en los PAD
+<input name="q" value="{e(texto)}" placeholder="p. ej. riego, Python, rúbrica, laboratorio de suelos, diseño"></label><button>Buscar</button>
+{'<a href="/cursos">Quitar búsqueda</a>' if texto else ''}</form>
+<div class="panel"><h2>Cursos del plan con PAD ({sum(1 for f in filas if f[2])})</h2><table>{cab}{del_plan or '<tr><td colspan="7" class="suave">Sin coincidencias.</td></tr>'}</table></div>
+{f'<div class="panel"><h2>Otros programas (especializaciones) ({sum(1 for f in filas if not f[2])})</h2><table>{cab}{otros}</table></div>' if otros else ''}
+{f'<div class="panel"><h2>Cursos del plan sin PAD ({len(sin_pad)})</h2><p class="suave">' + ', '.join(f'{e(c)} ({cr} cr.)' for c, cr in sin_pad) + '</p></div>' if sin_pad else ''}"""
+        return self.marco('Cursos y PAD' + (f' · «{texto}»' if texto else ''), cuerpo)
+
+    def curso(self):
+        cod = self.p.get('pad', '')
+        texto = self.p.get('q', '').strip()
+        fila = self.q("""SELECT p.id, p.codigo, p.nombre, p.programa, p.plantilla, p.idioma, p.semestre, p.creditos, p.relacion_creditos,
+                p.prerrequisitos, p.justificacion, p.rea_general, p.acciones, p.archivo, p.paginas, c.nombre, c.categoria_abet, c.confianza
+            FROM pad p LEFT JOIN curso c ON c.id=p.curso_id WHERE p.codigo=?""", cod)
+        if not fila: return self.marco('PAD no encontrado', f'<p>No existe el PAD {e(cod)}. <a href="/cursos">Ver cursos</a></p>')
+        (pid, cod, nom, prog, plantilla, idioma, sem, cr, rel, prer, just, rea_g, acciones, archivo, pags,
+         curso, cat, conf) = fila[0]
+        lista = lambda v: ', '.join(e(x) for x in json.loads(v)) if v else ''
+
+        def resaltar(t):
+            t = e(t or '')
+            if texto:
+                t = re.sub(re.escape(e(texto)), lambda m: f'<mark>{m.group()}</mark>', t, flags=re.I)
+            return t
+        reas = self.q('SELECT consecutivo, texto, peso FROM pad_rea WHERE pad_id=? ORDER BY consecutivo', pid)
+        rea_tr = ''.join(f'<tr><td class="num">{n}</td><td>{resaltar(t)}</td><td class="num">{f"{p:g} %" if p is not None else ""}</td></tr>' for n, t, p in reas)
+        fases = self.q('SELECT fase, descripcion FROM pad_fase WHERE pad_id=? ORDER BY orden', pid)
+        fases_html = ''.join(f'<tr><td>{e(f)}</td><td class="fragmento">{resaltar(d)}</td></tr>' for f, d in fases)
+        bloques = []
+        for xid, tipo, xnom, xrea, xdesc, dims, integ, comps, compo, unidad, lineas in self.q(
+                """SELECT id, tipo, nombre, rea, descripcion, dimensiones, integrantes, competencias, componentes, unidad_regional, lineas_translocales
+                   FROM pad_experiencia WHERE pad_id=? ORDER BY orden""", pid):
+            acts = self.q("""SELECT orden, etapa, nombre, semana_inicio, duracion_semanas, lugares, tipo_actividad, instrumentos, descripcion,
+                    trabajo_estudiante, trabajo_profesor, descripcion_instrumentos, analisis_retroalimentacion, fase, recursos_cgca, recursos_externos
+                FROM pad_actividad WHERE experiencia_id=? ORDER BY orden""", xid)
+            filas_act = ''
+            for (o, etapa, anom, sem_i, dur, lug, tip, ins, desc, est, prof, dins, anal, fase, rcgca, rext) in acts:
+                detalle = ''.join(f'<p><b>{titulo}.</b> {resaltar(v)}</p>' for titulo, v in [
+                    ('Descripción', desc), ('Trabajo del estudiante', est), ('Trabajo del profesor', prof),
+                    ('Producto evaluado', dins), ('Análisis y retroalimentación', anal), ('Fase del MCA', fase)] if v)
+                recursos = ''.join(f'<p><b>{titulo}.</b> {lista(v)}</p>' for titulo, v in [('Recursos CGCA', rcgca), ('Recursos externos', rext)] if v)
+                filas_act += f"""<tr><td class="num">{sem_i or ''}</td><td class="num">{dur or ''}</td><td><b>{resaltar(anom)}</b>
+{f'<div class="suave">{e(etapa)}</div>' if etapa else ''}<details><summary class="suave">ver detalle</summary>{detalle}{recursos}</details></td>
+<td>{lista(lug)}</td><td class="fragmento">{e(tip or '')}</td><td>{lista(ins)}</td></tr>"""
+            titulo_x = 'Soluciona un problema' if tipo == 'soluciona_problema' else 'Vive una experiencia'
+            meta = ' · '.join(x for x in [f'REA {e(xrea)}' if xrea and len(xrea) < 4 else '', f'Dimensiones: {lista(dims)}' if dims else '',
+                                          f'Integrantes: {integ}' if integ else '', f'Saber Pro: {lista(comps)}' if comps else ''] if x)
+            bloques.append(f"""<div class="panel"><h2>{titulo_x}: {resaltar(xnom)}</h2><p class="suave">{meta}</p>
+{f'<p class="suave">REA: {resaltar(xrea)}</p>' if xrea and len(xrea) >= 4 else ''}{f'<details><summary class="suave">Descripción de la experiencia</summary><p>{resaltar(xdesc)}</p></details>' if xdesc else ''}
+<table><tr><th>Semana</th><th>Sem.</th><th>Actividad</th><th>Lugares</th><th>Tipo</th><th>Instrumentos</th></tr>
+{filas_act or '<tr><td colspan="6" class="suave">Sin actividades registradas.</td></tr>'}</table></div>""")
+        bib = self.q('SELECT autor, titulo, anio, isbn, identificador, editorial, url FROM pad_bibliografia WHERE pad_id=? ORDER BY orden', pid)
+        bib_tr = ''.join(f"""<tr><td>{resaltar(a)}</td><td>{f'<a href="{e(u)}" target="_blank" rel="noopener">{resaltar(t)}</a>' if u else resaltar(t)}</td>
+<td class="num">{an or ''}</td><td class="suave">{e(i or idf or '')}{f' · {e(ed)}' if ed else ''}</td></tr>""" for a, t, an, i, idf, ed, u in bib)
+        recs = self.q('SELECT nombre, tipo, area FROM pad_recurso WHERE pad_id=? ORDER BY orden', pid)
+        rec_tr = ''.join(f'<tr><td>{e(n)}</td><td>{e(t or "")}</td><td class="suave">{e(a or "")}</td></tr>' for n, t, a in recs)
+        acc = json.loads(acciones) if acciones else {}
+        cuerpo = f"""<p><a href="/cursos{_qs({}, q=texto)}">← Todos los cursos</a> · <a href="/evidencia{_qs({}, codigo='PAD-' + cod)}">Etiquetar este PAD / ver texto completo</a></p>
+<div class="panel"><p><b>{e(cod)}</b> · {e((prog or '').title())} · plantilla {e(plantilla or '')}{' (inglés)' if idioma == 'en' else ''} · {pags} páginas · <span class="suave">{e(archivo)}</span></p>
+<p>Semestre <b>{sem if sem is not None else '—'}</b> · <b>{cr}</b> créditos{f' (relación {e(rel)})' if rel else ''} · prerrequisitos: {e(prer or 'ninguno')}</p>
+{f'<p>Curso del plan: <b>{e(curso)}</b> · categoría ABET actual: {e(cat)} (confianza {e(conf)})</p>' if curso else '<p class="suave">No está ligado a un curso del plan.</p>'}</div>
+<div class="panel"><h2>Resultados de aprendizaje</h2><p><b>REA general.</b> {resaltar(rea_g)}</p>
+<table><tr><th>N.º</th><th>REA específico</th><th>Peso</th></tr>{rea_tr}</table>
+{f'<details><summary class="suave">Justificación</summary><p>{resaltar(just)}</p></details>' if just else ''}</div>
+{f'<div class="panel"><h2>Fases del MCA</h2><table>{fases_html}</table></div>' if fases_html else ''}
+{''.join(bloques)}
+{f'<div class="panel"><h2>Acciones</h2>' + ''.join(f'<p><b>{e(k.replace("_", " ").capitalize())}.</b> {e(", ".join(v) if isinstance(v, list) else v)}</p>' for k, v in acc.items()) + '</div>' if acc else ''}
+<div class="panel"><h2>Bibliografía ({len(bib)})</h2><table><tr><th>Autor</th><th>Título</th><th>Año</th><th>ISBN / editorial</th></tr>
+{bib_tr or '<tr><td colspan="4" class="suave">El PAD no trae bibliografía en la tabla final.</td></tr>'}</table></div>
+{f'<div class="panel"><details><summary><b>Recursos externos ({len(recs)})</b></summary><table><tr><th>Recurso</th><th>Tipo</th><th>Área</th></tr>{rec_tr}</table></details></div>' if recs else ''}"""
+        return self.marco(nom, cuerpo)
+
     def auditoria(self):
         filas = self.q('SELECT fecha, validador, objeto, referencia, accion, estado_anterior, estado_nuevo, rol, comentario FROM decision ORDER BY id DESC LIMIT 500')
         tr = ''.join(f"""<tr><td class="suave">{e(f)}</td><td>{e(v)}</td><td>{e(o)}</td><td>{e(r)}</td><td>{e(a)}</td>
@@ -269,7 +371,8 @@ def crear_manejador(db):
             url = urllib.parse.urlsplit(self.path)
             params = {k: v[-1] for k, v in urllib.parse.parse_qs(url.query).items()}
             rutas = {'/': 'resumen', '/correspondencias': 'correspondencias', '/etiquetas': 'etiquetas',
-                     '/evidencias': 'evidencias', '/evidencia': 'evidencia', '/auditoria': 'auditoria'}
+                     '/evidencias': 'evidencias', '/evidencia': 'evidencia', '/auditoria': 'auditoria',
+                     '/cursos': 'cursos', '/curso': 'curso'}
             if url.path not in rutas:
                 return self._responder('<p>No encontrado</p>', 404)
             con = sqlite3.connect(db)
@@ -334,7 +437,16 @@ def servidor(db, puerto=8765):
     con.close()
     if not tiene:
         raise SystemExit('La base no tiene la tabla de auditoría. Ejecuta primero: indice cargar (la migra al esquema actual)')
-    return ThreadingHTTPServer(('127.0.0.1', puerto), crear_manejador(db))
+    try:
+        return _Servidor(('127.0.0.1', puerto), crear_manejador(db))
+    except OSError:
+        raise SystemExit(f'El puerto {puerto} ya está en uso (¿otra interfaz abierta?). Ciérrala o usa --puerto con otro número.')
+
+
+class _Servidor(ThreadingHTTPServer):
+    # En Windows, SO_REUSEADDR deja que dos servidores escuchen en el mismo puerto y responda el viejo sin aviso
+    allow_reuse_address = False
+    daemon_threads = True
 
 
 def validar(db, puerto=8765, abrir=False):

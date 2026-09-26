@@ -68,10 +68,14 @@ def test_interfaz_web_de_punta_a_punta(db, tmp_path):
     base = f'http://127.0.0.1:{srv.server_address[1]}'
     try:
         # Las páginas cargan
-        for ruta in ['/', '/correspondencias', '/etiquetas?nodo=C6', '/evidencias?sin=1', '/evidencia?codigo=F05-P027', '/auditoria']:
+        for ruta in ['/', '/correspondencias', '/etiquetas?nodo=C6', '/evidencias?sin=1', '/evidencia?codigo=F05-P027', '/auditoria',
+                     '/cursos', '/cursos?q=riego', '/curso?pad=CAD602020207&q=riego', '/curso?pad=CAD602020937']:
             with urllib.request.urlopen(base + ruta) as r:
                 html = r.read().decode('utf-8')
                 assert r.status == 200 and 'Validación del comité' in html, ruta
+        # La búsqueda en los PAD encuentra el curso por el contenido de sus actividades
+        with urllib.request.urlopen(base + '/cursos?q=riego') as r:
+            assert 'HIDRAULICA' in r.read().decode('utf-8')
         # El texto de las evidencias se escapa (no se inyecta HTML)
         with urllib.request.urlopen(base + '/evidencia?codigo=%3Cscript%3E') as r:
             assert '<script>' not in r.read().decode('utf-8').split('</style>')[1].split('<script>document')[0]

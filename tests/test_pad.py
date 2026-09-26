@@ -77,6 +77,7 @@ def test_variante_2026_por_semanas():
     p = leer_pad(V2026)
     assert (p['codigo'], p['creditos'], p['semestre'], p['relacion_creditos']) == ('CAD602020207', 3, 2, '1-2')
     assert [r['peso'] for r in p['rea']] == [32.0, 36.0, 32.0]
+    assert all(len(r['texto']) < 400 for r in p['rea'])   # la tabla de fases del MCA no se cuela en el REA
     assert [f['fase'].split('.')[0] for f in p['fases']] == [f'Fase {i}' for i in range(1, 10)]
     acts = [a for e in p['experiencias'] for a in e['actividades']]
     assert len(acts) == 8 and all(a.get('descripcion') for a in acts)

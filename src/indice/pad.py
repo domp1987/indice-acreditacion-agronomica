@@ -284,7 +284,7 @@ def _bloque_bajo(celdas, titulo, hasta):
 
 def _rea_especificos(celdas):
     """Números de consecutivo y texto; cada línea de texto va al número más cercano en altura."""
-    bloque = _bloque_bajo(celdas, 'rea especific', ['para el logro', 'vive una experiencia', 'soluciona un problema'])
+    bloque = _bloque_bajo(celdas, 'rea especific', ['para el logro', 'vive una experiencia', 'soluciona un problema', 'fases del mca'])
     bloque = [c for c in bloque if not normalizar(c.t).startswith('fases del mca')]
     numeros, lineas, pesos = [], [], []
     for c in bloque:
@@ -503,8 +503,14 @@ def _filas_v19(celdas, segs):
             valor = [x for x in valor if len(x) <= 70]
             if largos: acumular(destino, 'descripcion', ' '.join(largos))
             if not valor: return
+        if k == 'instrumentos' and isinstance(valor, list):
+            # a veces la celda trae la descripción del producto en lugar del tipo de instrumento
+            largos = [x for x in valor if len(x) > 60]
+            valor = [x for x in valor if len(x) <= 60]
+            if largos: acumular(destino, 'descripcion_instrumentos', ' '.join(largos))
+            if not valor: return
         if k == 'fase':
-            previas = [x.strip() for x in re.split(r'[;,]', destino.get('fase') or '') if x.strip()]
+            previas =[x.strip() for x in re.split(r'[;,]', destino.get('fase') or '') if x.strip()]
             nuevas = re.findall(r'FASE \d+\.\s*[A-ZÁÉÍÓÚÑ]{2,}(?:\s+(?:Y|[A-ZÁÉÍÓÚÑ]{2,}))*', valor)
             destino[k] = '; '.join(previas + [x for x in nuevas if x not in previas]) or valor
             return
@@ -719,7 +725,13 @@ def _tabla_actividades_v2(segs):
     for h_ in herramientas:
         a = contenedora(Celda([h_]))
         texto = h_.t.split('Herramientas de Recolecci', 1)[1].split(':', 1)[-1]
-        a.setdefault('instrumentos', []).append(_limpio(texto + ' ' + ' '.join(s.t for s in continuaciones[id(h_)])))
+        texto = _limpio(texto + ' ' + ' '.join(s.t for s in continuaciones[id(h_)]))
+        # 'V2' escribe '(Tarea): producto… (Foro): producto…': se separan los tipos de la descripción del producto
+        tipos = re.findall(r'\(([^()]{2,40})\)\s*:', texto)
+        for t in tipos or [texto]:
+            if t not in a.setdefault('instrumentos', []): a['instrumentos'].append(t)
+        if tipos:
+            a['descripcion_instrumentos'] = _limpio(((a.get('descripcion_instrumentos') or '') + ' ' + texto))
     en_herr = set()
     for z in ('descripcion', 'trabajo_profesor', 'trabajo_estudiante'):
         for c in _celdas([s for s in piezas if zona(s) == z and id(s) not in en_herr and not s.t.startswith('Herramientas')]):
