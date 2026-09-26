@@ -46,7 +46,8 @@ pytest
 indice.toml            configuración de rutas
 src/indice/            fuentes, extraer, pptx, ocr, pad, semillas, cargar, reproyectar, exportar, tablero, cli; *.sql; *.ps1
 plantillas/            template.html del tablero
-datos/semillas/        datos manuales (tarea 2, pendiente)
+datos/semillas/        datos que no salen de los documentos (CSV versionados)
+PADs/                  Planes de Aprendizaje Digital en PDF (no se versionan)
 tests/
 legado/                scripts del prototipo original, solo como referencia
 salida/                productos generados (no se versiona)
