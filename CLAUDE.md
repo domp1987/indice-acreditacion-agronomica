@@ -73,7 +73,7 @@ Reglas de reproyección: una etiqueta CNA de tipo `extraccion` genera etiquetas 
 
 ## Documentos pendientes de conseguir
 
-- **PAD de Modelos estadísticos aplicados adaptado al contexto agrícola.** Existe, pero no se tiene; el PDF actual (`PADs/Modelos CFC1002020302.pdf`) es la versión con ejemplos pecuarios. Cuando llegue: reemplazar el PDF (o agregarlo y ajustar `pad_curso.csv` si cambia el código) y correr `indice todo`.
+- **PAD de Modelos estadísticos aplicados adaptado al contexto agrícola.** Existe, pero no se tiene; el PDF actual (`PADs/Modelos CFC1002020302.pdf`) es la versión con ejemplos pecuarios. Trae el mismo código (CFC1002020302): cuando llegue, reemplazar el PDF, correr `indice todo` y quitar de `pad_curso.csv` la nota sobre la versión pecuaria.
 
 ## Deuda técnica conocida
 
