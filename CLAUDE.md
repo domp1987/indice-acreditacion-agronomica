@@ -71,6 +71,10 @@ Reglas de reproyección: una etiqueta CNA de tipo `extraccion` genera etiquetas 
 - **Criterio 5 (PAD).** 40 de los 54 cursos tienen PAD; solo faltan los 14 institucionales. Los PAD de Matemática aplicada (CFC1002020201) y Modelos estadísticos aplicados (CFC1002020302) son cursos de **formación común** con Zootecnia (el PDF figura en ese programa), adaptados al contexto agropecuario (sistemas agroambientales, agrícolas y pecuarios); el de Hidráulica, riegos y drenajes es propio del programa. Los créditos de todos los PAD coinciden con el plan. Créditos por semestre (cursos con PAD): 16, 12, 13, 14, 16, 12, 13, 16, 11. Estos tres PAD usan la variante 2026 y declaran el peso de cada REA (Hidráulica 32/36/32 %, Matemática 40/30/30 %, Modelos 30/20/50 %).
 - **Datos.** La graduación acumulada del programa difiere entre factores en los tres semestres: Factor 6 = 32,9 / 39,4 / 44,3 % y Factor 4 = 18,71 / 27,45 / 34,33 % (S12 / S13 / S14). La media nacional NBC coincide en ambos (25,1 / 28,1 / 31,1 %). `v_inconsistencias` lo detecta. El prototipo tomaba 27,45 % como media NBC en S14; la gráfica del PPTX muestra que es el programa en S13 (corregido).
 
+## Documentos pendientes de conseguir
+
+- **PAD de Modelos estadísticos aplicados adaptado al contexto agrícola.** Existe, pero no se tiene; el PDF actual (`PADs/Modelos CFC1002020302.pdf`) es la versión con ejemplos pecuarios. Cuando llegue: reemplazar el PDF (o agregarlo y ajustar `pad_curso.csv` si cambia el código) y correr `indice todo`.
+
 ## Deuda técnica conocida
 
 1. ~~Rutas fijas~~ (resuelto en la tarea 1 con `indice.toml` y la CLI).
