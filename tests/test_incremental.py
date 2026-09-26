@@ -132,6 +132,23 @@ def test_cambio_en_semillas_respeta_la_decision(base, tmp_path):
     assert roles == [('parcial',)]
 
 
+def test_migra_v2_sin_perder_decisiones(base):
+    """Una base v2 con decisiones del comité pasa a v3 agregando las tablas de PAD, sin recrearse."""
+    con = sqlite3.connect(base / 'base.sqlite')
+    decidir(con)
+    for t in ['pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad']:
+        con.execute(f'DROP TABLE {t}')
+    for v in ['v_pad_curso', 'v_pad_lugar', 'v_pad_instrumento']:
+        con.execute(f'DROP VIEW {v}')
+    con.execute("UPDATE meta SET valor='2' WHERE clave='version_esquema'")
+    con.commit(); con.close()
+    recargar(base)
+    assert not list(base.glob('*.respaldo-*'))
+    con = sqlite3.connect(base / 'base.sqlite')
+    assert uno(con, "SELECT COUNT(*) FROM evidencia_nodo WHERE validado_por='comité'") == 2
+    assert uno(con, "SELECT COUNT(*) FROM sqlite_master WHERE name='pad'") == 1
+
+
 def test_migra_base_de_esquema_anterior(tmp_path):
     legado = PROYECTO / 'legado' / 'indice_acreditacion.sqlite'
     if not legado.exists(): pytest.skip('no está la base del prototipo')
@@ -139,5 +156,6 @@ def test_migra_base_de_esquema_anterior(tmp_path):
     recargar(tmp_path)
     assert (tmp_path / 'base.respaldo-v1.sqlite').exists()
     con = sqlite3.connect(tmp_path / 'base.sqlite')
-    assert uno(con, "SELECT valor FROM meta WHERE clave='version_esquema'") == '2'
+    from indice.cargar import VERSION_ESQUEMA
+    assert uno(con, "SELECT valor FROM meta WHERE clave='version_esquema'") == str(VERSION_ESQUEMA)
     assert uno(con, 'SELECT COUNT(*) FROM evidencia_nodo') == 492

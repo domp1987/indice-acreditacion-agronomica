@@ -6,6 +6,8 @@ pdf = "OneDrive_1_9-23-2026"
 salida = "salida"
 # Datos que no salen de las presentaciones (marcos, correspondencias, indicadores, cursos, brechas)
 semillas = "datos/semillas"
+# Planes de Aprendizaje Digital (PAD) de cada CADI, en PDF (con subcarpetas)
+pads = "PADs"
 
 # Carpeta con pdftotext y pdfinfo, solo si no están en el PATH.
 # También se puede indicar con la variable de entorno INDICE_POPPLER.

@@ -9,6 +9,7 @@ from indice.exportar import exportar
 from indice.extraer import extraer
 from indice.fuentes import convertir_faltantes, listar_fuentes
 from indice.ocr import ocr
+from indice.pad import extraer_pads
 from indice.pptx import extraer_pptx
 from indice.reproyectar import reproyectar
 from indice.tablero import tablero
@@ -36,8 +37,9 @@ def main(argv=None):
     p = argparse.ArgumentParser(prog='indice', description='Índice de acreditación CNA → ABET')
     p.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
     sub = p.add_subparsers(dest='comando', required=True)
-    sub.add_parser('extraer', parents=[comun, con_pdf, motor, con_ocr], help='texto de los PDF, gráficas y tablas de los PPTX y OCR de imágenes')
+    sub.add_parser('extraer', parents=[comun, con_pdf, motor, con_ocr], help='texto de los PDF, gráficas y tablas de los PPTX, OCR de imágenes y PAD')
     sub.add_parser('ocr', parents=[comun, con_pdf, con_ocr], help='solo el OCR de las imágenes (con caché)')
+    sub.add_parser('pads', parents=[comun], help='solo extrae los Planes de Aprendizaje Digital (PAD) a pads.json')
     sub.add_parser('cargar', parents=[comun, con_carga], help='actualiza la base SQLite (incremental) desde lo extraído y las semillas')
     sub.add_parser('reproyectar', parents=[comun], help='infiere etiquetas ABET desde CNA y REA vía correspondencias')
     sub.add_parser('exportar', parents=[comun], help='genera data.json y los CSV')
@@ -56,8 +58,10 @@ def main(argv=None):
             extraer(fuentes, r.diapositivas, args.motor, r.poppler)
             extraer_pptx(fuentes, r.pptx_json, r.diapositivas)
             if not args.sin_ocr: ocr(fuentes, r.ocr_json, r.poppler, args.rehacer_ocr)
+            extraer_pads(r.pads, r.pads_json, r.poppler)
         elif paso == 'ocr': ocr(fuentes, r.ocr_json, r.poppler, args.rehacer_ocr)
-        elif paso == 'cargar': cargar(r.db, r.diapositivas, r.semillas, r.pptx_json, r.ocr_json, args.reconstruir)
+        elif paso == 'pads': extraer_pads(r.pads, r.pads_json, r.poppler)
+        elif paso == 'cargar': cargar(r.db, r.diapositivas, r.semillas, r.pptx_json, r.ocr_json, args.reconstruir, r.pads_json)
         elif paso == 'reproyectar': reproyectar(r.db)
         elif paso == 'exportar': exportar(r.db, r.data_json, r.csv, r.csv_zip)
         elif paso == 'tablero': tablero(r.data_json, PLANTILLA, r.tablero)

@@ -20,6 +20,7 @@ La carpeta de PDF y la de salida se configuran en `indice.toml`; `--pdf` y `--sa
 indice todo                 # flujo completo
 indice extraer --pdf datos/pdf
 indice ocr                  # solo el OCR (con caché)
+indice pads                 # solo los Planes de Aprendizaje Digital (PADs/)
 indice cargar               # incremental: conserva las decisiones del comité (--reconstruir la crea de nuevo)
 indice reproyectar
 indice exportar
@@ -29,6 +30,7 @@ indice tablero
 `extraer` recorre la carpeta de presentaciones (con subcarpetas) y obtiene:
 - el texto de cada página del PDF (si una presentación solo tiene PPTX, se convierte con PowerPoint);
 - los datos de las gráficas y las celdas de las tablas de los PPTX (el PDF solo conserva la imagen de la gráfica);
+- los Planes de Aprendizaje Digital de la carpeta `PADs/` (REA, experiencias, actividades, bibliografía), ligados a cada curso por `datos/semillas/pad_curso.csv`;
 - el texto dentro de imágenes, con el OCR de Windows (o tesseract). La primera vez tarda unos 10 minutos; después usa la caché. `--sin-ocr` lo omite y `indice ocr --rehacer-ocr` lo repite.
 
 Productos en `salida/`: `diapositivas.json`, `pptx.json`, `ocr.json`, `pdf_convertidos/`, `indice_acreditacion.sqlite`, `data.json`, `csv/` y `tablas_csv.zip` (UTF-8 con BOM, para Excel o Power BI) e `indice_acreditacion_abet.html` (tablero autocontenido).
@@ -42,7 +44,7 @@ pytest
 ## Estructura
 ```
 indice.toml            configuración de rutas
-src/indice/            fuentes, extraer, pptx, ocr, cargar, reproyectar, exportar, tablero, cli; schema.sql; *.ps1
+src/indice/            fuentes, extraer, pptx, ocr, pad, semillas, cargar, reproyectar, exportar, tablero, cli; *.sql; *.ps1
 plantillas/            template.html del tablero
 datos/semillas/        datos manuales (tarea 2, pendiente)
 tests/

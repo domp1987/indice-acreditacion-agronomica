@@ -12,8 +12,9 @@ import re
 import sqlite3
 from pathlib import Path
 
-from indice.config import ESQUEMA
+from indice.config import ESQUEMA, PAQUETE
 from indice.ocr import texto_nuevo
+from indice.pad import normalizar as normalizar_texto
 from indice.semillas import leer_todas
 
 
@@ -128,17 +129,36 @@ def _tipo_y_titulo(s):
 _CAMPOS_EVIDENCIA = ['titulo', 'tipo', 'texto', 'texto_ocr', 'fuente', 'archivo', 'pagina', 'sede']
 
 
-def sincronizar_evidencias(cur, nodos, slides, ocr=None):
+def sincronizar_evidencias(cur, nodos, slides, ocr=None, adicionales=()):
     """Upsert de una evidencia por diapositiva (sin portadas) y de sus etiquetas CNA de extracción.
 
     Las evidencias conservan su id. Las que ya no aparecen quedan 'obsoleta' (no se borran: pueden tener
     decisiones del comité). Devuelve ({código: id} de las vigentes, resumen de cambios).
     ocr: {(fuente, página): [líneas]} del OCR; se guarda solo lo que no está ya en el texto del PDF.
+    adicionales: evidencias que no son diapositivas (p. ej. los PAD), como dicts con codigo y _CAMPOS_EVIDENCIA.
     """
     ocr = ocr or {}
     ev_ids = {}
     nuevas = actualizadas = 0
     etiquetas = {}   # {evidencia_id: nodo_id} de origen extracción, deseadas
+
+    def upsert(valores):
+        nonlocal nuevas, actualizadas
+        existe = cur.execute('SELECT id FROM evidencia WHERE codigo=?', (valores['codigo'],)).fetchone()
+        cur.execute(f"""INSERT INTO evidencia(codigo,{','.join(_CAMPOS_EVIDENCIA)},creado_en,actualizado_en)
+                        VALUES (:codigo,{','.join(':' + c for c in _CAMPOS_EVIDENCIA)},{AHORA},{AHORA})
+                        ON CONFLICT(codigo) DO UPDATE SET {', '.join(f'{c}=excluded.{c}' for c in _CAMPOS_EVIDENCIA)},
+                          estado_revision=CASE WHEN estado_revision='obsoleta' THEN 'sin_revisar' ELSE estado_revision END,
+                          actualizado_en={AHORA}
+                        WHERE estado_revision='obsoleta' OR {' OR '.join(f'{c} IS NOT excluded.{c}' for c in _CAMPOS_EVIDENCIA)}""",
+                    valores)
+        if not existe: nuevas += 1
+        elif cur.rowcount: actualizadas += 1
+        ev_ids[valores['codigo']] = existe[0] if existe else cur.lastrowid
+        return ev_ids[valores['codigo']]
+
+    for v in adicionales:
+        upsert({c: v.get(c) for c in ['codigo'] + _CAMPOS_EVIDENCIA})
     for s in slides:
         t = s['texto']
         if _es_portada(t): continue
@@ -150,19 +170,8 @@ def sincronizar_evidencias(cur, nodos, slides, ocr=None):
             if extra: titulo = (extra if titulo.endswith(f'diapositiva {s["pagina"]}') else f'{titulo}: {extra}')[:110]
         fuentes = re.findall(r'Fuente[.:]\s*([^\n]{3,80})', t)
         codigo = f'{s["fuente"]}-P{s["pagina"]:03d}'
-        valores = dict(codigo=codigo, titulo=titulo, tipo=tipo, texto=t, texto_ocr=texto_ocr,
-                       fuente=fuentes[0].strip() if fuentes else None, archivo=s['archivo'], pagina=s['pagina'], sede=s['sede'])
-        existe = cur.execute('SELECT id FROM evidencia WHERE codigo=?', (codigo,)).fetchone()
-        cur.execute(f"""INSERT INTO evidencia(codigo,{','.join(_CAMPOS_EVIDENCIA)},creado_en,actualizado_en)
-                        VALUES (:codigo,{','.join(':' + c for c in _CAMPOS_EVIDENCIA)},{AHORA},{AHORA})
-                        ON CONFLICT(codigo) DO UPDATE SET {', '.join(f'{c}=excluded.{c}' for c in _CAMPOS_EVIDENCIA)},
-                          estado_revision=CASE WHEN estado_revision='obsoleta' THEN 'sin_revisar' ELSE estado_revision END,
-                          actualizado_en={AHORA}
-                        WHERE estado_revision='obsoleta' OR {' OR '.join(f'{c} IS NOT excluded.{c}' for c in _CAMPOS_EVIDENCIA)}""",
-                    valores)
-        if not existe: nuevas += 1
-        elif cur.rowcount: actualizadas += 1
-        eid = ev_ids[codigo] = existe[0] if existe else cur.lastrowid
+        eid = upsert(dict(codigo=codigo, titulo=titulo, tipo=tipo, texto=t, texto_ocr=texto_ocr,
+                          fuente=fuentes[0].strip() if fuentes else None, archivo=s['archivo'], pagina=s['pagina'], sede=s['sede']))
         # Etiquetado CNA extraído del encabezado de la diapositiva
         car = f'C{s["car"]:02d}' if s['car'] else None
         if car in nodos.caracteristicas: etiquetas[eid] = nodos('CNA', car)
@@ -189,12 +198,12 @@ def sincronizar_evidencias(cur, nodos, slides, ocr=None):
 _PATRON_NORMA = re.compile(r'(Acuerdo|Resoluci[oó]n)\b([^\n]{0,60}?)(?:N[o°º]\.?\s*|N\.\s*)?(\d{3,6})\s+(?:del?\s+)?(?:\d{1,2}\s+de\s+[a-zA-Z]+\s+(?:de\s+)?)?(\d{4})', re.I)
 
 
-def cargar_normativa(cur, slides, ev_ids, semillas):
-    """Normas citadas: las que reconoce el patrón (menos las excluidas) y las de normativa_manual.csv."""
+def cargar_normativa(cur, texto, ev_ids, semillas):
+    """Normas citadas: las que reconoce el patrón (menos las excluidas) y las de normativa_manual.csv.
+    texto: {código de evidencia: texto} de las diapositivas y de los PAD."""
     excluir = {(n['tipo'], n['numero'], n['anio']) for n in semillas['normativa_excluir']}
-    texto = {f'{s["fuente"]}-P{s["pagina"]:03d}': s['texto'] for s in slides}
     for codigo, eid in ev_ids.items():
-        t = re.sub(r'\s+', ' ', texto[codigo])
+        t = re.sub(r'\s+', ' ', texto.get(codigo, ''))
         for m in _PATRON_NORMA.finditer(t):
             tipo = 'Acuerdo' if m.group(1).lower().startswith('acu') else 'Resolución'
             num, anio = int(m.group(3)), int(m.group(4))
@@ -209,7 +218,7 @@ def cargar_normativa(cur, slides, ev_ids, semillas):
         cur.execute("INSERT OR IGNORE INTO normativa(tipo,numero,anio,organo) VALUES (?,?,?,?)", (n['tipo'], n['numero'], n['anio'], n['organo']))
         doc = cur.execute("SELECT id FROM normativa WHERE tipo=? AND numero=? AND anio=?", (n['tipo'], n['numero'], n['anio'])).fetchone()[0]
         for codigo, eid in ev_ids.items():
-            if n['texto_a_buscar'] in texto[codigo]:
+            if n['texto_a_buscar'] in texto.get(codigo, ''):
                 cur.execute("INSERT OR IGNORE INTO normativa_mencion VALUES (?,?)", (doc, eid))
 
 
@@ -258,16 +267,84 @@ def cargar_pptx(cur, pptx, ev_ids):
     return huerfanas
 
 
+# ---------- Planes de Aprendizaje Digital (PAD) ----------
+def evidencias_pad(pads):
+    """Cada PAD como evidencia 'PAD-<código>' (tipo 'pad') con su texto completo, para búsqueda y etiquetado."""
+    out = []
+    for p in pads:
+        del_programa = normalizar_texto(p.get('programa') or '') == 'ingenieria agronomica'
+        out.append(dict(codigo=f'PAD-{p["codigo"]}', titulo=f'PAD {p["nombre"]} ({p["codigo"]})'[:110], tipo='pad',
+                        texto=p['texto'], texto_ocr=None, fuente='Plan de Aprendizaje Digital', archivo=p['archivo'],
+                        pagina=None, sede='Programa' if del_programa else 'Institución'))
+    return out
+
+
+def _semanas(t):
+    m = re.search(r'\d+', t or '')
+    return int(m.group()) if m else None
+
+
+def _json(x):
+    return json.dumps(x, ensure_ascii=False) if x else None
+
+
+def cargar_pads(cur, pads, ev_ids, semillas):
+    """PAD, REA específicos, experiencias, actividades, bibliografía y recursos. Devuelve avisos."""
+    avisos = []
+    curso_id = dict(cur.execute('SELECT nombre, id FROM curso'))
+    relacion = {x['pad']: x['curso'] for x in semillas['pad_curso']}
+    for p in pads:
+        curso = relacion.get(p['codigo'])
+        if p['codigo'] not in relacion:
+            avisos.append(f'PAD {p["codigo"]} ({p["nombre"]}) no está en pad_curso.csv')
+        cur.execute("""INSERT INTO pad(codigo,evidencia_id,curso_id,nombre,programa,plantilla,idioma,semestre,creditos,prerrequisitos,
+                                       justificacion,rea_general,acciones,archivo,paginas) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                    (p['codigo'], ev_ids.get(f'PAD-{p["codigo"]}'), curso_id.get(curso) if curso else None, p['nombre'], p['programa'],
+                     p['plantilla'], p['idioma'], p['semestre'], p['creditos'], p['prerrequisitos'], p['justificacion'], p['rea_general'],
+                     _json(p['acciones']), p['archivo'], p['paginas']))
+        pid = cur.lastrowid
+        cur.executemany('INSERT OR IGNORE INTO pad_rea VALUES (?,?,?)', [(pid, r['consecutivo'], r['texto']) for r in p['rea']])
+        for i, e in enumerate(p['experiencias'], 1):
+            cur.execute("""INSERT INTO pad_experiencia(pad_id,orden,tipo,nombre,rea,descripcion,dimensiones,integrantes,competencias,
+                                                       componentes,unidad_regional,lineas_translocales) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                        (pid, i, e['tipo'], e.get('nombre'), str(e['rea']) if e.get('rea') is not None else None, e.get('descripcion'),
+                         _json(e.get('dimensiones')), _semanas(e.get('integrantes')), _json(e.get('competencias')), _json(e.get('componentes')),
+                         e.get('unidad_regional'), e.get('lineas_translocales')))
+            eid = cur.lastrowid
+            for j, a in enumerate(e['actividades'], 1):
+                cur.execute("""INSERT INTO pad_actividad(experiencia_id,orden,etapa,nombre,descripcion,trabajo_estudiante,trabajo_profesor,
+                                   semana_inicio,duracion_semanas,fase,tipo_actividad,lugares,instrumentos,descripcion_instrumentos,
+                                   recursos_cgca,recursos_externos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                            (eid, j, a.get('etapa'), a.get('nombre'), a.get('descripcion'), a.get('trabajo_estudiante'), a.get('trabajo_profesor'),
+                             _semanas(a.get('semana_inicio')), _semanas(a.get('duracion')), a.get('fase'), a.get('tipo_actividad'),
+                             _json(a.get('lugares')), _json(a.get('instrumentos')), a.get('descripcion_instrumentos'),
+                             _json(a.get('recursos_cgca')), _json(a.get('recursos_externos'))))
+        cur.executemany('INSERT INTO pad_bibliografia VALUES (?,?,?,?,?,?,?,?,?)',
+                        [(pid, k, b.get('autor'), b['titulo'], b.get('anio'), b.get('editorial'), b.get('edicion'), b.get('isbn'), b.get('identificador'))
+                         for k, b in enumerate(p['bibliografia'], 1)])
+        cur.executemany('INSERT INTO pad_recurso VALUES (?,?,?,?,?)',
+                        [(pid, k, r['nombre'], r.get('tipo'), r.get('area')) for k, r in enumerate(p['recursos'], 1)])
+    # El semestre del plan sale del PAD (curso.periodo estaba vacío); si hay varias opciones, todas comparten semestre
+    cur.execute("""UPDATE curso SET periodo = (SELECT MIN(p.semestre) FROM pad p WHERE p.curso_id = curso.id)
+                   WHERE periodo IS NULL AND EXISTS (SELECT 1 FROM pad p WHERE p.curso_id = curso.id)""")
+    for c, cp, pad, cpad in cur.execute("SELECT curso, creditos_plan, pad, creditos_pad FROM v_pad_curso WHERE estado='créditos distintos'"):
+        avisos.append(f'créditos distintos: {c} tiene {cp} en el plan y {cpad} en su PAD {pad}')
+    return avisos
+
+
 def _leer_ocr(ocr_json):
     if not ocr_json or not Path(ocr_json).exists(): return {}
     cache = json.loads(Path(ocr_json).read_text(encoding='utf-8'))
     return {(fuente, int(p)): lineas for fuente, c in cache.items() for p, lineas in c['paginas'].items()}
 
 
-VERSION_ESQUEMA = 2
-# Tablas que son copia directa de semillas o del PPTX: se vacían y se vuelven a llenar en cada carga
-# (hijas antes que padres). Su fuente de verdad son los CSV y las presentaciones, no la base.
-DERIVADAS = ['grafica_dato', 'grafica', 'tabla_diapositiva', 'normativa_mencion', 'normativa',
+VERSION_ESQUEMA = 3
+# Migraciones que agregan tablas sin tocar los datos existentes: {versión destino: script}
+MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql'}
+# Tablas que son copia directa de semillas, presentaciones o PAD: se vacían y se vuelven a llenar en cada carga
+# (hijas antes que padres). Su fuente de verdad son los CSV y los documentos, no la base.
+DERIVADAS = ['pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad',
+             'grafica_dato', 'grafica', 'tabla_diapositiva', 'normativa_mencion', 'normativa',
              'medicion', 'indicador_nodo', 'indicador', 'curso_outcome', 'curso', 'brecha']
 
 
@@ -286,7 +363,9 @@ def abrir_base(db, reconstruir=False):
         con = sqlite3.connect(db)
         v = version_esquema(con)
         con.close()
-        if reconstruir or v < VERSION_ESQUEMA:
+        if not reconstruir and 2 <= v < VERSION_ESQUEMA:
+            _migrar(db, v)
+        elif reconstruir or v < VERSION_ESQUEMA:
             respaldo = db.with_name(f'{db.stem}.respaldo-v{v}.sqlite')
             db.replace(respaldo)
             motivo = 'se pidió reconstruir' if reconstruir else f'su esquema es v{v} (actual v{VERSION_ESQUEMA})'
@@ -298,10 +377,27 @@ def abrir_base(db, reconstruir=False):
     con.execute('PRAGMA foreign_keys = ON')
     if nueva:
         con.executescript(ESQUEMA.read_text(encoding='utf-8'))
+        con.close()
+        _migrar(db, 2, avisar=False)
+        con = sqlite3.connect(db)
+        con.execute('PRAGMA foreign_keys = ON')
     return con
 
 
-def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, reconstruir=False):
+def _migrar(db, desde, avisar=True):
+    """Aplica en orden las migraciones posteriores a 'desde' (solo agregan tablas y vistas: no se pierde nada)."""
+    con = sqlite3.connect(db)
+    try:
+        for v in sorted(k for k in MIGRACIONES if k > desde):
+            con.executescript(MIGRACIONES[v].read_text(encoding='utf-8'))
+            con.execute("UPDATE meta SET valor=? WHERE clave='version_esquema'", (str(v),))
+            con.commit()
+            if avisar: print(f'Base migrada al esquema v{v}')
+    finally:
+        con.close()
+
+
+def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, reconstruir=False, pads_json=None):
     """Carga incremental: actualiza la base sin perder las decisiones del comité (ver schema.sql)."""
     diapositivas = Path(diapositivas)
     if not diapositivas.exists():
@@ -316,14 +412,18 @@ def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, recons
         cur = con.cursor()
         sincronizar_marcos(cur, semillas, avisos)
         nodos = Nodos(cur)
-        ev_ids, cambios = sincronizar_evidencias(cur, nodos, slides, _leer_ocr(ocr_json))
+        pads = json.loads(Path(pads_json).read_text(encoding='utf-8')) if pads_json and Path(pads_json).exists() else []
+        ev_pads = evidencias_pad(pads)
+        ev_ids, cambios = sincronizar_evidencias(cur, nodos, slides, _leer_ocr(ocr_json), adicionales=ev_pads)
         for t in DERIVADAS:
             cur.execute(f'DELETE FROM {t}')
-        cargar_normativa(cur, slides, ev_ids, semillas)
+        textos = {f'{s["fuente"]}-P{s["pagina"]:03d}': s['texto'] for s in slides} | {e['codigo']: e['texto'] for e in ev_pads}
+        cargar_normativa(cur, textos, ev_ids, semillas)
         faltantes = cargar_indicadores(cur, nodos, ev_ids, semillas)
         if faltantes:
             avisos.append(f'mediciones.csv cita evidencias que no existen (quedan sin vínculo): {", ".join(sorted(faltantes))}')
         cargar_cursos_y_brechas(cur, nodos, semillas)
+        avisos += cargar_pads(cur, pads, ev_ids, semillas)
         if pptx_json and Path(pptx_json).exists():
             huerfanas = cargar_pptx(cur, json.loads(Path(pptx_json).read_text(encoding='utf-8')), ev_ids)
             if huerfanas:

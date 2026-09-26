@@ -73,7 +73,7 @@ def test_sesion_de_inicio(con):
 
 def test_data_json_completo(salida):
     d = json.loads((salida / 'data.json').read_text(encoding='utf-8'))
-    assert len(d['abet']) == 24 and len(d['cna']) == 60 and len(d['evidencias']) == 292
+    assert len(d['abet']) == 24 and len(d['cna']) == 60 and len(d['evidencias']) == 342   # 292 diapositivas + 50 PAD
 
 
 def test_reproyectar_es_idempotente(salida, con):
@@ -111,11 +111,16 @@ def test_inconsistencias_graduacion(con):
 @pytest.mark.skipif(not LEGADO.exists(), reason='no está la base del prototipo en legado/')
 def test_igual_al_prototipo(salida):
     difs = comparar(LEGADO, salida / 'indice_acreditacion.sqlite')
-    es_sesion = lambda fila: any(isinstance(v, str) and v[:1] == 'S' and v[1:3].isdigit() and '-P' in v for v in fila)
+    # Evidencias que no existían en el prototipo: sesión de inicio (S..-P...) y PAD (PAD-...)
+    es_sesion = lambda fila: any(isinstance(v, str) and ((v[:1] == 'S' and v[1:3].isdigit() and '-P' in v) or v.startswith('PAD-')) for v in fila)
     # Diferencias esperadas: poppler 26.09 corta distinto las líneas de 3 diapositivas; la graduación acumulada
     # del factor 4 se corrigió con la gráfica del PPTX; y se agregaron las presentaciones de la sesión de inicio
     # (evidencias S.., con su normativa). El resto debe ser idéntico.
-    assert set(difs) <= {'evidencia', 'evidencia.texto', 'medicion', 'indicador', 'v_inconsistencias', 'normativa', 'normativa_mencion'}
+    assert set(difs) <= {'evidencia', 'evidencia.texto', 'medicion', 'indicador', 'v_inconsistencias', 'normativa', 'normativa_mencion', 'curso'}
+    # Cursos: solo cambia el semestre (periodo), que ahora sale de los PAD
+    solo_a, solo_b = difs.get('curso', ([], []))
+    assert sorted(r[:3] + r[4:] for r in solo_a) == sorted(r[:3] + r[4:] for r in solo_b)
+    assert all(r[3] is None for r in solo_a) and all(r[3] is not None for r in solo_b)
     assert {r[0] for r in difs.get('evidencia.texto', ([], []))[1] if not es_sesion(r)} <= {'F05-P016', 'F07-P020', 'F11-P006'}
     assert {r[0] for r in difs.get('evidencia', ([], []))[1] if not es_sesion(r)} <= {'F07-P020'}
     # Mediciones: corrección de F04-P006, vínculos de evidencia que el prototipo no resolvía o resolvía mal

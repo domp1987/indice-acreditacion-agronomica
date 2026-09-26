@@ -15,7 +15,11 @@ class Rutas:
     pdf: Path
     salida: Path
     semillas: Path
+    pads: Path | None = None
     poppler: Path | None = None
+
+    @property
+    def pads_json(self): return self.salida / 'pads.json'
 
     @property
     def pptx_json(self): return self.salida / 'pptx.json'
@@ -65,4 +69,5 @@ def cargar_rutas(pdf=None, salida=None, config=None):
     return Rutas(pdf=ruta(pdf, 'pdf', 'datos/pdf'),
                  salida=ruta(salida, 'salida', 'salida'),
                  semillas=ruta(None, 'semillas', 'datos/semillas'),
+                 pads=ruta(None, 'pads', 'PADs'),
                  poppler=Path(poppler) if poppler else ruta(None, 'poppler', None))

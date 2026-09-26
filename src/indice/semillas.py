@@ -17,6 +17,7 @@ ARCHIVOS = {
     'brechas': ['marco', 'nodo', 'titulo', 'descripcion', 'severidad', 'accion', 'responsable', 'estado'],
     'normativa_manual': ['tipo', 'numero', 'anio', 'organo', 'texto_a_buscar'],
     'normativa_excluir': ['tipo', 'numero', 'anio'],
+    'pad_curso': ['pad', 'curso', 'nota'],
 }
 # Columnas numéricas por archivo (el resto es texto; 'periodo' es número en cursos y texto en mediciones)
 ENTEROS = {'marcos': {'id'}, 'nodos': {'orden'}, 'cursos': {'creditos', 'periodo'},
@@ -81,6 +82,9 @@ def validar(d):
     for m in d['mediciones']:
         if m['indicador'] not in indicadores: errores.append(f'mediciones.csv: indicador desconocido {m["indicador"]}')
         if m['valor'] is None: errores.append(f'mediciones.csv: falta el valor de {m["indicador"]} {m["periodo"]}')
+    cursos = {c['nombre'] for c in d['cursos']}
+    for x in d['pad_curso']:
+        if x['curso'] and x['curso'] not in cursos: errores.append(f'pad_curso.csv: curso desconocido "{x["curso"]}" para {x["pad"]}')
     for b in d['brechas']:
         if (b['marco'], b['nodo']) not in nodos: errores.append(f'brechas.csv: nodo desconocido {b["marco"]}/{b["nodo"]}')
     if errores:
