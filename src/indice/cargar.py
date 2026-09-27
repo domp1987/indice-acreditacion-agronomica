@@ -290,6 +290,10 @@ def cargar_cursos_y_brechas(cur, nodos, semillas):
     ids = dict(cur.execute('SELECT nombre, id FROM curso'))
     cur.executemany('INSERT INTO curso_prerrequisito(curso_id, requisito_id, requisito) VALUES (?,?,?)',
                     [(ids[x['curso']], ids.get(x['requisito']), x['requisito']) for x in semillas['prerrequisitos']])
+    # Matriz cursos × Student Outcomes (propuestas de `indice outcomes` y decisiones del comité en la semilla)
+    cur.executemany('INSERT INTO curso_outcome(curso_id,nodo_id,nivel,estado,origen,puntaje,justificacion,validado_por) VALUES (?,?,?,?,?,?,?,?)',
+                    [(ids[x['curso']], nodos('ABET-EAC', x['outcome']), x['nivel'], x['estado'], x['origen'], x['puntaje'],
+                      x['justificacion'], x['validado_por']) for x in semillas['curso_outcomes']])
     for b in semillas['brechas']:
         cur.execute("INSERT INTO brecha(nodo_id,titulo,descripcion,severidad,accion,responsable,estado) VALUES (?,?,?,?,?,?,?)",
                     (nodos(b['marco'], b['nodo']), b['titulo'], b['descripcion'], b['severidad'], b['accion'], b['responsable'], b['estado'] or 'abierta'))
@@ -422,13 +426,14 @@ def _leer_ocr(ocr_json):
     return {(fuente, int(p)): lineas for fuente, c in cache.items() for p, lineas in c['paginas'].items()}
 
 
-VERSION_ESQUEMA = 9
+VERSION_ESQUEMA = 10
 # Migraciones que agregan tablas sin tocar los datos existentes: {versión destino: script}
 MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql', 4: PAQUETE / 'esquema_pad_v4.sql',
                5: PAQUETE / 'esquema_v5_decision.sql', 6: PAQUETE / 'esquema_v6_maestro.sql',
                7: PAQUETE / 'esquema_v7_procesos.sql',
                8: PAQUETE / 'esquema_v8_nivel.sql',
-               9: PAQUETE / 'esquema_v9_ruta.sql'}
+               9: PAQUETE / 'esquema_v9_ruta.sql',
+               10: PAQUETE / 'esquema_v10_outcomes.sql'}
 # Tablas que son copia directa de semillas, presentaciones o PAD: se vacían y se vuelven a llenar en cada carga
 # (hijas antes que padres). Su fuente de verdad son los CSV y los documentos, no la base.
 DERIVADAS = ['plan_2025_rea', 'plan_2025', 'transicion_2025', 'pad_fase', 'pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad',

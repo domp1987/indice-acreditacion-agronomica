@@ -39,7 +39,9 @@ def datos_tablero(c):
         i['m'] = q("SELECT periodo,sede,valor,desagregacion d,nota FROM medicion WHERE indicador_id=? ORDER BY id", i.pop('id'))
     return dict(
         abet=abet, cna=cna, evidencias=ev, indicadores=ind,
-        cursos=q("SELECT nombre,componente_cma,creditos,categoria_abet,confianza,nota FROM curso ORDER BY id"),
+        cursos=q("SELECT nombre,numero,periodo,componente_cma,creditos,categoria_abet,confianza,nota FROM curso ORDER BY periodo,numero"),
+        matriz=q("""SELECT c.nombre curso,n.codigo so,co.nivel,co.estado,co.origen,co.justificacion j FROM curso_outcome co
+                    JOIN curso c ON c.id=co.curso_id JOIN nodo n ON n.id=co.nodo_id ORDER BY c.periodo,c.numero,n.orden"""),
         inconsistencias=q("SELECT * FROM v_inconsistencias"),
         normativa=q("""SELECT n.tipo,n.numero,n.anio,n.organo,GROUP_CONCAT(e.codigo) evs FROM normativa n JOIN normativa_mencion m ON m.normativa_id=n.id
                        JOIN evidencia e ON e.id=m.evidencia_id GROUP BY n.id ORDER BY n.anio DESC,n.numero"""),

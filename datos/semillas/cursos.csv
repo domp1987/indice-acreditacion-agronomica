@@ -1,6 +1,6 @@
 nombre,numero,componente_cma,creditos,periodo,categoria_abet,confianza,nota
 Introducción a las ciencias agrarias,1,Ingeniería aplicada,2,1,otro,alta,
-Agroclimatología,2,Ciencias básicas de ingeniería,2,1,ingenieria,baja,Validar contenido: puede ser ciencia básica
+Agroclimatología,2,Ciencias básicas de ingeniería,2,1,otro,media,"Revisado con el PAD CAD602020106: climatología aplicada, medición y análisis de datos; sin ciencias de la ingeniería (antes: ingeniería, baja)"
 Geología y pedología,3,Ciencias básicas de ingeniería,2,1,ciencias_basicas,media,
 Química,4,Ciencias básicas,3,1,ciencias_basicas,alta,
 Ecología y recursos naturales,5,Ciencias básicas,3,1,ciencias_basicas,media,
@@ -8,7 +8,7 @@ Topografía,6,Ciencias básicas,2,1,ingenieria,media,Clasificado por el programa
 Física,7,Ciencias básicas,2,1,ciencias_basicas,alta,Intensidad baja para un programa de ingeniería
 "Hidráulica, riegos y drenajes",10,Ingeniería aplicada,3,2,ingenieria,alta,
 Matemática aplicada,11,Ciencias básicas,3,2,matematicas,alta,Único curso de matemáticas; no se evidencia cálculo diferencial e integral
-Suelos,12,Ciencias básicas de ingeniería,3,2,ingenieria,baja,Validar si incluye mecánica o física de suelos
+Suelos,12,Ciencias básicas de ingeniería,3,2,otro,media,"Revisado con el PAD CAD602020208: física, química y biología de suelos; no incluye mecánica de suelos (antes: ingeniería, baja)"
 Bioquímica,13,Ciencias básicas,3,2,ciencias_basicas,alta,
 Razonamiento lógico y cuantitativo,15,Institucional,2,2,educacion_general,alta,Nombre en la ruta v4; en el DM 2019 y las presentaciones CNA: Razonamiento argumentativo
 Comunicación y lectura crítica I,16,Institucional,2,2,educacion_general,alta,Nombre en la ruta v4; antes: Comunicación y pensamiento crítico I
@@ -38,18 +38,18 @@ Agroecología,42,Ingeniería aplicada,3,6,otro,media,Ciencia agronómica aplicad
 Lengua extranjera IV,43,Institucional,2,6,educacion_general,alta,Nombre en la ruta v4; antes: Segunda lengua IV
 "Ciencia, tecnología e innovación I",44,Institucional,2,6,educacion_general,alta,
 Emprendimiento e innovación I,45,Institucional,2,6,educacion_general,alta,
-Formulación y evaluación de proyectos,46,Formación complementaria,2,7,educacion_general,baja,Podría aportar a diseño (SO2) según contenido
-Profundización I,47,Ingeniería aplicada,5,7,por_definir,baja,Líneas SPAS / EDRT
+Formulación y evaluación de proyectos,46,Formación complementaria,2,7,educacion_general,media,"PAD CAD602020730: diseño y evaluación de proyectos de inversión (planeación, viabilidad); aporta a SO2 y SO4 más que a temas de ingeniería"
+Profundización I,47,Ingeniería aplicada,5,7,por_definir,baja,"Líneas SPAS / EDRT. PAD disponible (SPAS): modelos de producción y diagnóstico participativo; sin contenido de ingeniería"
 MIPE,48,Ingeniería aplicada,4,7,otro,media,Ciencia agronómica aplicada
-Electiva I,49,Ingeniería aplicada,2,7,por_definir,baja,
+Electiva I,49,Ingeniería aplicada,2,7,por_definir,baja,"Opciones con PAD: cultivo de tejidos, agricultura de precisión (SIG)"
 Cátedra Generación Siglo 21,50,Institucional,1,7,educacion_general,alta,1 crédito según la ruta v4 y el DM 2019 (antes figuraba con 2)
 "Ciencia, tecnología e innovación II",51,Institucional,2,7,educacion_general,alta,
 Emprendimiento e innovación II,52,Institucional,2,7,educacion_general,alta,
 Extensión rural,53,Formación complementaria,3,8,educacion_general,media,
-Profundización II,54,Ingeniería aplicada,5,8,por_definir,baja,Líneas SPAS / EDRT
+Profundización II,54,Ingeniería aplicada,5,8,por_definir,baja,"Líneas SPAS / EDRT. PAD disponible (EDRT): mercadeo, TIC y agronegocios; sin contenido de ingeniería"
 Producción de cultivos,55,Ingeniería aplicada,4,8,otro,media,Ciencia agronómica aplicada
-Electiva II,56,Ingeniería aplicada,2,8,por_definir,baja,
-Poscosecha,57,Ingeniería aplicada,2,8,ingenieria,baja,Validar componente de ingeniería de procesos
+Electiva II,56,Ingeniería aplicada,2,8,por_definir,baja,"Opciones con PAD: flores de exportación, producción de flores, viverismo y paisajismo"
+Poscosecha,57,Ingeniería aplicada,2,8,ingenieria,baja,"PAD CAD602020832: 1 de 3 REA diseña sistemas de manejo poscosecha (procesamiento, conservación); el resto es fisiología y bioquímica"
 "Ciencia, tecnología e innovación III",58,Institucional,2,8,educacion_general,alta,
-Profundización III,59,Ingeniería aplicada,10,9,por_definir,baja,Candidato natural a experiencia de diseño mayor (C5d)
+Profundización III,59,Ingeniería aplicada,10,9,por_definir,baja,"Candidato natural a experiencia de diseño mayor (C5d). PAD disponible (EDRT): diagnóstico y mejora de procesos en una organización; hoy no es diseño de ingeniería"
 Opción de grado,60,Ingeniería aplicada,1,9,otro,media,"Hoy admite monografía, pasantía, especialización u obra artística"

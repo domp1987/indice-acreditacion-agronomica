@@ -12,6 +12,7 @@ from indice.ocr import ocr
 from indice.pad import extraer_pads
 from indice.maestro import extraer_maestros
 from indice.anexos import extraer_anexos
+from indice.outcomes import actualizar_semilla
 from indice.config import PROYECTO
 from indice.semillas import leer
 from indice.pptx import extraer_pptx
@@ -49,6 +50,7 @@ def main(argv=None):
     sub.add_parser('anexos', parents=[comun], help='solo indexa los anexos (ANEXOS/, con OCR de los escaneados y caché)')
     sub.add_parser('cargar', parents=[comun, con_carga], help='actualiza la base SQLite (incremental) desde lo extraído y las semillas')
     sub.add_parser('reproyectar', parents=[comun], help='infiere etiquetas ABET desde CNA y REA vía correspondencias')
+    sub.add_parser('outcomes', parents=[comun], help='propone la matriz cursos × Student Outcomes (I/R/E) desde los PAD en curso_outcomes.csv, sin tocar las decisiones del comité')
     sub.add_parser('exportar', parents=[comun], help='genera data.json y los CSV')
     sub.add_parser('tablero', parents=[comun], help='genera el tablero HTML autocontenido')
     sub.add_parser('todo', parents=[comun, con_pdf, motor, con_ocr, con_carga], help='ejecuta el flujo completo')
@@ -77,6 +79,9 @@ def main(argv=None):
         elif paso == 'anexos': extraer_anexos(r.anexos, r.anexos_json, r.poppler)
         elif paso == 'cargar': cargar(r.db, r.diapositivas, r.semillas, r.pptx_json, r.ocr_json, args.reconstruir, r.pads_json, r.salida, r.anexos_json)
         elif paso == 'reproyectar': reproyectar(r.db)
+        elif paso == 'outcomes':
+            actualizar_semilla(r.db, r.semillas / 'curso_outcomes.csv')
+            print('Revisa datos/semillas/curso_outcomes.csv y ejecuta: indice cargar')
         elif paso == 'exportar': exportar(r.db, r.data_json, r.csv, r.csv_zip)
         elif paso == 'tablero': tablero(r.data_json, PLANTILLA, r.tablero)
         elif paso == 'validar': validar(r.db, args.puerto, args.abrir)

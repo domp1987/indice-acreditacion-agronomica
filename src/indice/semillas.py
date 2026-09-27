@@ -16,6 +16,7 @@ ARCHIVOS = {
     'mediciones': ['indicador', 'periodo', 'sede', 'valor', 'desagregacion', 'evidencia', 'nota'],
     'cursos': ['nombre', 'numero', 'componente_cma', 'creditos', 'periodo', 'categoria_abet', 'confianza', 'nota'],
     'prerrequisitos': ['curso', 'requisito'],
+    'curso_outcomes': ['curso', 'outcome', 'nivel', 'estado', 'origen', 'puntaje', 'justificacion', 'validado_por'],
     'brechas': ['marco', 'nodo', 'titulo', 'descripcion', 'severidad', 'accion', 'responsable', 'estado'],
     'normativa_manual': ['tipo', 'numero', 'anio', 'organo', 'texto_a_buscar'],
     'normativa_excluir': ['tipo', 'numero', 'anio'],
@@ -24,7 +25,7 @@ ARCHIVOS = {
     'documento_nodos': ['patron', 'nodo', 'rol', 'nota'],
 }
 # Columnas numéricas por archivo (el resto es texto; 'periodo' es número en cursos y texto en mediciones)
-ENTEROS = {'marcos': {'id'}, 'nodos': {'orden'}, 'cursos': {'numero', 'creditos', 'periodo'},
+ENTEROS = {'marcos': {'id'}, 'nodos': {'orden'}, 'cursos': {'numero', 'creditos', 'periodo'}, 'curso_outcomes': {'puntaje'},
            'normativa_manual': {'numero', 'anio'}, 'normativa_excluir': {'numero', 'anio'}}
 REALES = {'mediciones': {'valor'}}
 TEXTO_VACIO = {'desagregacion'}
@@ -94,6 +95,18 @@ def validar(d):
         if x['curso'] not in cursos: errores.append(f'prerrequisitos.csv: curso desconocido "{x["curso"]}"')
         if x['requisito'] not in cursos and not x['requisito'].startswith('Diagnóstico y nivelatorio'):
             errores.append(f'prerrequisitos.csv: requisito desconocido "{x["requisito"]}" de {x["curso"]}')
+    vistos = set()
+    for x in d['curso_outcomes']:
+        clave = (x['curso'], x['outcome'])
+        if x['curso'] not in cursos: errores.append(f'curso_outcomes.csv: curso desconocido "{x["curso"]}"')
+        if ('ABET-EAC', x['outcome']) not in nodos or not x['outcome'].startswith('SO'):
+            errores.append(f'curso_outcomes.csv: Student Outcome desconocido {x["outcome"]}')
+        if x['nivel'] not in ('I', 'R', 'E'): errores.append(f'curso_outcomes.csv: nivel "{x["nivel"]}" en {clave} (usa I, R o E)')
+        if x['estado'] not in ('propuesta', 'validada', 'descartada'): errores.append(f'curso_outcomes.csv: estado "{x["estado"]}" en {clave}')
+        if x['estado'] == 'validada' and not x['validado_por']:
+            errores.append(f'curso_outcomes.csv: {clave} está validada sin validado_por')
+        if clave in vistos: errores.append(f'curso_outcomes.csv: fila repetida {clave}')
+        vistos.add(clave)
     numeros = [c['numero'] for c in d['cursos'] if c['numero'] is not None]
     if len(numeros) != len(set(numeros)): errores.append('cursos.csv: número de la ruta repetido')
     for x in d['documentos']:

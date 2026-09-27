@@ -119,7 +119,13 @@ def test_igual_al_prototipo(salida):
     # del factor 4 se corrigió con la gráfica del PPTX; y se agregaron las presentaciones de la sesión de inicio
     # (evidencias S.., con su normativa). El resto debe ser idéntico.
     assert set(difs) <= {'evidencia', 'evidencia.texto', 'medicion', 'indicador', 'v_inconsistencias', 'normativa', 'normativa_mencion', 'curso',
-                         'marco', 'nodo', 'correspondencia', 'evidencia_nodo', 'v_cobertura_abet'}
+                         'marco', 'nodo', 'correspondencia', 'evidencia_nodo', 'v_cobertura_abet', 'curso_outcome',
+                         'brecha', 'v_creditos_abet'}
+    # Brechas: solo cambia la descripción de C5b (9 créditos de ingeniería tras revisar los PAD)
+    solo_a, solo_b = difs.get('brecha', ([], []))
+    assert len(solo_a) == len(solo_b) <= 1 and all('C5b' in r for r in solo_a + solo_b)
+    # Matriz cursos × SO: en el prototipo estaba vacía; ahora solo se agrega (curso_outcomes.csv)
+    assert not difs.get('curso_outcome', ([], []))[0]
     # Etiquetas: las de las diapositivas son las mismas; solo se agregan las de documentos maestros y anexos
     # (propuestas por sección en documento_nodos.csv, y sus inferidas), que también cambian la cobertura ABET
     solo_a, solo_b = difs.get('evidencia_nodo', ([], []))
@@ -135,7 +141,10 @@ def test_igual_al_prototipo(salida):
                  'Comunicación y pensamiento crítico II': 'Comunicación y lectura crítica II',
                  **{f'Segunda lengua {n}': f'Lengua extranjera {n}' for n in ('I', 'II', 'III', 'IV')}}
     creditos = {'Ciudadanía siglo 21': 2, 'Cátedra Generación Siglo 21': 1}
-    antes = sorted((renombres.get(r[0], r[0]), r[1], creditos.get(r[0], r[2]), r[4], r[5]) for r in solo_a)
+    # reclasificados con el contenido de su PAD (tarea 7): (categoría, confianza)
+    revisados = {'Agroclimatología': ('otro', 'media'), 'Suelos': ('otro', 'media'),
+                 'Formulación y evaluación de proyectos': ('educacion_general', 'media')}
+    antes = sorted((renombres.get(r[0], r[0]), r[1], creditos.get(r[0], r[2]), *revisados.get(r[0], (r[4], r[5]))) for r in solo_a)
     assert antes == sorted((r[0], r[1], r[2], r[4], r[5]) for r in solo_b)
     assert all(r[3] is not None for r in solo_b)
     assert {r[0] for r in difs.get('evidencia.texto', ([], []))[1] if not es_sesion(r)} <= {'F05-P016', 'F07-P020', 'F11-P006'}

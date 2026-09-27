@@ -97,6 +97,11 @@ table{border-collapse:collapse;width:100%;font-size:.88rem}
 th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-weight:650;color:var(--muted);font-size:.8rem}
 td.n{text-align:right;font-variant-numeric:tabular-nums}
+.matriz td.so,.matriz th.so{text-align:center;width:52px;padding:5px 4px}
+.matriz .lv{display:inline-block;min-width:24px;border-radius:6px;font-weight:700;font-size:.8rem;padding:1px 0;border:1.5px dashed var(--ochre);color:var(--ink)}
+.matriz .lv.validada{border-style:solid;border-color:var(--moss);background:var(--moss);color:var(--surface)}
+.matriz .lv.E{border-color:var(--mulberry)} .matriz tr.per td{background:var(--tray);font-weight:650;font-size:.8rem;color:var(--muted)}
+.matriz tfoot td{font-weight:650}
 .cat{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
 /* Explorador */
 .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
@@ -169,6 +174,11 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
       <h2>Créditos por categoría</h2>
       <div id="catbars"></div>
     </div>
+  </div>
+  <div class="panel" style="margin-top:18px">
+    <h2 style="margin-bottom:6px">Matriz cursos × Student Outcomes</h2>
+    <p class="note">I introduce, R refuerza, E evalúa. Propuestas calculadas desde los PAD (o por el nombre en los cursos sin PAD) con <code>indice outcomes</code>; el comité las valida o descarta en <code>datos/semillas/curso_outcomes.csv</code>. Borde punteado = propuesta; relleno = validada. Pasa el cursor sobre una celda para ver la justificación.</p>
+    <div class="wide"><table id="matriz" class="matriz"></table></div>
   </div>
   <div class="panel" style="margin-top:18px">
     <h2 style="margin-bottom:10px">Cursos</h2>
@@ -289,6 +299,16 @@ $('#reqs').innerHTML =
       `${cred.ingenieria} créditos clasificados como ingeniería (barra oscura). Aunque todas las profundizaciones y electivas (${cred.por_definir}, barra clara) fueran ingeniería, no se alcanza el mínimo.`, cred.ingenieria);
 $('#catbars').innerHTML = Object.entries(CAT).map(([k,[n,col]])=>{
   const v=cred[k]||0; return `<div class="req"><div class="lbl"><span><i class="cat" style="background:${col}"></i>${n}</span><b>${v}</b></div><div class="bar"><div class="seg" style="left:0;width:${v/150*100}%;background:${col}"></div></div></div>`}).join('');
+const SOS = D.abet.filter(a=>/^SO\d/.test(a.codigo));
+const MZ = {}; D.matriz.filter(m=>m.estado!=='descartada').forEach(m=>{(MZ[m.curso]=MZ[m.curso]||{})[m.so]=m});
+let perAnt = null;
+$('#matriz').innerHTML = '<thead><tr><th>Curso</th><th class="n">Créd.</th>'+SOS.map(s=>`<th class="so" title="${esc(s.nombre)}">${s.codigo}</th>`).join('')+'</tr></thead><tbody>' +
+  D.cursos.map(c=>{
+    const cab = c.periodo!==perAnt ? `<tr class="per"><td colspan="${SOS.length+2}">Período ${c.periodo}</td></tr>` : ''; perAnt = c.periodo;
+    return cab+`<tr><td>${esc(c.nombre)}</td><td class="n">${c.creditos}</td>`+SOS.map(s=>{const m=(MZ[c.nombre]||{})[s.codigo];
+      return `<td class="so">${m?`<span class="lv ${m.nivel} ${m.estado}" title="${esc(m.estado+' · '+(m.j||''))}">${m.nivel}</span>`:''}</td>`}).join('')+'</tr>'}).join('') +
+  '</tbody><tfoot><tr><td>Cursos que aportan (I / R / E)</td><td></td>'+SOS.map(s=>{const f=n=>D.matriz.filter(m=>m.so===s.codigo&&m.estado!=='descartada'&&m.nivel===n).length;
+    return `<td class="so" title="I ${f('I')} · R ${f('R')} · E ${f('E')}">${f('I')}/${f('R')}/${f('E')}</td>`}).join('')+'</tr></tfoot>';
 $('#cursos').innerHTML = '<thead><tr><th>Curso</th><th>Componente CMA</th><th class="n">Créd.</th><th>Categoría ABET</th><th>Confianza</th><th>Nota</th></tr></thead><tbody>' +
   D.cursos.map(c=>`<tr><td>${esc(c.nombre)}</td><td>${esc(c.componente_cma)}</td><td class="n">${c.creditos}</td><td><i class="cat" style="background:${CAT[c.categoria_abet][1]}"></i>${CAT[c.categoria_abet][0]}</td><td>${c.confianza}</td><td>${esc(c.nota||'')}</td></tr>`).join('')+'</tbody>';
 
