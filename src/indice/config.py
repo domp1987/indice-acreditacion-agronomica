@@ -16,14 +16,14 @@ class Rutas:
     salida: Path
     semillas: Path
     pads: Path | None = None
-    maestro: Path | None = None
+    anexos: Path | None = None
     poppler: Path | None = None
 
     @property
     def pads_json(self): return self.salida / 'pads.json'
 
     @property
-    def maestro_json(self): return self.salida / 'maestro.json'
+    def anexos_json(self): return self.salida / 'anexos.json'
 
     @property
     def pptx_json(self): return self.salida / 'pptx.json'
@@ -74,11 +74,6 @@ def cargar_rutas(pdf=None, salida=None, config=None):
                  salida=ruta(salida, 'salida', 'salida'),
                  semillas=ruta(None, 'semillas', 'datos/semillas'),
                  pads=ruta(None, 'pads', 'PADs'),
-                 maestro=ruta(None, 'maestro', None) or _buscar_maestro(base),
+                 anexos=ruta(None, 'anexos', 'ANEXOS'),
                  poppler=Path(poppler) if poppler else ruta(None, 'poppler', None))
 
-
-def _buscar_maestro(carpeta):
-    """El documento maestro en la raíz del proyecto (un PDF cuyo nombre contiene 'DOCUMENTO MAESTRO')."""
-    candidatos = sorted(f for f in Path(carpeta).glob('*.pdf') if 'DOCUMENTO MAESTRO' in f.name.upper())
-    return candidatos[-1] if candidatos else None

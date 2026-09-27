@@ -51,6 +51,14 @@ def _firma(pdf):
     return f'{st.st_size}-{int(st.st_mtime)}'
 
 
+def ocr_pdf(pdf, motor, pdftoppm):
+    """OCR de todas las páginas de un PDF: {'1': [líneas], '2': […], …}."""
+    with tempfile.TemporaryDirectory(prefix='indice_ocr_') as tmp:
+        subprocess.run([pdftoppm, '-png', '-r', str(RESOLUCION), str(pdf), str(Path(tmp) / 'p')], check=True, capture_output=True)
+        lineas = _ocr_windows(tmp) if motor == 'windows' else _ocr_tesseract(tmp)
+    return {str(int(re.search(r'-(\d+)\.png$', k).group(1))): v for k, v in lineas.items()}
+
+
 def ocr(fuentes, destino, poppler=None, rehacer=False):
     """Actualiza la caché de OCR {fuente: {firma, motor, paginas: {n: [líneas]}}} para cada fuente con PDF."""
     motor = elegir_motor()
@@ -64,10 +72,7 @@ def ocr(fuentes, destino, poppler=None, rehacer=False):
     for f in fuentes:
         if not f.pdf: continue
         if cache.get(f.codigo, {}).get('firma') == _firma(f.pdf): continue
-        with tempfile.TemporaryDirectory(prefix='indice_ocr_') as tmp:
-            subprocess.run([pdftoppm, '-png', '-r', str(RESOLUCION), str(f.pdf), str(Path(tmp) / 'p')], check=True, capture_output=True)
-            lineas = _ocr_windows(tmp) if motor == 'windows' else _ocr_tesseract(tmp)
-        paginas = {str(int(re.search(r'-(\d+)\.png$', k).group(1))): v for k, v in lineas.items()}
+        paginas = ocr_pdf(f.pdf, motor, pdftoppm)
         cache[f.codigo] = dict(firma=_firma(f.pdf), motor=motor, paginas=paginas)
         hechas += 1
         print(f'OCR ({motor}) {f.codigo}: {len(paginas)} páginas')

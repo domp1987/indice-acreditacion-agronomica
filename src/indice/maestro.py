@@ -1,8 +1,11 @@
-"""Documento maestro del programa (renovación de registro calificado, Decreto 1330 de 2019) como contexto e índice.
+"""Documentos maestros del programa como contexto e índice (uno por proceso, declarados en datos/semillas/documentos.csv).
 
-El PDF sale de Word con estructura etiquetada: se lee el árbol lógico con 'pdfinfo -struct-text' (títulos H1–H3,
-párrafos, listas y tablas celda por celda) y se arma una evidencia por sección ('DM-4.6', 'DM-8.1'…) con su página
-de inicio y sus tablas. La lectura tarda un par de minutos: el resultado se guarda en caché (salida/maestro.json)
+- DM25: documento maestro RRC 2025 (renovación de registro calificado, Decreto 1330 de 2019) → proceso de resignificación.
+- DM19: documento maestro de la resignificación MEN 2019 → sigue siendo la base del proceso de acreditación de alta calidad.
+
+Los PDF salen de Word con estructura etiquetada: se lee el árbol lógico con 'pdfinfo -struct-text' (títulos H1–H3,
+párrafos, listas y tablas celda por celda) y se arma una evidencia por sección ('DM25-4.6', 'DM19-3.2'…) con su página
+de inicio y sus tablas. La lectura tarda un par de minutos: cada documento se guarda en caché (salida/maestro_<prefijo>.json)
 y solo se repite si cambia el PDF.
 
 Nota: la portada del documento de 2025 es, por error tipográfico, la de otro programa (Ingeniería en Robótica y
@@ -93,8 +96,8 @@ def _paginas(pdf, pdftotext):
     return [_normalizar(p) for p in texto.split('\f')]
 
 
-def _secciones(bloques, paginas):
-    """Una sección por título (H1–H3 no vacío). Código a partir de la numeración del título ('4.6' → 'DM-4.6')."""
+def _secciones(bloques, paginas, prefijo='DM'):
+    """Una sección por título (H1–H3 no vacío). Código a partir de la numeración del título ('4.6' → 'DM25-4.6')."""
     secciones, actual, usados = [], None, set()
     buscar_desde = 0
     for tipo, valor in bloques:
@@ -102,7 +105,7 @@ def _secciones(bloques, paginas):
             titulo = re.sub(r'\s+', ' ', valor).strip()
             m = re.match(r'^(\d+(?:\.\d+)*)\.?\s+(.*)', titulo)
             numero = m.group(1) if m else None
-            base = f'DM-{numero}' if numero else 'DM-' + '-'.join(_normalizar(titulo).upper().split()[:4])
+            base = f'{prefijo}-{numero}' if numero else f'{prefijo}-' + '-'.join(_normalizar(titulo).upper().split()[:4])
             codigo, k = base, 2
             while codigo in usados:
                 codigo, k = f'{base}-{k}', k + 1
@@ -115,8 +118,8 @@ def _secciones(bloques, paginas):
             secciones.append(actual)
             continue
         if actual is None:
-            actual = dict(codigo='DM-PORTADA', numero=None, titulo='Portada y créditos', nivel=1, pagina=1, parrafos=[], tablas=[])
-            secciones.append(actual); usados.add('DM-PORTADA')
+            actual = dict(codigo=f'{prefijo}-PORTADA', numero=None, titulo='Portada y créditos', nivel=1, pagina=1, parrafos=[], tablas=[])
+            secciones.append(actual); usados.add(actual['codigo'])
         if tipo == 'Table':
             leyenda = actual['parrafos'].pop() if actual['parrafos'] and actual['parrafos'][-1].startswith('Tabla ') else None
             actual['tablas'].append(dict(leyenda=leyenda, filas=valor))
@@ -132,8 +135,8 @@ def _firma(pdf):
     return f'{st.st_size}-{int(st.st_mtime)}'
 
 
-def extraer_maestro(pdf, destino, poppler=None):
-    """Lee el documento maestro (con caché) y escribe maestro.json: {archivo, firma, secciones}."""
+def extraer_maestro(pdf, destino, poppler=None, prefijo='DM', proceso=None, titulo=None):
+    """Lee un documento maestro (con caché) y escribe su JSON: {archivo, firma, prefijo, proceso, titulo_doc, secciones}."""
     destino = Path(destino)
     if not pdf:
         print('Aviso: no se encontró el documento maestro; se omite.')
@@ -141,8 +144,9 @@ def extraer_maestro(pdf, destino, poppler=None):
     pdf = Path(pdf)
     if destino.exists():
         previo = json.loads(destino.read_text(encoding='utf-8'))
-        if previo.get('firma') == _firma(pdf) and previo.get('archivo') == pdf.name:
-            print(f'Documento maestro: desde caché ({len(previo["secciones"])} secciones) → {destino}')
+        if previo.get('firma') == _firma(pdf) and previo.get('archivo') == pdf.name and previo.get('prefijo') == prefijo:
+            previo.update(proceso=proceso, titulo_doc=titulo or previo.get('titulo_doc'))
+            print(f'{prefijo}: desde caché ({len(previo["secciones"])} secciones) → {destino.name}')
             return previo
     pdfinfo, pdftotext = binario('pdfinfo', poppler), binario('pdftotext', poppler)
     if not pdfinfo or not pdftotext:
@@ -150,10 +154,10 @@ def extraer_maestro(pdf, destino, poppler=None):
     print(f'Leyendo la estructura del documento maestro ({pdf.name}); tarda unos minutos la primera vez…')
     struct = subprocess.run([pdfinfo, '-enc', 'UTF-8', '-struct-text', str(pdf)], capture_output=True,
                             text=True, encoding='utf-8', errors='replace', check=True).stdout
-    secciones = _secciones(_bloques(_nodos(struct)), _paginas(pdf, pdftotext))
-    datos = dict(archivo=pdf.name, firma=_firma(pdf), secciones=secciones)
+    secciones = _secciones(_bloques(_nodos(struct)), _paginas(pdf, pdftotext), prefijo)
+    datos = dict(archivo=pdf.name, firma=_firma(pdf), prefijo=prefijo, proceso=proceso, titulo_doc=titulo or pdf.stem, secciones=secciones)
     destino.write_text(json.dumps(datos, ensure_ascii=False), encoding='utf-8')
-    print(f'Documento maestro: {len(secciones)} secciones, {sum(len(s["tablas"]) for s in secciones)} tablas → {destino}')
+    print(f'{prefijo}: {len(secciones)} secciones, {sum(len(s["tablas"]) for s in secciones)} tablas → {destino.name}')
     return datos
 
 
@@ -241,7 +245,25 @@ def evidencias_maestro(datos):
         for t in s['tablas']:   # las tablas también cuentan para la búsqueda
             texto += '\n' + (t['leyenda'] or 'Tabla') + '\n' + '\n'.join(' | '.join(f) for f in t['filas'])
         if not texto.strip() and not s['tablas']: continue
-        out.append(dict(codigo=s['codigo'], titulo=f'Documento maestro 2025 · {s["titulo"]}'[:110], tipo='documento_maestro',
-                        texto=texto.strip(), texto_ocr=None, fuente='Documento maestro RRC 2025', archivo=datos['archivo'],
-                        pagina=s['pagina'], sede='Programa', _tablas=s['tablas']))
+        out.append(dict(codigo=s['codigo'], titulo=f'{datos["titulo_doc"]} · {s["titulo"]}'[:110], tipo='documento_maestro',
+                        texto=texto.strip(), texto_ocr=None, fuente=datos['titulo_doc'], archivo=datos['archivo'],
+                        pagina=s['pagina'], sede='Programa', proceso=datos.get('proceso'), _tablas=s['tablas']))
     return out
+
+
+def extraer_maestros(raiz, documentos, salida, poppler=None):
+    """Lee los documentos maestros declarados en documentos.csv (patrón del nombre de archivo, prefijo, proceso).
+    Cada uno se guarda en salida/maestro_<prefijo>.json. Devuelve la lista de documentos leídos."""
+    leidos = []
+    for d in documentos:
+        pdf = next((f for f in sorted(Path(raiz).glob('*.pdf')) if d['patron'].lower() in f.name.lower()), None)
+        if not pdf:
+            print(f'Aviso: no se encontró el documento {d["prefijo"]} (patrón "{d["patron"]}"); se omite.')
+            continue
+        leidos.append(extraer_maestro(pdf, Path(salida) / f'maestro_{d["prefijo"]}.json', poppler, d['prefijo'], d['proceso'], d['titulo']))
+    return leidos
+
+
+def leer_maestros(salida):
+    """Los documentos maestros ya extraídos (salida/maestro_*.json)."""
+    return [json.loads(f.read_text(encoding='utf-8')) for f in sorted(Path(salida).glob('maestro_*.json'))]

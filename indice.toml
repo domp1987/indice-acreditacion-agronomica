@@ -8,8 +8,8 @@ salida = "salida"
 semillas = "datos/semillas"
 # Planes de Aprendizaje Digital (PAD) de cada CADI, en PDF (con subcarpetas)
 pads = "PADs"
-# Documento maestro del programa (por defecto, el PDF de la raíz cuyo nombre contiene "DOCUMENTO MAESTRO")
-# maestro = "DOCUMENTO MAESTRO RRC ING AGRONOMICA 2025.pdf"
+# Anexos del documento maestro RRC 2025. Los documentos maestros se declaran en datos/semillas/documentos.csv
+anexos = "ANEXOS"
 
 # Carpeta con pdftotext y pdfinfo, solo si no están en el PATH.
 # También se puede indicar con la variable de entorno INDICE_POPPLER.

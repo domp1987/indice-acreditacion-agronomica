@@ -35,8 +35,8 @@ def salida(tmp_path_factory):
         shutil.copytree(rutas.pdf_convertidos, carpeta / 'pdf_convertidos', copy_function=shutil.copy2)
     if rutas.ocr_json.exists():
         shutil.copy2(rutas.ocr_json, carpeta / 'ocr.json')
-    if rutas.maestro_json.exists():
-        shutil.copy2(rutas.maestro_json, carpeta / 'maestro.json')   # leer su estructura tarda minutos
+    for f in [*rutas.salida.glob('maestro_*.json'), rutas.anexos_json]:
+        if f.exists(): shutil.copy2(f, carpeta / f.name)   # leer su estructura y el OCR de los anexos tarda minutos
     assert main(['todo', '--salida', str(carpeta), '--motor', 'pdftotext']) == 0
     return carpeta
 
@@ -75,7 +75,7 @@ def test_sesion_de_inicio(con):
 
 def test_data_json_completo(salida):
     d = json.loads((salida / 'data.json').read_text(encoding='utf-8'))
-    assert len(d['abet']) == 24 and len(d['cna']) == 60 and len(d['evidencias']) == 471   # 292 diapositivas + 53 PAD + 126 secciones del documento maestro
+    assert len(d['abet']) == 24 and len(d['cna']) == 60 and len(d['evidencias']) == 713   # 292 diapositivas + 53 PAD + 126 secciones DM25 + 107 DM19 + 135 anexos
 
 
 def test_reproyectar_es_idempotente(salida, con):
@@ -113,8 +113,8 @@ def test_inconsistencias_graduacion(con):
 @pytest.mark.skipif(not LEGADO.exists(), reason='no está la base del prototipo en legado/')
 def test_igual_al_prototipo(salida):
     difs = comparar(LEGADO, salida / 'indice_acreditacion.sqlite')
-    # Evidencias que no existían en el prototipo: sesión de inicio (S..-P...) y PAD (PAD-...)
-    es_sesion = lambda fila: any(isinstance(v, str) and ((v[:1] == 'S' and v[1:3].isdigit() and '-P' in v) or v.startswith(('PAD-', 'DM-'))) for v in fila)
+    # Evidencias que no existían en el prototipo: sesión de inicio (S..-P...) , PAD (PAD-...), documentos maestros (DM25-, DM19-) y anexos (AX-)
+    es_sesion = lambda fila: any(isinstance(v, str) and ((v[:1] == 'S' and v[1:3].isdigit() and '-P' in v) or v.startswith(('PAD-', 'DM25-', 'DM19-', 'AX-'))) for v in fila)
     # Diferencias esperadas: poppler 26.09 corta distinto las líneas de 3 diapositivas; la graduación acumulada
     # del factor 4 se corrigió con la gráfica del PPTX; y se agregaron las presentaciones de la sesión de inicio
     # (evidencias S.., con su normativa). El resto debe ser idéntico.

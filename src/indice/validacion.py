@@ -176,25 +176,30 @@ de ella (salvo las ya decididas). La columna "Evidencias" cuenta las diapositiva
         texto = self.p.get('q', '')
         tipo = self.p.get('tipo', '')
         sin = self.p.get('sin', '')
+        proceso = self.p.get('proceso', '')
         pag = int(self.p.get('pagina') or 1)
         like = f'%{texto}%'
         donde = """FROM evidencia ev WHERE ev.estado_revision<>'obsoleta' AND (?='' OR ev.tipo=?)
+            AND (?='' OR ev.proceso=? OR ev.proceso='ambos')
             AND (?='' OR ev.codigo LIKE ? OR ev.titulo LIKE ? OR ev.texto LIKE ? OR ev.texto_ocr LIKE ?)
             AND (?='' OR NOT EXISTS (SELECT 1 FROM evidencia_nodo en JOIN nodo x ON x.id=en.nodo_id JOIN marco m ON m.id=x.marco_id
                  AND m.codigo='ABET-EAC' WHERE en.evidencia_id=ev.id AND en.estado<>'descartada'))"""
-        args = (tipo, tipo, texto, like, like, like, like, sin)
+        args = (tipo, tipo, proceso, proceso, texto, like, like, like, like, sin)
         total = self.q('SELECT COUNT(*) ' + donde, *args)[0][0]
-        filas = self.q(f"""SELECT ev.codigo, ev.titulo, ev.tipo, ev.sede,
+        filas = self.q(f"""SELECT ev.codigo, ev.titulo, ev.tipo, ev.proceso,
                 (SELECT group_concat(x.codigo || CASE en.estado WHEN 'descartada' THEN '✗' ELSE '' END, ', ') FROM evidencia_nodo en
                  JOIN nodo x ON x.id=en.nodo_id WHERE en.evidencia_id=ev.id)
             {donde} ORDER BY ev.codigo LIMIT ? OFFSET ?""", *args, POR_PAGINA, (pag - 1) * POR_PAGINA)
         tipos = ''.join(f'<option {"selected" if t == tipo else ""}>{e(t)}</option>' for (t,) in self.q('SELECT DISTINCT tipo FROM evidencia ORDER BY 1'))
+        procesos = ''.join(f'<option value="{v}" {"selected" if v == proceso else ""}>{n}</option>'
+                           for v, n in [('acreditacion', 'acreditación de alta calidad'), ('resignificacion', 'resignificación (RRC 2025)')])
         tr = ''.join(f"""<tr><td><a href="/evidencia{_qs({}, codigo=c)}">{e(c)}</a></td><td>{e(t)}</td><td>{e(tp)}</td><td>{e(sd or '')}</td>
 <td class="suave">{e(tags or '—')}</td></tr>""" for c, t, tp, sd, tags in filas)
         cuerpo = f"""<form class="filtros panel" method="get"><label>Buscar<input name="q" value="{e(texto)}" placeholder="texto, OCR, código"></label>
 <label>Tipo<select name="tipo"><option value="">todos</option>{tipos}</select></label>
+<label>Proceso<select name="proceso"><option value="">ambos</option>{procesos}</select></label>
 <label>Filtro<select name="sin"><option value="">todas</option><option value="1" {"selected" if sin else ""}>sin etiqueta ABET</option></select></label>
-<button>Filtrar</button></form><div class="panel"><table><tr><th>Código</th><th>Título</th><th>Tipo</th><th>Sede</th><th>Etiquetas</th></tr>
+<button>Filtrar</button></form><div class="panel"><table><tr><th>Código</th><th>Título</th><th>Tipo</th><th>Proceso</th><th>Etiquetas</th></tr>
 {tr or '<tr><td colspan="5" class="suave">Sin resultados.</td></tr>'}</table>{self.paginacion(total, '/evidencias')}</div>"""
         return self.marco(f'Evidencias ({total})', cuerpo)
 

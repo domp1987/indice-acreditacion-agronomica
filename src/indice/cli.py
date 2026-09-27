@@ -10,7 +10,10 @@ from indice.extraer import extraer
 from indice.fuentes import convertir_faltantes, listar_fuentes
 from indice.ocr import ocr
 from indice.pad import extraer_pads
-from indice.maestro import extraer_maestro
+from indice.maestro import extraer_maestros
+from indice.anexos import extraer_anexos
+from indice.config import PROYECTO
+from indice.semillas import leer
 from indice.pptx import extraer_pptx
 from indice.reproyectar import reproyectar
 from indice.tablero import tablero
@@ -42,7 +45,8 @@ def main(argv=None):
     sub.add_parser('extraer', parents=[comun, con_pdf, motor, con_ocr], help='texto de los PDF, gráficas y tablas de los PPTX, OCR de imágenes y PAD')
     sub.add_parser('ocr', parents=[comun, con_pdf, con_ocr], help='solo el OCR de las imágenes (con caché)')
     sub.add_parser('pads', parents=[comun], help='solo extrae los Planes de Aprendizaje Digital (PAD) a pads.json')
-    sub.add_parser('maestro', parents=[comun], help='solo lee el documento maestro del programa (con caché)')
+    sub.add_parser('maestro', parents=[comun], help='solo lee los documentos maestros declarados en documentos.csv (con caché)')
+    sub.add_parser('anexos', parents=[comun], help='solo indexa los anexos (ANEXOS/, con OCR de los escaneados y caché)')
     sub.add_parser('cargar', parents=[comun, con_carga], help='actualiza la base SQLite (incremental) desde lo extraído y las semillas')
     sub.add_parser('reproyectar', parents=[comun], help='infiere etiquetas ABET desde CNA y REA vía correspondencias')
     sub.add_parser('exportar', parents=[comun], help='genera data.json y los CSV')
@@ -65,11 +69,13 @@ def main(argv=None):
             extraer_pptx(fuentes, r.pptx_json, r.diapositivas)
             if not args.sin_ocr: ocr(fuentes, r.ocr_json, r.poppler, args.rehacer_ocr)
             extraer_pads(r.pads, r.pads_json, r.poppler)
-            extraer_maestro(r.maestro, r.maestro_json, r.poppler)
+            extraer_maestros(PROYECTO, leer(r.semillas, 'documentos'), r.salida, r.poppler)
+            extraer_anexos(r.anexos, r.anexos_json, r.poppler, not args.sin_ocr)
         elif paso == 'ocr': ocr(fuentes, r.ocr_json, r.poppler, args.rehacer_ocr)
         elif paso == 'pads': extraer_pads(r.pads, r.pads_json, r.poppler)
-        elif paso == 'maestro': extraer_maestro(r.maestro, r.maestro_json, r.poppler)
-        elif paso == 'cargar': cargar(r.db, r.diapositivas, r.semillas, r.pptx_json, r.ocr_json, args.reconstruir, r.pads_json, r.maestro_json)
+        elif paso == 'maestro': extraer_maestros(PROYECTO, leer(r.semillas, 'documentos'), r.salida, r.poppler)
+        elif paso == 'anexos': extraer_anexos(r.anexos, r.anexos_json, r.poppler)
+        elif paso == 'cargar': cargar(r.db, r.diapositivas, r.semillas, r.pptx_json, r.ocr_json, args.reconstruir, r.pads_json, r.salida, r.anexos_json)
         elif paso == 'reproyectar': reproyectar(r.db)
         elif paso == 'exportar': exportar(r.db, r.data_json, r.csv, r.csv_zip)
         elif paso == 'tablero': tablero(r.data_json, PLANTILLA, r.tablero)
