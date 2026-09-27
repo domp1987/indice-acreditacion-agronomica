@@ -1,0 +1,16 @@
+patron,motivo
+^AX-3[3467]$,"listados de profesores investigadores (planta CTeI, categorización, CVLAC, publicaciones)"
+^AX-44(-\d+)?$,actas del Consejo de Facultad con nombres de asistentes
+^AX-48(-\d+)?$,informes individuales de profesores en proyectos ISU
+^AX-54(-\d+)?$,plan de vinculación y contratación docente con nombres
+^AX-56$,horas de asignación por profesor
+^AX-64(-\d+)?$,plan de capacitación con nombres de profesores
+^AX-65$,evaluación docente
+^DM19-5\.2\.1\.1$,integrantes de los grupos de investigación
+^DM19-5\.2\.6$,núcleo de profesores investigadores
+^DM19-7\.[45]$,titulación y funciones de cada profesor
+^DM19-13\.4$,egresados distinguidos con nombre
+^DM25-6\.[67]$,producción y planta profesoral de investigación con nombres
+^DM25-8\.1\.[12]$,grupo de profesores y plan de vinculación con nombres
+^DM25-8\.3\.1$,asignación de labores por profesor
+^DM(19|25)-PORTADA$,créditos de la portada (equipo que elaboró el documento)

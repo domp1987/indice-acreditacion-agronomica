@@ -23,6 +23,7 @@ ARCHIVOS = {
     'pad_curso': ['pad', 'curso', 'nota'],
     'documentos': ['patron', 'prefijo', 'proceso', 'nivel', 'titulo'],
     'documento_nodos': ['patron', 'nodo', 'rol', 'nota'],
+    'privacidad': ['patron', 'motivo'],
 }
 # Columnas numéricas por archivo (el resto es texto; 'periodo' es número en cursos y texto en mediciones)
 ENTEROS = {'marcos': {'id'}, 'nodos': {'orden'}, 'cursos': {'numero', 'creditos', 'periodo'}, 'curso_outcomes': {'puntaje'},
@@ -114,6 +115,10 @@ def validar(d):
             errores.append(f"documentos.csv: proceso desconocido '{x['proceso']}' ({x['prefijo']})")
         if x['nivel'] not in NIVELES:
             errores.append(f"documentos.csv: nivel desconocido '{x['nivel']}' ({x['prefijo']})")
+    for x in d['privacidad']:
+        try: re.compile(x['patron'])
+        except re.error as err: errores.append(f"privacidad.csv: patrón inválido '{x['patron']}' ({err})")
+        if not x['motivo']: errores.append(f"privacidad.csv: falta el motivo de '{x['patron']}'")
     for x in d['documento_nodos']:
         try: re.compile(x['patron'])
         except re.error as err: errores.append(f"documento_nodos.csv: patrón inválido '{x['patron']}' ({err})")

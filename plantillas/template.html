@@ -225,6 +225,8 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
 
 <script>
 const D = __DATA__;
+if (D.version === 'compartir') document.querySelector('.lede').insertAdjacentHTML('beforeend',
+  ' <strong>Versión para compartir:</strong> sin correos ni nombres de profesores; los listados de personas están omitidos (la versión completa los conserva).');
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt = n => n.toLocaleString('es-CO');

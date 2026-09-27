@@ -24,6 +24,8 @@ class Rutas:
 
     @property
     def anexos_json(self): return self.salida / 'anexos.json'
+    @property
+    def compartir(self): return self.salida / 'compartir'
 
     @property
     def pptx_json(self): return self.salida / 'pptx.json'

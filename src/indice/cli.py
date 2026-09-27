@@ -18,6 +18,7 @@ from indice.semillas import leer
 from indice.pptx import extraer_pptx
 from indice.reproyectar import reproyectar
 from indice.tablero import tablero
+from indice.compartir import compartir
 from indice.validacion import validar
 
 
@@ -53,6 +54,7 @@ def main(argv=None):
     sub.add_parser('outcomes', parents=[comun], help='propone la matriz cursos × Student Outcomes (I/R/E) desde los PAD en curso_outcomes.csv, sin tocar las decisiones del comité')
     sub.add_parser('exportar', parents=[comun], help='genera data.json y los CSV')
     sub.add_parser('tablero', parents=[comun], help='genera el tablero HTML autocontenido')
+    sub.add_parser('compartir', parents=[comun], help='genera en salida/compartir/ el tablero y los CSV sin datos personales (la versión completa no cambia)')
     sub.add_parser('todo', parents=[comun, con_pdf, motor, con_ocr, con_carga], help='ejecuta el flujo completo')
     v = sub.add_parser('validar', parents=[comun], help='abre la interfaz web local para que el comité valide correspondencias y etiquetas')
     v.add_argument('--puerto', type=int, default=8765)
@@ -61,7 +63,7 @@ def main(argv=None):
 
     r = cargar_rutas(pdf=getattr(args, 'pdf', None), salida=args.salida, config=args.config)
     r.salida.mkdir(parents=True, exist_ok=True)
-    pasos = ['extraer', 'cargar', 'reproyectar', 'exportar', 'tablero'] if args.comando == 'todo' else [args.comando]
+    pasos = ['extraer', 'cargar', 'reproyectar', 'exportar', 'tablero', 'compartir'] if args.comando == 'todo' else [args.comando]
     fuentes = None
     for paso in pasos:
         if paso in ('extraer', 'ocr') and fuentes is None:
@@ -84,6 +86,7 @@ def main(argv=None):
             print('Revisa datos/semillas/curso_outcomes.csv y ejecuta: indice cargar')
         elif paso == 'exportar': exportar(r.db, r.data_json, r.csv, r.csv_zip)
         elif paso == 'tablero': tablero(r.data_json, PLANTILLA, r.tablero)
+        elif paso == 'compartir': compartir(r.db, r.compartir, PLANTILLA, r.semillas)
         elif paso == 'validar': validar(r.db, args.puerto, args.abrir)
     return 0
 
