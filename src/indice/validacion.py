@@ -251,6 +251,14 @@ de ella (salvo las ya decididas). La columna "Evidencias" cuenta las diapositiva
             FROM pad p LEFT JOIN curso c ON c.id=p.curso_id WHERE {coincide}
             ORDER BY c.id IS NULL, p.semestre, p.nombre""", *args)
         sin_pad = [] if texto else self.q("SELECT curso, creditos_plan FROM v_pad_curso WHERE estado='sin PAD' ORDER BY curso")
+        # Ruta de formación 2020-2027 (plan-estudios-agronomica-v4): período, número, créditos y prerrequisitos
+        ruta = [] if texto else self.q("""SELECT c.periodo, c.numero, c.nombre, c.creditos, c.categoria_abet,
+                (SELECT group_concat(r.requisito, '; ') FROM curso_prerrequisito r WHERE r.curso_id=c.id),
+                (SELECT MIN(p.codigo) FROM pad p WHERE p.curso_id=c.id)
+            FROM curso c ORDER BY c.periodo, c.numero""")
+        ruta_tr = ''.join(f"""<tr><td class="num">{per or ''}</td><td class="num">{num or ''}</td>
+<td>{f'<a href="/curso{_qs({}, pad=pad)}">{e(nom)}</a>' if pad else e(nom)}</td><td class="num">{cr}</td><td>{e(cat)}</td>
+<td class="suave">{e(req or '')}</td></tr>""" for per, num, nom, cr, cat, req, pad in ruta)
 
         def fila(cod, nom, curso, prog, sem, cr, cr_plan, nrea, nact, nbib):
             aviso = f' <span class="chip descartada" title="créditos del plan">plan {cr_plan}</span>' if cr_plan and cr != cr_plan else ''
@@ -265,7 +273,10 @@ de ella (salvo las ya decididas). La columna "Evidencias" cuenta las diapositiva
 {'<a href="/cursos">Quitar búsqueda</a>' if texto else ''}</form>
 <div class="panel"><h2>Cursos del plan con PAD ({sum(1 for f in filas if f[2])})</h2><table>{cab}{del_plan or '<tr><td colspan="7" class="suave">Sin coincidencias.</td></tr>'}</table></div>
 {f'<div class="panel"><h2>Otros programas (especializaciones) ({sum(1 for f in filas if not f[2])})</h2><table>{cab}{otros}</table></div>' if otros else ''}
-{f'<div class="panel"><h2>Cursos del plan sin PAD ({len(sin_pad)})</h2><p class="suave">' + ', '.join(f'{e(c)} ({cr} cr.)' for c, cr in sin_pad) + '</p></div>' if sin_pad else ''}"""
+{f'<div class="panel"><h2>Cursos del plan sin PAD ({len(sin_pad)})</h2><p class="suave">' + ', '.join(f'{e(c)} ({cr} cr.)' for c, cr in sin_pad) + '</p></div>' if sin_pad else ''}
+{f'''<div class="panel"><h2>Ruta de formación y aprendizaje 2020–2027 ({sum(r[3] for r in ruta)} créditos)</h2>
+<p class="suave">Fuente: plan-estudios-agronomica-v4. Los diagnósticos y nivelatorios (0 créditos) solo aparecen como prerrequisitos.</p>
+<table><tr><th>Per.</th><th>N.º</th><th>Curso</th><th>Créditos</th><th>Categoría ABET</th><th>Prerrequisitos</th></tr>{ruta_tr}</table></div>''' if ruta else ''}"""
         return self.marco('Cursos y PAD' + (f' · «{texto}»' if texto else ''), cuerpo)
 
     def curso(self):

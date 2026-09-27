@@ -63,7 +63,10 @@ def test_pad_en_la_base():
     assert n("SELECT COUNT(*) FROM evidencia WHERE tipo='pad'") == 53
     assert n("SELECT COUNT(*) FROM v_pad_curso WHERE estado='créditos distintos'") == 0
     assert n("SELECT COUNT(DISTINCT curso) FROM v_pad_curso WHERE estado='ok'") == 40
-    assert n('SELECT COUNT(*) FROM curso WHERE periodo IS NOT NULL') == 40
+    # el período lo da la ruta v4 para los 54 cursos, y el semestre de cada PAD del plan coincide con él
+    assert n('SELECT COUNT(*) FROM curso WHERE periodo IS NOT NULL') == 54
+    assert n('SELECT COUNT(*) FROM pad p JOIN curso c ON c.id=p.curso_id WHERE p.semestre <> c.periodo') == 0
+    assert n('SELECT COUNT(*) FROM curso_prerrequisito') == 34
     # Solo los cursos institucionales quedan sin PAD
     assert {c for (c,) in con.execute("SELECT curso FROM v_pad_curso WHERE estado='sin PAD'")} == {c for (c,) in con.execute("SELECT nombre FROM curso WHERE componente_cma='Institucional'")}
     con.close()

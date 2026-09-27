@@ -14,7 +14,8 @@ ARCHIVOS = {
     'indicadores': ['codigo', 'nombre', 'unidad', 'descripcion'],
     'indicador_nodos': ['indicador', 'marco', 'nodo', 'rol'],
     'mediciones': ['indicador', 'periodo', 'sede', 'valor', 'desagregacion', 'evidencia', 'nota'],
-    'cursos': ['nombre', 'componente_cma', 'creditos', 'periodo', 'categoria_abet', 'confianza', 'nota'],
+    'cursos': ['nombre', 'numero', 'componente_cma', 'creditos', 'periodo', 'categoria_abet', 'confianza', 'nota'],
+    'prerrequisitos': ['curso', 'requisito'],
     'brechas': ['marco', 'nodo', 'titulo', 'descripcion', 'severidad', 'accion', 'responsable', 'estado'],
     'normativa_manual': ['tipo', 'numero', 'anio', 'organo', 'texto_a_buscar'],
     'normativa_excluir': ['tipo', 'numero', 'anio'],
@@ -23,7 +24,7 @@ ARCHIVOS = {
     'documento_nodos': ['patron', 'nodo', 'rol', 'nota'],
 }
 # Columnas numéricas por archivo (el resto es texto; 'periodo' es número en cursos y texto en mediciones)
-ENTEROS = {'marcos': {'id'}, 'nodos': {'orden'}, 'cursos': {'creditos', 'periodo'},
+ENTEROS = {'marcos': {'id'}, 'nodos': {'orden'}, 'cursos': {'numero', 'creditos', 'periodo'},
            'normativa_manual': {'numero', 'anio'}, 'normativa_excluir': {'numero', 'anio'}}
 REALES = {'mediciones': {'valor'}}
 TEXTO_VACIO = {'desagregacion'}
@@ -89,6 +90,12 @@ def validar(d):
     cursos = {c['nombre'] for c in d['cursos']}
     for x in d['pad_curso']:
         if x['curso'] and x['curso'] not in cursos: errores.append(f'pad_curso.csv: curso desconocido "{x["curso"]}" para {x["pad"]}')
+    for x in d['prerrequisitos']:
+        if x['curso'] not in cursos: errores.append(f'prerrequisitos.csv: curso desconocido "{x["curso"]}"')
+        if x['requisito'] not in cursos and not x['requisito'].startswith('Diagnóstico y nivelatorio'):
+            errores.append(f'prerrequisitos.csv: requisito desconocido "{x["requisito"]}" de {x["curso"]}')
+    numeros = [c['numero'] for c in d['cursos'] if c['numero'] is not None]
+    if len(numeros) != len(set(numeros)): errores.append('cursos.csv: número de la ruta repetido')
     for x in d['documentos']:
         if x['proceso'] not in ('acreditacion', 'resignificacion', 'ambos'):
             errores.append(f"documentos.csv: proceso desconocido '{x['proceso']}' ({x['prefijo']})")

@@ -285,8 +285,11 @@ def cargar_indicadores(cur, nodos, ev_ids, semillas):
 
 
 def cargar_cursos_y_brechas(cur, nodos, semillas):
-    cur.executemany("INSERT INTO curso(nombre,componente_cma,creditos,periodo,categoria_abet,confianza,nota) "
-                    "VALUES (:nombre,:componente_cma,:creditos,:periodo,:categoria_abet,:confianza,:nota)", semillas['cursos'])
+    cur.executemany("INSERT INTO curso(nombre,numero,componente_cma,creditos,periodo,categoria_abet,confianza,nota) "
+                    "VALUES (:nombre,:numero,:componente_cma,:creditos,:periodo,:categoria_abet,:confianza,:nota)", semillas['cursos'])
+    ids = dict(cur.execute('SELECT nombre, id FROM curso'))
+    cur.executemany('INSERT INTO curso_prerrequisito(curso_id, requisito_id, requisito) VALUES (?,?,?)',
+                    [(ids[x['curso']], ids.get(x['requisito']), x['requisito']) for x in semillas['prerrequisitos']])
     for b in semillas['brechas']:
         cur.execute("INSERT INTO brecha(nodo_id,titulo,descripcion,severidad,accion,responsable,estado) VALUES (?,?,?,?,?,?,?)",
                     (nodos(b['marco'], b['nodo']), b['titulo'], b['descripcion'], b['severidad'], b['accion'], b['responsable'], b['estado'] or 'abierta'))
@@ -372,9 +375,12 @@ def cargar_pads(cur, pads, ev_ids, semillas):
                          for k, b in enumerate(p['bibliografia'], 1)])
         cur.executemany('INSERT INTO pad_recurso VALUES (?,?,?,?,?)',
                         [(pid, k, r['nombre'], r.get('tipo'), r.get('area')) for k, r in enumerate(p['recursos'], 1)])
-    # El semestre del plan sale del PAD (curso.periodo estaba vacío); si hay varias opciones, todas comparten semestre
+    # El período lo da la ruta v4 (cursos.csv); el del PAD solo llena los vacíos y, si no coincide, se avisa
     cur.execute("""UPDATE curso SET periodo = (SELECT MIN(p.semestre) FROM pad p WHERE p.curso_id = curso.id)
                    WHERE periodo IS NULL AND EXISTS (SELECT 1 FROM pad p WHERE p.curso_id = curso.id)""")
+    for c, per, sem, pad in cur.execute("""SELECT c.nombre, c.periodo, p.semestre, p.codigo FROM pad p JOIN curso c ON c.id = p.curso_id
+                                          WHERE p.semestre IS NOT NULL AND p.semestre <> c.periodo""").fetchall():
+        avisos.append(f'PAD {pad}: semestre {sem} y la ruta ubica {c} en el período {per}')
     for c, cp, pad, cpad in cur.execute("SELECT curso, creditos_plan, pad, creditos_pad FROM v_pad_curso WHERE estado='créditos distintos'"):
         avisos.append(f'créditos distintos: {c} tiene {cp} en el plan y {cpad} en su PAD {pad}')
     return avisos
@@ -416,17 +422,18 @@ def _leer_ocr(ocr_json):
     return {(fuente, int(p)): lineas for fuente, c in cache.items() for p, lineas in c['paginas'].items()}
 
 
-VERSION_ESQUEMA = 8
+VERSION_ESQUEMA = 9
 # Migraciones que agregan tablas sin tocar los datos existentes: {versión destino: script}
 MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql', 4: PAQUETE / 'esquema_pad_v4.sql',
                5: PAQUETE / 'esquema_v5_decision.sql', 6: PAQUETE / 'esquema_v6_maestro.sql',
                7: PAQUETE / 'esquema_v7_procesos.sql',
-               8: PAQUETE / 'esquema_v8_nivel.sql'}
+               8: PAQUETE / 'esquema_v8_nivel.sql',
+               9: PAQUETE / 'esquema_v9_ruta.sql'}
 # Tablas que son copia directa de semillas, presentaciones o PAD: se vacían y se vuelven a llenar en cada carga
 # (hijas antes que padres). Su fuente de verdad son los CSV y los documentos, no la base.
 DERIVADAS = ['plan_2025_rea', 'plan_2025', 'transicion_2025', 'pad_fase', 'pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad',
              'grafica_dato', 'grafica', 'tabla_diapositiva', 'normativa_mencion', 'normativa',
-             'medicion', 'indicador_nodo', 'indicador', 'curso_outcome', 'curso', 'brecha']
+             'medicion', 'indicador_nodo', 'indicador', 'curso_outcome', 'curso_prerrequisito', 'curso', 'brecha']
 
 
 def version_esquema(con):
