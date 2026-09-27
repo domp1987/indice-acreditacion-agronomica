@@ -35,6 +35,8 @@ def salida(tmp_path_factory):
         shutil.copytree(rutas.pdf_convertidos, carpeta / 'pdf_convertidos', copy_function=shutil.copy2)
     if rutas.ocr_json.exists():
         shutil.copy2(rutas.ocr_json, carpeta / 'ocr.json')
+    if rutas.maestro_json.exists():
+        shutil.copy2(rutas.maestro_json, carpeta / 'maestro.json')   # leer su estructura tarda minutos
     assert main(['todo', '--salida', str(carpeta), '--motor', 'pdftotext']) == 0
     return carpeta
 
@@ -58,7 +60,7 @@ def test_conteos(con):
     assert n("SELECT COUNT(*) FROM evidencia WHERE codigo LIKE 'F%'") == 240      # como el prototipo
     assert n("SELECT COUNT(*) FROM evidencia WHERE codigo LIKE 'S%'") == 52       # sesión de inicio (Rectoría y Facultad)
     assert n('SELECT COUNT(*) FROM evidencia_nodo') == 492
-    assert n('SELECT COUNT(*) FROM nodo') == 89
+    assert n('SELECT COUNT(*) FROM nodo') == 92   # 89 + los 3 REA de la ruta 2025
     assert n('SELECT COUNT(*) FROM medicion') == 299   # 224 del prototipo + 3 (corrección F04-P006) + 72 (ponderaciones y factores CNA)
     assert n('SELECT COUNT(*) FROM curso') == 54
     assert n('SELECT SUM(creditos) FROM curso') == 150
@@ -73,7 +75,7 @@ def test_sesion_de_inicio(con):
 
 def test_data_json_completo(salida):
     d = json.loads((salida / 'data.json').read_text(encoding='utf-8'))
-    assert len(d['abet']) == 24 and len(d['cna']) == 60 and len(d['evidencias']) == 345   # 292 diapositivas + 53 PAD
+    assert len(d['abet']) == 24 and len(d['cna']) == 60 and len(d['evidencias']) == 471   # 292 diapositivas + 53 PAD + 126 secciones del documento maestro
 
 
 def test_reproyectar_es_idempotente(salida, con):
@@ -112,11 +114,15 @@ def test_inconsistencias_graduacion(con):
 def test_igual_al_prototipo(salida):
     difs = comparar(LEGADO, salida / 'indice_acreditacion.sqlite')
     # Evidencias que no existían en el prototipo: sesión de inicio (S..-P...) y PAD (PAD-...)
-    es_sesion = lambda fila: any(isinstance(v, str) and ((v[:1] == 'S' and v[1:3].isdigit() and '-P' in v) or v.startswith('PAD-')) for v in fila)
+    es_sesion = lambda fila: any(isinstance(v, str) and ((v[:1] == 'S' and v[1:3].isdigit() and '-P' in v) or v.startswith(('PAD-', 'DM-'))) for v in fila)
     # Diferencias esperadas: poppler 26.09 corta distinto las líneas de 3 diapositivas; la graduación acumulada
     # del factor 4 se corrigió con la gráfica del PPTX; y se agregaron las presentaciones de la sesión de inicio
     # (evidencias S.., con su normativa). El resto debe ser idéntico.
-    assert set(difs) <= {'evidencia', 'evidencia.texto', 'medicion', 'indicador', 'v_inconsistencias', 'normativa', 'normativa_mencion', 'curso'}
+    assert set(difs) <= {'evidencia', 'evidencia.texto', 'medicion', 'indicador', 'v_inconsistencias', 'normativa', 'normativa_mencion', 'curso',
+                         'marco', 'nodo', 'correspondencia'}
+    # Marco REA-IA-2025 (documento maestro): solo se agrega
+    for t in ('marco', 'nodo', 'correspondencia'):
+        assert not difs.get(t, ([], []))[0], t
     # Cursos: solo cambia el semestre (periodo), que ahora sale de los PAD
     solo_a, solo_b = difs.get('curso', ([], []))
     assert sorted(r[:3] + r[4:] for r in solo_a) == sorted(r[:3] + r[4:] for r in solo_b)
@@ -132,7 +138,9 @@ def test_igual_al_prototipo(salida):
     assert all(r[0] != 'GRAD_ACUM' or r[5] == 'F04-P006' for r in solo_a + solo_b)
     assert set(difs.get('indicador', ([], []))[1]) <= {r for r in difs.get('indicador', ([], []))[1] if r[0].startswith('CNA_')}
     # Normativa: solo se agrega (nada del prototipo se pierde) y las menciones nuevas son de la sesión de inicio
-    assert not difs.get('normativa', ([], []))[0]
+    # (una norma del prototipo puede ganar el órgano emisor gracias al documento maestro)
+    solo_a, solo_b = difs.get('normativa', ([], []))
+    assert {r[:3] for r in solo_a} <= {r[:3] for r in solo_b} and all(r[3] is None for r in solo_a)
     solo_a, solo_b = difs.get('normativa_mencion', ([], []))
     assert not solo_a and all(es_sesion(r) for r in solo_b)
 

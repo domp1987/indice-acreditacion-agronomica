@@ -15,6 +15,7 @@ from pathlib import Path
 from indice.config import ESQUEMA, PAQUETE
 from indice.ocr import texto_nuevo
 from indice.pad import normalizar as normalizar_texto
+from indice.maestro import evidencias_maestro, plan_2025, rea_por_cadi, transicion_2025
 from indice.semillas import leer_todas
 
 
@@ -205,6 +206,8 @@ def cargar_normativa(cur, texto, ev_ids, semillas):
     for codigo, eid in ev_ids.items():
         t = re.sub(r'\s+', ' ', texto.get(codigo, ''))
         for m in _PATRON_NORMA.finditer(t):
+            # 'de acuerdo con lo establecido en el decreto 1330…' no es un Acuerdo
+            if re.match(r'\s+(con|a|al)\b', t[m.end(1):], re.I): continue
             tipo = 'Acuerdo' if m.group(1).lower().startswith('acu') else 'Resolución'
             num, anio = int(m.group(3)), int(m.group(4))
             if (tipo, num, anio) in excluir or anio < 1990 or anio > 2026: continue
@@ -335,19 +338,47 @@ def cargar_pads(cur, pads, ev_ids, semillas):
     return avisos
 
 
+# ---------- Documento maestro RRC 2025 ----------
+def cargar_maestro(cur, maestro, ev_maestro, ev_ids):
+    """Tablas de cada sección del documento maestro y el plan de estudios propuesto (ruta 2025). Devuelve avisos."""
+    if not maestro: return []
+    for e in ev_maestro:
+        eid = ev_ids.get(e['codigo'])
+        for orden, t in enumerate(e['_tablas'], 1):
+            cur.execute("INSERT INTO tabla_diapositiva(evidencia_id,orden,filas,columnas,celdas,leyenda) VALUES (?,?,?,?,?,?)",
+                        (eid, orden, len(t['filas']), max((len(f) for f in t['filas']), default=0),
+                         json.dumps(t['filas'], ensure_ascii=False), t['leyenda']))
+    for x in plan_2025(maestro):
+        cur.execute("""INSERT INTO plan_2025(orden,periodo,nombre,tipo,obligatorio,creditos,horas_acompanamiento,horas_independiente,
+                                             horas_total,max_estudiantes,creditos_distribucion,evidencia_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                    (x['orden'], x['periodo'], x['nombre'], x['tipo'], x['obligatorio'], x['creditos'], x['horas_acompanamiento'],
+                     x['horas_independiente'], x['horas_total'], x['max_estudiantes'], x['creditos_distribucion'], ev_ids.get(x['seccion'])))
+    for x in transicion_2025(maestro):
+        cur.execute("""INSERT INTO transicion_2025(orden,curso_vigente,semestre_vigente,creditos_vigente,curso_propuesto,semestre_propuesto,
+                                                   creditos_propuesto,tipo) VALUES (:orden,:curso_vigente,:semestre_vigente,:creditos_vigente,
+                                                   :curso_propuesto,:semestre_propuesto,:creditos_propuesto,:tipo)""", x)
+    for x in rea_por_cadi(maestro):
+        cur.execute("INSERT INTO plan_2025_rea(codigo_cadi,campo,creditos,perfil,consecutivo,texto) VALUES (:codigo_cadi,:campo,:creditos,:perfil,:consecutivo,:texto)", x)
+    total = cur.execute('SELECT SUM(creditos) FROM plan_2025').fetchone()[0]
+    avisos = [f'plan 2025: {nombre} ({per}.º período): {problema.rstrip("; ")}' for per, nombre, problema in
+              cur.execute('SELECT periodo, nombre, problema FROM v_plan_2025_inconsistencias ORDER BY periodo')]
+    if total != 150: avisos.append(f'plan 2025: suma {total} créditos (se esperaban 150)')
+    return avisos
+
+
 def _leer_ocr(ocr_json):
     if not ocr_json or not Path(ocr_json).exists(): return {}
     cache = json.loads(Path(ocr_json).read_text(encoding='utf-8'))
     return {(fuente, int(p)): lineas for fuente, c in cache.items() for p, lineas in c['paginas'].items()}
 
 
-VERSION_ESQUEMA = 5
+VERSION_ESQUEMA = 6
 # Migraciones que agregan tablas sin tocar los datos existentes: {versión destino: script}
 MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql', 4: PAQUETE / 'esquema_pad_v4.sql',
-               5: PAQUETE / 'esquema_v5_decision.sql'}
+               5: PAQUETE / 'esquema_v5_decision.sql', 6: PAQUETE / 'esquema_v6_maestro.sql'}
 # Tablas que son copia directa de semillas, presentaciones o PAD: se vacían y se vuelven a llenar en cada carga
 # (hijas antes que padres). Su fuente de verdad son los CSV y los documentos, no la base.
-DERIVADAS = ['pad_fase', 'pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad',
+DERIVADAS = ['plan_2025_rea', 'plan_2025', 'transicion_2025', 'pad_fase', 'pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad',
              'grafica_dato', 'grafica', 'tabla_diapositiva', 'normativa_mencion', 'normativa',
              'medicion', 'indicador_nodo', 'indicador', 'curso_outcome', 'curso', 'brecha']
 
@@ -393,7 +424,16 @@ def _migrar(db, desde, avisar=True):
     con = sqlite3.connect(db)
     try:
         for v in sorted(k for k in MIGRACIONES if k > desde):
-            con.executescript(MIGRACIONES[v].read_text(encoding='utf-8'))
+            # instrucción por instrucción: un ALTER TABLE sobre una columna que ya existe se salta (migración repetible)
+            actual = ''
+            for linea in MIGRACIONES[v].read_text(encoding='utf-8').splitlines(keepends=True):
+                actual += linea
+                if sqlite3.complete_statement(actual):
+                    try:
+                        con.execute(actual)
+                    except sqlite3.OperationalError as ex:
+                        if 'duplicate column' not in str(ex): raise
+                    actual = ''
             con.execute("UPDATE meta SET valor=? WHERE clave='version_esquema'", (str(v),))
             con.commit()
             if avisar: print(f'Base migrada al esquema v{v}')
@@ -401,7 +441,7 @@ def _migrar(db, desde, avisar=True):
         con.close()
 
 
-def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, reconstruir=False, pads_json=None):
+def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, reconstruir=False, pads_json=None, maestro_json=None):
     """Carga incremental: actualiza la base sin perder las decisiones del comité (ver schema.sql)."""
     diapositivas = Path(diapositivas)
     if not diapositivas.exists():
@@ -418,16 +458,19 @@ def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, recons
         nodos = Nodos(cur)
         pads = json.loads(Path(pads_json).read_text(encoding='utf-8')) if pads_json and Path(pads_json).exists() else []
         ev_pads = evidencias_pad(pads, {x['pad'] for x in semillas['pad_curso'] if x['curso']})
-        ev_ids, cambios = sincronizar_evidencias(cur, nodos, slides, _leer_ocr(ocr_json), adicionales=ev_pads)
+        maestro = json.loads(Path(maestro_json).read_text(encoding='utf-8')) if maestro_json and Path(maestro_json).exists() else None
+        ev_maestro = evidencias_maestro(maestro)
+        ev_ids, cambios = sincronizar_evidencias(cur, nodos, slides, _leer_ocr(ocr_json), adicionales=ev_pads + ev_maestro)
         for t in DERIVADAS:
             cur.execute(f'DELETE FROM {t}')
-        textos = {f'{s["fuente"]}-P{s["pagina"]:03d}': s['texto'] for s in slides} | {e['codigo']: e['texto'] for e in ev_pads}
+        textos = {f'{s["fuente"]}-P{s["pagina"]:03d}': s['texto'] for s in slides} | {e['codigo']: e['texto'] for e in ev_pads + ev_maestro}
         cargar_normativa(cur, textos, ev_ids, semillas)
         faltantes = cargar_indicadores(cur, nodos, ev_ids, semillas)
         if faltantes:
             avisos.append(f'mediciones.csv cita evidencias que no existen (quedan sin vínculo): {", ".join(sorted(faltantes))}')
         cargar_cursos_y_brechas(cur, nodos, semillas)
         avisos += cargar_pads(cur, pads, ev_ids, semillas)
+        avisos += cargar_maestro(cur, maestro, ev_maestro, ev_ids)
         if pptx_json and Path(pptx_json).exists():
             huerfanas = cargar_pptx(cur, json.loads(Path(pptx_json).read_text(encoding='utf-8')), ev_ids)
             if huerfanas:

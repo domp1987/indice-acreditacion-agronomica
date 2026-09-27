@@ -64,3 +64,8 @@ REA-IA,REA3,ABET-EAC,SO4,parcial,
 REA-IA,REA4,ABET-EAC,SO1,parcial,"Conocimiento biológico, no resolución de problemas de ingeniería"
 REA-IA,REA5,ABET-EAC,SO5,parcial,
 REA-IA,REA5,ABET-EAC,SO4,apoyo,
+REA-IA-2025,REA1,ABET-EAC,SO2,parcial,"Diseña sistemas productivos agrícolas, pero no explicita un proceso de diseño de ingeniería con restricciones y estándares"
+REA-IA-2025,REA1,ABET-EAC,SO1,apoyo,Diagnóstico técnico y planificación; no problemas complejos de ingeniería
+REA-IA-2025,REA2,ABET-EAC,SO4,parcial,Criterios éticos y de responsabilidad social en la aplicación de tecnología
+REA-IA-2025,REA3,ABET-EAC,SO1,parcial,Alternativas tecnológicas con criterios científicos para optimizar el agroecosistema
+REA-IA-2025,REA3,ABET-EAC,SO6,apoyo,Fundamentación científica; no nombra experimentación ni análisis de datos

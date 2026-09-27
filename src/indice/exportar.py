@@ -7,7 +7,8 @@ from pathlib import Path
 
 TABLAS = ['marco', 'nodo', 'correspondencia', 'evidencia', 'evidencia_nodo', 'indicador', 'medicion', 'indicador_nodo',
           'curso', 'curso_outcome', 'normativa', 'normativa_mencion', 'brecha', 'grafica', 'grafica_dato', 'tabla_diapositiva',
-          'pad', 'pad_rea', 'pad_fase', 'pad_experiencia', 'pad_actividad', 'pad_bibliografia', 'pad_recurso', 'decision']
+          'pad', 'pad_rea', 'pad_fase', 'pad_experiencia', 'pad_actividad', 'pad_bibliografia', 'pad_recurso', 'decision',
+          'plan_2025', 'plan_2025_rea', 'transicion_2025']
 
 
 def datos_tablero(c):
