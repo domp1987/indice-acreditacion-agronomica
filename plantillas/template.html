@@ -64,6 +64,8 @@ section[hidden]{display:none}
 .nm span{font-size:.93rem;line-height:1.25}
 .cells{display:flex;flex-wrap:wrap;gap:3px;min-height:14px}
 .c{width:11px;height:11px;border-radius:2px}
+.proc{display:inline-block;font-size:.72rem;font-weight:650;border-radius:999px;padding:1px 8px;margin:2px 6px 2px 0;border:1px solid var(--line);color:var(--muted)}
+.proc.principal{border-color:var(--moss);color:var(--moss)} .proc.escenario{border-color:var(--mulberry);color:var(--mulberry);border-style:dashed}
 .c.principal{background:var(--moss)} .c.parcial{background:var(--ochre)} .c.apoyo{background:var(--sage)}
 .credn{font-size:.86rem;font-weight:650;color:var(--mulberry)}
 .empty{height:14px;border:1.5px dashed var(--mulberry);border-radius:4px;width:min(180px,100%)}
@@ -131,7 +133,7 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
 <header>
   <div>
     <h1>Evidencias CNA reproyectadas a ABET</h1>
-    <p class="lede">Ingeniería Agronómica, UCundinamarca (Fusagasugá y ALD Facatativá). Cada diapositiva de la autoevaluación CNA es una evidencia; las correspondencias la proponen para los criterios de ABET EAC. Las propuestas deben validarse en el comité.</p>
+    <p class="lede">Ingeniería Agronómica, UCundinamarca (Fusagasugá y ALD Facatativá). Cada diapositiva de la autoevaluación CNA, cada PAD y cada sección del documento maestro 2019 es una evidencia de base; los anexos se consultan como fuente complementaria (solo apoyo) y el documento maestro RRC 2025, ruta aún no confirmada, como escenario sin proyección a ABET. Las correspondencias proponen la evidencia para los criterios de ABET EAC. Las propuestas deben validarse en el comité.</p>
   </div>
   <div class="figs" id="figs"></div>
 </header>
@@ -153,7 +155,7 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
     <span><i class="sw g"></i>Sin evidencia</span>
   </div>
   <div class="tray" id="tray"></div>
-  <p class="foot">Cada cuadro es una diapositiva. Haz clic en un criterio para ver de qué características CNA viene su evidencia, qué brechas tiene abiertas y para abrir sus evidencias en el explorador.</p>
+  <p class="foot">Cada cuadro es una evidencia (diapositiva, sección de documento maestro o anexo). Haz clic en un criterio para ver de qué características CNA viene su evidencia, qué brechas tiene abiertas y para abrir sus evidencias en el explorador.</p>
 </section>
 
 <section id="curriculo" role="tabpanel" hidden>
@@ -181,10 +183,16 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
 
 <section id="evidencias" role="tabpanel" hidden>
   <div class="filters">
-    <input id="q" type="search" placeholder="Buscar en el texto de las diapositivas (p. ej. alertas tempranas, laboratorio, Acuerdo 040)" aria-label="Buscar evidencias">
+    <input id="q" type="search" placeholder="Buscar en diapositivas, PAD, documentos maestros y anexos (p. ej. alertas tempranas, laboratorio, Acuerdo 040)" aria-label="Buscar evidencias">
     <select id="fFactor" aria-label="Factor CNA"></select>
     <select id="fAbet" aria-label="Criterio ABET"></select>
     <select id="fTipo" aria-label="Tipo de evidencia"></select>
+    <select id="fNivel" aria-label="Fuente">
+      <option value="">Todas las fuentes</option>
+      <option value="principal">Base ABET: CNA, PAD y documento maestro 2019</option>
+      <option value="complementaria">Complementaria: anexos</option>
+      <option value="escenario">Escenario solo renovación: documento maestro 2025</option>
+    </select>
   </div>
   <div class="count" id="count"></div>
   <div id="list"></div>
@@ -197,7 +205,7 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
 
 <section id="normativa" role="tabpanel" hidden>
   <div class="panel">
-    <p class="note">Acuerdos y resoluciones citados en las diapositivas, detectados automáticamente. El órgano emisor puede requerir verificación.</p>
+    <p class="note">Acuerdos y resoluciones citados en las evidencias, detectados automáticamente. El órgano emisor puede requerir verificación.</p>
     <div class="wide"><table id="tnorm"></table></div>
   </div>
 </section>
@@ -331,25 +339,29 @@ $('#charts').innerHTML=charts;
 const facts=[...new Set(D.evidencias.map(e=>e.codigo.slice(0,3)))];
 $('#fFactor').innerHTML='<option value="">Todos los factores CNA</option>'+D.cna.filter(n=>n.tipo==='factor').map(n=>`<option value="${n.codigo}">${n.codigo.replace('F0','F')} ${esc(n.nombre)}</option>`).join('');
 $('#fAbet').innerHTML='<option value="">Todos los criterios ABET</option>'+D.abet.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('');
-const TIPOS={diapositiva:'Diapositiva',valoracion:'Valoración del factor',logros:'Logros e impacto',plan_mejora:'Plan de mejoramiento'};
+const TIPOS={diapositiva:'Diapositiva',valoracion:'Valoración del factor',logros:'Logros e impacto',plan_mejora:'Plan de mejoramiento',pad:'Plan de Aprendizaje Digital',documento_maestro:'Sección de documento maestro',anexo:'Anexo del RRC 2025'};
+const NIVELES={principal:'Base ABET',complementaria:'Complementaria',escenario:'Escenario RRC 2025'};
+// factor CNA de cada característica, para que el filtro por factor incluya documentos y anexos etiquetados
+const FACTOR=Object.fromEntries(D.cna.filter(n=>n.padre).map(n=>[n.codigo,n.padre]));
+const enFactor=(e,f)=>e.codigo.startsWith(f)||e.tags.some(g=>g[0]==='CNA'&&(g[1]===f||FACTOR[g[1]]===f));
 $('#fTipo').innerHTML='<option value="">Todos los tipos</option>'+Object.entries(TIPOS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
 let limit=40;
 function render(){
-  const q=$('#q').value.trim().toLowerCase(), f=$('#fFactor').value, a=$('#fAbet').value, t=$('#fTipo').value;
-  const res=D.evidencias.filter(e=>(!f||e.codigo.startsWith(f))&&(!t||e.tipo===t)&&(!a||e.tags.some(g=>g[0]==='ABET-EAC'&&g[1]===a))&&(!q||(e.titulo+' '+e.texto).toLowerCase().includes(q)));
+  const q=$('#q').value.trim().toLowerCase(), f=$('#fFactor').value, a=$('#fAbet').value, t=$('#fTipo').value, nv=$('#fNivel').value;
+  const res=D.evidencias.filter(e=>(!f||enFactor(e,f))&&(!t||e.tipo===t)&&(!nv||e.nivel===nv)&&(!a||e.tags.some(g=>g[0]==='ABET-EAC'&&g[1]===a))&&(!q||(e.titulo+' '+e.texto).toLowerCase().includes(q)));
   $('#count').textContent=`${res.length} evidencia${res.length===1?'':'s'}`;
   const hl=s=>{s=esc(s); if(!q) return s; const i=s.toLowerCase().indexOf(esc(q)); return i<0?s:s.slice(0,i)+'<mark>'+s.slice(i,i+esc(q).length)+'</mark>'+s.slice(i+esc(q).length)};
   $('#list').innerHTML=res.slice(0,limit).map(e=>{
-    const cna=e.tags.filter(g=>g[0]==='CNA').map(g=>`<span class="tag">${g[1].startsWith('C')?'Car. '+(+g[1].slice(1)):'Factor '+(+g[1].slice(1))}</span>`).join('');
+    const cna=e.tags.filter(g=>g[0]==='CNA').map(g=>`<span class="tag${g[3]==='extraccion'&&e.tipo!=='diapositiva'&&!['valoracion','logros','plan_mejora'].includes(e.tipo)?' '+g[2]:''}" title="${e.tipo==='anexo'||e.tipo==='documento_maestro'?'Propuesta por sección (documento_nodos.csv)':'Del encabezado de la diapositiva'}">${g[1].startsWith('C')?'Car. '+(+g[1].slice(1)):'Factor '+(+g[1].slice(1))}</span>`).join('');
     const ab=e.tags.filter(g=>g[0]==='ABET-EAC').map(g=>`<span class="tag ${g[2]}" title="${g[3]==='inferida'?'Propuesta por correspondencia':'Asignada'}">${g[1]} · ${g[2]}</span>`).join('');
     let snip='';
     if(q){const i=e.texto.toLowerCase().indexOf(q); if(i>=0) snip=`<p>…${hl(e.texto.slice(Math.max(0,i-80),i+120).replace(/\s+/g,' '))}…</p>`;}
-    return `<details class="ev"><summary><span class="cd">${e.codigo}</span><span><strong>${hl(e.titulo)}</strong><br>${cna}${ab}${snip}</span></summary>
-      <div class="body"><p>${esc(TIPOS[e.tipo]||e.tipo)} · ${esc(e.archivo)}, página ${e.pagina}${e.fuente?` · Fuente: ${esc(e.fuente)}`:''}</p><pre>${esc(e.texto)}</pre></div></details>`;
+    return `<details class="ev"><summary><span class="cd">${e.codigo}</span><span><strong>${hl(e.titulo)}</strong><br><span class="proc ${e.nivel||''}">${NIVELES[e.nivel]||''}</span>${cna}${ab}${snip}</span></summary>
+      <div class="body"><p>${esc(TIPOS[e.tipo]||e.tipo)} · ${esc(e.archivo||'')}${e.pagina?`, página ${e.pagina}`:''}${e.fuente?` · Fuente: ${esc(e.fuente)}`:''}</p><pre>${esc(e.texto)}</pre></div></details>`;
   }).join('') || '<p>No hay evidencias con esos filtros. Prueba quitar un filtro o buscar otra palabra.</p>';
   $('#more').hidden = res.length<=limit;
 }
-['#q','#fFactor','#fAbet','#fTipo'].forEach(s=>$(s).addEventListener('input',()=>{limit=40;render()}));
+['#q','#fFactor','#fAbet','#fTipo','#fNivel'].forEach(s=>$(s).addEventListener('input',()=>{limit=40;render()}));
 $('#more').addEventListener('click',()=>{limit+=40;render()});
 render();
 

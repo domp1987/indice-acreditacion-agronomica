@@ -25,7 +25,7 @@ def datos_tablero(c):
         a['indicadores'] = q("SELECT i.codigo,i.nombre FROM indicador_nodo x JOIN indicador i ON i.id=x.indicador_id WHERE x.nodo_id=?", a['id'])
     cna = q("""SELECT n.codigo,n.nombre,n.tipo,p.codigo padre FROM nodo n LEFT JOIN nodo p ON p.id=n.padre_id
                JOIN marco m ON m.id=n.marco_id AND m.codigo='CNA' ORDER BY n.orden""")
-    ev = q("SELECT id,codigo,titulo,tipo,texto,texto_ocr,fuente,archivo,pagina,proceso FROM evidencia WHERE estado_revision<>'obsoleta' ORDER BY codigo")
+    ev = q("SELECT id,codigo,titulo,tipo,texto,texto_ocr,fuente,archivo,pagina,proceso,nivel FROM evidencia WHERE estado_revision<>'obsoleta' ORDER BY codigo")
     tags = {}
     for r in q("SELECT en.evidencia_id,n.codigo,m.codigo marco,en.rol,en.origen FROM evidencia_nodo en JOIN nodo n ON n.id=en.nodo_id JOIN marco m ON m.id=n.marco_id"):
         tags.setdefault(r['evidencia_id'], []).append([r['marco'], r['codigo'], r['rol'], r['origen']])

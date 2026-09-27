@@ -1,7 +1,9 @@
 """Documentos maestros del programa como contexto e índice (uno por proceso, declarados en datos/semillas/documentos.csv).
 
-- DM25: documento maestro RRC 2025 (renovación de registro calificado, Decreto 1330 de 2019) → proceso de resignificación.
-- DM19: documento maestro de la resignificación MEN 2019 → sigue siendo la base del proceso de acreditación de alta calidad.
+- DM19: documento maestro de la resignificación MEN 2019 → base de la acreditación de alta calidad y de la proyección ABET
+  (nivel 'principal', junto con las presentaciones CNA y los PAD).
+- DM25: documento maestro RRC 2025 (renovación de registro calificado, Decreto 1330 de 2019) → ruta aún no confirmada, para
+  el caso de que solo haya renovación y no acreditación (nivel 'escenario': no se proyecta a ABET).
 
 Los PDF salen de Word con estructura etiquetada: se lee el árbol lógico con 'pdfinfo -struct-text' (títulos H1–H3,
 párrafos, listas y tablas celda por celda) y se arma una evidencia por sección ('DM25-4.6', 'DM19-3.2'…) con su página
@@ -247,7 +249,7 @@ def evidencias_maestro(datos):
         if not texto.strip() and not s['tablas']: continue
         out.append(dict(codigo=s['codigo'], titulo=f'{datos["titulo_doc"]} · {s["titulo"]}'[:110], tipo='documento_maestro',
                         texto=texto.strip(), texto_ocr=None, fuente=datos['titulo_doc'], archivo=datos['archivo'],
-                        pagina=s['pagina'], sede='Programa', proceso=datos.get('proceso'), _tablas=s['tablas']))
+                        pagina=s['pagina'], sede='Programa', proceso=datos.get('proceso'), nivel=datos.get('nivel'), _tablas=s['tablas']))
     return out
 
 

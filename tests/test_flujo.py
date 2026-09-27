@@ -59,7 +59,7 @@ def test_conteos(con):
     n = lambda q: con.execute(q).fetchone()[0]
     assert n("SELECT COUNT(*) FROM evidencia WHERE codigo LIKE 'F%'") == 240      # como el prototipo
     assert n("SELECT COUNT(*) FROM evidencia WHERE codigo LIKE 'S%'") == 52       # sesión de inicio (Rectoría y Facultad)
-    assert n('SELECT COUNT(*) FROM evidencia_nodo') == 492
+    assert n('SELECT COUNT(*) FROM evidencia_nodo') == 1231   # 240 de diapositivas + 406 propuestas por sección (documento_nodos.csv) + 585 inferidas (sin el escenario DM25)
     assert n('SELECT COUNT(*) FROM nodo') == 92   # 89 + los 3 REA de la ruta 2025
     assert n('SELECT COUNT(*) FROM medicion') == 299   # 224 del prototipo + 3 (corrección F04-P006) + 72 (ponderaciones y factores CNA)
     assert n('SELECT COUNT(*) FROM curso') == 54
@@ -80,7 +80,7 @@ def test_data_json_completo(salida):
 
 def test_reproyectar_es_idempotente(salida, con):
     assert main(['reproyectar', '--salida', str(salida)]) == 0
-    assert con.execute('SELECT COUNT(*) FROM evidencia_nodo').fetchone()[0] == 492
+    assert con.execute('SELECT COUNT(*) FROM evidencia_nodo').fetchone()[0] == 1231
 
 
 def test_graficas_y_tablas_pptx(con):
@@ -119,7 +119,11 @@ def test_igual_al_prototipo(salida):
     # del factor 4 se corrigió con la gráfica del PPTX; y se agregaron las presentaciones de la sesión de inicio
     # (evidencias S.., con su normativa). El resto debe ser idéntico.
     assert set(difs) <= {'evidencia', 'evidencia.texto', 'medicion', 'indicador', 'v_inconsistencias', 'normativa', 'normativa_mencion', 'curso',
-                         'marco', 'nodo', 'correspondencia'}
+                         'marco', 'nodo', 'correspondencia', 'evidencia_nodo', 'v_cobertura_abet'}
+    # Etiquetas: las de las diapositivas son las mismas; solo se agregan las de documentos maestros y anexos
+    # (propuestas por sección en documento_nodos.csv, y sus inferidas), que también cambian la cobertura ABET
+    solo_a, solo_b = difs.get('evidencia_nodo', ([], []))
+    assert not solo_a and all(es_sesion(r) for r in solo_b)
     # Marco REA-IA-2025 (documento maestro): solo se agrega
     for t in ('marco', 'nodo', 'correspondencia'):
         assert not difs.get(t, ([], []))[0], t

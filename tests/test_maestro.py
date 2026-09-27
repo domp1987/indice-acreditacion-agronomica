@@ -73,3 +73,30 @@ def test_maestro_en_la_base():
     # 'de acuerdo con el decreto 1330' no se toma como un Acuerdo
     assert n('SELECT COUNT(*) FROM normativa WHERE numero IN (1330, 1279)') == 0
     con.close()
+
+
+@pytest.mark.skipif(not rutas.db.exists(), reason='falta la base')
+def test_documentos_etiquetados_por_seccion():
+    con = sqlite3.connect(rutas.db)
+    n = lambda q: con.execute(q).fetchone()[0]
+    # solo portadas y bibliografías quedan sin etiqueta CNA
+    sin = {c for (c,) in con.execute("""SELECT codigo FROM evidencia e WHERE tipo IN ('documento_maestro','anexo')
+        AND NOT EXISTS (SELECT 1 FROM evidencia_nodo WHERE evidencia_id=e.id)""")}
+    assert sin == {'DM19-PORTADA', 'DM19-BIBLIOGRAFIA', 'DM25-PORTADA', 'DM25-REFERENCIAS-BIBLIOGRAFICAS'}
+    # las etiquetas por sección nacen propuestas (las decide el comité) y la subsección hereda la de su padre
+    assert n("""SELECT COUNT(*) FROM evidencia_nodo en JOIN evidencia e ON e.id=en.evidencia_id
+        WHERE e.tipo IN ('documento_maestro','anexo') AND en.estado='validada'""") == 0
+    tags = lambda c: {x for (x,) in con.execute("""SELECT n.codigo FROM evidencia_nodo en JOIN evidencia e ON e.id=en.evidencia_id
+        JOIN nodo n ON n.id=en.nodo_id WHERE e.codigo=?""", (c,))}
+    assert {'C23', 'C24'} <= tags('DM19-3.2.2') and 'C31' in tags('AX-46-34') and 'C11' in tags('DM25-8.4.2')
+    # base ABET = presentaciones CNA, PAD y DM19; anexos complementarios (solo apoyo); DM25 escenario (sin ABET)
+    assert n("SELECT COUNT(*) FROM evidencia WHERE nivel='principal'") == 452
+    assert n("SELECT COUNT(*) FROM evidencia WHERE codigo LIKE 'DM19-%' AND nivel<>'principal'") == 0
+    abet = lambda nivel, extra='': n(f"""SELECT COUNT(*) FROM evidencia_nodo en JOIN evidencia e ON e.id=en.evidencia_id
+        JOIN nodo x ON x.id=en.nodo_id JOIN marco m ON m.id=x.marco_id AND m.codigo='ABET-EAC' WHERE e.nivel='{nivel}' {extra}""")
+    assert abet('escenario') == 0 and abet('complementaria') > 0 and abet('complementaria', "AND en.rol<>'apoyo'") == 0
+    # si todas las etiquetas de origen son 'apoyo', las inferidas también lo son
+    assert n("""SELECT COUNT(*) FROM evidencia_nodo i JOIN evidencia e ON e.id=i.evidencia_id
+        WHERE e.tipo='anexo' AND i.origen='inferida' AND i.rol<>'apoyo'
+        AND NOT EXISTS (SELECT 1 FROM evidencia_nodo x WHERE x.evidencia_id=i.evidencia_id AND x.origen='extraccion' AND x.rol<>'apoyo')""") == 0
+    con.close()

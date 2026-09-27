@@ -2,6 +2,10 @@
 
 Reglas (CLAUDE.md): el rol se traduce equivalente → principal, parcial → parcial, apoyo → apoyo; la etiqueta
 nace 'inferida' y 'propuesta'. No se usan correspondencias ni etiquetas descartadas, ni evidencias obsoletas.
+El rol inferido nunca es más fuerte que el de la etiqueta de origen (las diapositivas son 'principal'; las
+secciones de documentos maestros y anexos etiquetadas por regla pueden ser 'parcial' o 'apoyo').
+Por nivel de la fuente: 'escenario' (documento maestro RRC 2025, ruta no confirmada) no se proyecta a ABET y
+'complementaria' (anexos) solo da etiquetas de apoyo.
 Regla adicional: una diapositiva de avance del plan de mejoramiento (sin característica) apoya el Criterio 4.
 
 Sincroniza: agrega las inferidas que faltan, corrige el rol de las que cambiaron y retira las que ya no se
@@ -18,15 +22,18 @@ AHORA = "strftime('%Y-%m-%dT%H:%M:%SZ','now')"
 def etiquetas_deseadas(con, marco_destino):
     """{(evidencia_id, nodo_id): rol} que se deducen hoy. Si varias correspondencias llevan al mismo nodo, gana el rol más fuerte."""
     filas = con.execute("""
-        SELECT en.evidencia_id, c.destino_id, c.tipo FROM evidencia_nodo en
+        SELECT en.evidencia_id, c.destino_id, c.tipo, en.rol, e.nivel FROM evidencia_nodo en
         JOIN evidencia e ON e.id = en.evidencia_id AND e.estado_revision <> 'obsoleta'
+             AND COALESCE(e.nivel, 'principal') <> 'escenario'
         JOIN correspondencia c ON c.origen_id = en.nodo_id AND c.estado <> 'descartada'
         JOIN nodo d ON d.id = c.destino_id
         JOIN marco m ON m.id = d.marco_id AND m.codigo = ?
         WHERE en.origen = 'extraccion' AND en.estado <> 'descartada'""", (marco_destino,)).fetchall()
     deseadas = {}
-    for eid, nid, tipo in filas:
-        rol = ROL[tipo]
+    for eid, nid, tipo, rol_origen, nivel in filas:
+        if nivel == 'complementaria': rol_origen = 'apoyo'   # fuente complementaria: nunca más que apoyo
+        # el rol inferido no es más fuerte que el de la etiqueta de origen (una sección 'apoyo' no da un 'principal')
+        rol = max(ROL[tipo], rol_origen, key=FUERZA.get)
         if (eid, nid) not in deseadas or FUERZA[rol] < FUERZA[deseadas[(eid, nid)]]:
             deseadas[(eid, nid)] = rol
     if marco_destino == 'ABET-EAC':

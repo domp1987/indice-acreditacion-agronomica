@@ -128,21 +128,44 @@ def _tipo_y_titulo(s):
     return 'diapositiva', sub if good else f"Factor {s['factor']}, diapositiva {s['pagina']}"
 
 
-_CAMPOS_EVIDENCIA = ['titulo', 'tipo', 'texto', 'texto_ocr', 'fuente', 'archivo', 'pagina', 'sede', 'proceso']
+_CAMPOS_EVIDENCIA = ['titulo', 'tipo', 'texto', 'texto_ocr', 'fuente', 'archivo', 'pagina', 'sede', 'proceso', 'nivel']
 
 
-def sincronizar_evidencias(cur, nodos, slides, ocr=None, adicionales=()):
+FUERZA_ROL = {'principal': 0, 'parcial': 1, 'apoyo': 2}
+
+
+def _ancestros(codigo, anterior):
+    """Códigos a probar contra documento_nodos.csv, del más específico al más general, y la última sección
+    numerada. 'DM25-4.1.2' → DM25-4.1.2, DM25-4.1, DM25-4; 'AX-46-03' → AX-46-03, AX-46; un título sin número
+    ('DM25-ANALISIS-DE-OFERTA-A') hereda la cadena de la sección numerada anterior del mismo documento."""
+    m = re.match(r'^(DM\d+)-(\d+(?:\.\d+)*)(-\d+)?$', codigo)
+    if m:
+        prefijo, numero, sufijo = m.group(1), m.group(2).split('.'), m.group(3) or ''
+        cadena = [f"{prefijo}-{'.'.join(numero[:k])}{sufijo}" for k in range(len(numero), 0, -1)]
+        return cadena, (prefijo, cadena)
+    m = re.match(r'^(AX-\d+)-\d+$', codigo)
+    if m: return [codigo, m.group(1)], anterior
+    m = re.match(r'^(DM\d+)-', codigo)
+    if m and anterior and anterior[0] == m.group(1) and not re.search(r'PORTADA|BIBLIOGRAF|REFERENCIAS', codigo):
+        return [codigo, *anterior[1]], anterior
+    return [codigo], anterior
+
+
+def sincronizar_evidencias(cur, nodos, slides, ocr=None, adicionales=(), reglas=()):
     """Upsert de una evidencia por diapositiva (sin portadas) y de sus etiquetas CNA de extracción.
 
     Las evidencias conservan su id. Las que ya no aparecen quedan 'obsoleta' (no se borran: pueden tener
     decisiones del comité). Devuelve ({código: id} de las vigentes, resumen de cambios).
     ocr: {(fuente, página): [líneas]} del OCR; se guarda solo lo que no está ya en el texto del PDF.
     adicionales: evidencias que no son diapositivas (p. ej. los PAD), como dicts con codigo y _CAMPOS_EVIDENCIA.
+    reglas: filas de documento_nodos.csv; cada adicional cuyo código cumple el patrón recibe esa etiqueta CNA
+    (origen extraccion, estado propuesta: la asignación por sección la debe confirmar el comité).
     """
     ocr = ocr or {}
     ev_ids = {}
     nuevas = actualizadas = 0
-    etiquetas = {}   # {evidencia_id: nodo_id} de origen extracción, deseadas
+    etiquetas = {}   # {(evidencia_id, nodo_id): (rol, estado)} de origen extracción, deseadas
+    reglas = [(re.compile(r['patron']), nodos('CNA', r['nodo']), r['rol']) for r in reglas]
 
     def upsert(valores):
         nonlocal nuevas, actualizadas
@@ -159,8 +182,19 @@ def sincronizar_evidencias(cur, nodos, slides, ocr=None, adicionales=()):
         ev_ids[valores['codigo']] = existe[0] if existe else cur.lastrowid
         return ev_ids[valores['codigo']]
 
+    anterior = None   # última sección numerada: la hereda un título sin número que venga después
     for v in adicionales:
-        upsert({c: v.get(c) for c in ['codigo'] + _CAMPOS_EVIDENCIA})
+        eid = upsert({c: v.get(c) for c in ['codigo'] + _CAMPOS_EVIDENCIA})
+        if not reglas: continue
+        cadena, anterior = _ancestros(v['codigo'], anterior)
+        # gana el nivel más específico que tenga alguna regla (la sección, si no su padre, y así hacia arriba)
+        for codigo in cadena:
+            aplican = [(nid, rol) for patron, nid, rol in reglas if patron.search(codigo)]
+            if not aplican: continue
+            for nid, rol in aplican:
+                previo = etiquetas.get((eid, nid))
+                if not previo or FUERZA_ROL[rol] < FUERZA_ROL[previo[0]]: etiquetas[(eid, nid)] = (rol, 'propuesta')
+            break
     for s in slides:
         t = s['texto']
         if _es_portada(t): continue
@@ -174,11 +208,11 @@ def sincronizar_evidencias(cur, nodos, slides, ocr=None, adicionales=()):
         codigo = f'{s["fuente"]}-P{s["pagina"]:03d}'
         eid = upsert(dict(codigo=codigo, titulo=titulo, tipo=tipo, texto=t, texto_ocr=texto_ocr,
                           fuente=fuentes[0].strip() if fuentes else None, archivo=s['archivo'], pagina=s['pagina'], sede=s['sede'],
-                          proceso='acreditacion'))
+                          proceso='acreditacion', nivel='principal'))
         # Etiquetado CNA extraído del encabezado de la diapositiva
         car = f'C{s["car"]:02d}' if s['car'] else None
-        if car in nodos.caracteristicas: etiquetas[eid] = nodos('CNA', car)
-        elif s['factor']: etiquetas[eid] = nodos('CNA', f'F{s["factor"]:02d}')
+        if car in nodos.caracteristicas: etiquetas[(eid, nodos('CNA', car))] = ('principal', 'validada')
+        elif s['factor']: etiquetas[(eid, nodos('CNA', f'F{s["factor"]:02d}'))] = ('principal', 'validada')
 
     # Evidencias que ya no están en las fuentes
     vigentes = set(ev_ids.values())
@@ -188,9 +222,13 @@ def sincronizar_evidencias(cur, nodos, slides, ocr=None, adicionales=()):
     # Etiquetas de extracción: se agregan las nuevas y se retiran las que ya no salen del encabezado, salvo
     # decisiones del comité. Si ya existe una etiqueta (p. ej. manual) en ese par, prevalece la existente.
     existentes = set(cur.execute("SELECT evidencia_id, nodo_id FROM evidencia_nodo WHERE origen='extraccion'").fetchall())
-    deseadas = set(etiquetas.items())
+    deseadas = set(etiquetas)
     cur.executemany(f"""INSERT OR IGNORE INTO evidencia_nodo(evidencia_id,nodo_id,rol,origen,estado,creado_en,actualizado_en)
-                        VALUES (?,?,'principal','extraccion','validada',{AHORA},{AHORA})""", sorted(deseadas - existentes))
+                        VALUES (?,?,?,'extraccion',?,{AHORA},{AHORA})""", [(e, n, *etiquetas[(e, n)]) for e, n in sorted(deseadas - existentes)])
+    # Si la semilla cambia el rol de una etiqueta por regla, se actualiza (salvo decisión del comité)
+    cur.executemany(f"""UPDATE evidencia_nodo SET rol=?, actualizado_en={AHORA}
+                        WHERE evidencia_id=? AND nodo_id=? AND origen='extraccion' AND validado_por IS NULL AND rol<>?""",
+                    [(etiquetas[k][0], *k, etiquetas[k][0]) for k in sorted(deseadas & existentes)])
     retirar = sorted((e, n) for e, n in existentes - deseadas if e in vigentes)
     cur.executemany("DELETE FROM evidencia_nodo WHERE evidencia_id=? AND nodo_id=? AND origen='extraccion' AND validado_por IS NULL", retirar)
     return ev_ids, dict(nuevas=nuevas, actualizadas=actualizadas, obsoletas=len(obsoletas),
@@ -283,7 +321,7 @@ def evidencias_pad(pads, del_plan=()):
         del_programa = p['codigo'] in del_plan or normalizar_texto(p.get('programa') or '') == 'ingenieria agronomica'
         out.append(dict(codigo=f'PAD-{p["codigo"]}', titulo=f'PAD {p["nombre"]} ({p["codigo"]})'[:110], tipo='pad',
                         texto=p['texto'], texto_ocr=None, fuente='Plan de Aprendizaje Digital', archivo=p['archivo'],
-                        pagina=None, sede='Programa' if del_programa else 'Institución', proceso='ambos'))
+                        pagina=None, sede='Programa' if del_programa else 'Institución', proceso='ambos', nivel='principal'))
     return out
 
 
@@ -378,11 +416,12 @@ def _leer_ocr(ocr_json):
     return {(fuente, int(p)): lineas for fuente, c in cache.items() for p, lineas in c['paginas'].items()}
 
 
-VERSION_ESQUEMA = 7
+VERSION_ESQUEMA = 8
 # Migraciones que agregan tablas sin tocar los datos existentes: {versión destino: script}
 MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql', 4: PAQUETE / 'esquema_pad_v4.sql',
                5: PAQUETE / 'esquema_v5_decision.sql', 6: PAQUETE / 'esquema_v6_maestro.sql',
-               7: PAQUETE / 'esquema_v7_procesos.sql'}
+               7: PAQUETE / 'esquema_v7_procesos.sql',
+               8: PAQUETE / 'esquema_v8_nivel.sql'}
 # Tablas que son copia directa de semillas, presentaciones o PAD: se vacían y se vuelven a llenar en cada carga
 # (hijas antes que padres). Su fuente de verdad son los CSV y los documentos, no la base.
 DERIVADAS = ['plan_2025_rea', 'plan_2025', 'transicion_2025', 'pad_fase', 'pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad',
@@ -467,8 +506,14 @@ def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, recons
         ev_pads = evidencias_pad(pads, {x['pad'] for x in semillas['pad_curso'] if x['curso']})
         maestros = leer_maestros(maestros_dir) if maestros_dir else []
         anexos = json.loads(Path(anexos_json).read_text(encoding='utf-8')) if anexos_json and Path(anexos_json).exists() else None
+        # proceso y nivel de cada documento maestro los manda documentos.csv (se reclasifica sin volver a leer el PDF)
+        declarados = {d['prefijo']: d for d in semillas['documentos']}
+        for m in maestros:
+            if m.get('prefijo') in declarados:
+                m.update(proceso=declarados[m['prefijo']]['proceso'], nivel=declarados[m['prefijo']]['nivel'])
         ev_documentos = [e for m in maestros for e in evidencias_maestro(m)] + evidencias_anexos(anexos)
-        ev_ids, cambios = sincronizar_evidencias(cur, nodos, slides, _leer_ocr(ocr_json), adicionales=ev_pads + ev_documentos)
+        ev_ids, cambios = sincronizar_evidencias(cur, nodos, slides, _leer_ocr(ocr_json), adicionales=ev_pads + ev_documentos,
+                                                 reglas=semillas['documento_nodos'])
         for t in DERIVADAS:
             cur.execute(f'DELETE FROM {t}')
         textos = {f'{s["fuente"]}-P{s["pagina"]:03d}': s['texto'] for s in slides} | {e['codigo']: e['texto'] or '' for e in ev_pads + ev_documentos}

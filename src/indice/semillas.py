@@ -4,6 +4,7 @@ Cada CSV es UTF-8 con encabezado. Una celda vacía significa NULL, salvo 'desagr
 'estado' (toma el valor por defecto del esquema). El orden de las filas es el orden de carga.
 """
 import csv
+import re
 from pathlib import Path
 
 ARCHIVOS = {
@@ -18,13 +19,15 @@ ARCHIVOS = {
     'normativa_manual': ['tipo', 'numero', 'anio', 'organo', 'texto_a_buscar'],
     'normativa_excluir': ['tipo', 'numero', 'anio'],
     'pad_curso': ['pad', 'curso', 'nota'],
-    'documentos': ['patron', 'prefijo', 'proceso', 'titulo'],
+    'documentos': ['patron', 'prefijo', 'proceso', 'nivel', 'titulo'],
+    'documento_nodos': ['patron', 'nodo', 'rol', 'nota'],
 }
 # Columnas numéricas por archivo (el resto es texto; 'periodo' es número en cursos y texto en mediciones)
 ENTEROS = {'marcos': {'id'}, 'nodos': {'orden'}, 'cursos': {'creditos', 'periodo'},
            'normativa_manual': {'numero', 'anio'}, 'normativa_excluir': {'numero', 'anio'}}
 REALES = {'mediciones': {'valor'}}
-TEXTO_VACIO = {'desagregacion'}   # columnas NOT NULL DEFAULT '' en el esquema
+TEXTO_VACIO = {'desagregacion'}
+NIVELES = ('principal', 'complementaria', 'escenario')   # peso de una fuente para ABET (esquema v8)   # columnas NOT NULL DEFAULT '' en el esquema
 
 
 class ErrorSemilla(SystemExit):
@@ -89,6 +92,13 @@ def validar(d):
     for x in d['documentos']:
         if x['proceso'] not in ('acreditacion', 'resignificacion', 'ambos'):
             errores.append(f"documentos.csv: proceso desconocido '{x['proceso']}' ({x['prefijo']})")
+        if x['nivel'] not in NIVELES:
+            errores.append(f"documentos.csv: nivel desconocido '{x['nivel']}' ({x['prefijo']})")
+    for x in d['documento_nodos']:
+        try: re.compile(x['patron'])
+        except re.error as err: errores.append(f"documento_nodos.csv: patrón inválido '{x['patron']}' ({err})")
+        if ('CNA', x['nodo']) not in nodos: errores.append(f"documento_nodos.csv: nodo CNA desconocido {x['nodo']}")
+        if x['rol'] not in ('principal', 'parcial', 'apoyo'): errores.append(f"documento_nodos.csv: rol desconocido '{x['rol']}'")
     for b in d['brechas']:
         if (b['marco'], b['nodo']) not in nodos: errores.append(f'brechas.csv: nodo desconocido {b["marco"]}/{b["nodo"]}')
     if errores:

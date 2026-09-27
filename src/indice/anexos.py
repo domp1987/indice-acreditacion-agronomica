@@ -1,7 +1,8 @@
 """Anexos del documento maestro RRC 2025 (carpeta ANEXOS/, organizada por condición de calidad).
 
 Cada archivo es una evidencia 'AX-<n>' (o 'AX-<n>-<k>' si el anexo es una carpeta con varios archivos), del proceso
-de resignificación. Los PDF se indexan por su texto (pdftotext); los Excel se leen sin dependencias (un .xlsx es un zip
+de resignificación y de nivel 'complementaria': son anteriores a la base (PAD, presentaciones CNA, documento maestro 2019),
+se consultan, pero hacia ABET solo aportan etiquetas de apoyo. Los PDF se indexan por su texto (pdftotext); los Excel se leen sin dependencias (un .xlsx es un zip
 con XML) y cada hoja se guarda como tabla. Resultado en salida/anexos.json, con caché por archivo.
 
 Se omiten:
@@ -149,5 +150,5 @@ def evidencias_anexos(datos):
         titulo = f'Anexo {a["numero"]} · {a["nombre"]}' + (f' · {Path(a["archivo"]).stem}' if a['codigo'].count('-') == 2 else '')
         out.append(dict(codigo=a['codigo'], titulo=titulo[:110], tipo='anexo', texto=a['texto'] or None, texto_ocr=None,
                         fuente=f'Anexos RRC 2025 · {a["condicion"]}', archivo=a['archivo'], pagina=None, sede='Programa',
-                        proceso='resignificacion', _tablas=a['tablas']))
+                        proceso='resignificacion', nivel='complementaria', _tablas=a['tablas']))
     return out

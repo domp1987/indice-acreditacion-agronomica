@@ -1,0 +1,102 @@
+patron,nodo,rol,nota
+^DM25-(PRESENTACION|1|ASPECTOS-INSTITUCIONALES)$,C01,apoyo,Presentación e identificación institucional
+^DM25-(IDENTIDAD-DEL-PROGRAMA|2|2\.\d+)$,C01,parcial,Identidad y denominación del programa
+^DM25-3(\.\d+)?$,C02,parcial,Justificación: pertinencia y oferta
+^DM25-4\.(1|15)$,C18,parcial,Componentes formativos y fundamentación
+^DM25-4\.2$,C19,parcial,Flexibilización curricular
+^DM25-4\.3$,C20,parcial,Transdisciplinariedad
+^DM25-4$,C18,apoyo,Aspectos curriculares (encabezado y subsecciones sin regla propia)
+^DM25-4\.4$,C18,apoyo,Formación para la vida
+^DM25-4\.(5|12)$,C06,parcial,Requisitos y condiciones de grado
+^DM25-4\.6$,C23,parcial,Resultados de aprendizaje 2025
+^DM25-4\.7$,C01,parcial,Componente teleológico (propósitos y perfiles)
+^DM25-4\.9$,C26,parcial,Componentes de interacción
+^DM25-(4\.10|5\.6)$,C04,parcial,Seguimiento al proceso formativo
+^DM25-(4\.11|5\.5)$,C21,parcial,Estrategias de interacción estudiante-profesor
+^DM25-4\.13$,C31,parcial,Internacionalización
+^DM25-4\.14$,C28,apoyo,Educación inclusiva
+^DM25-4\.16$,C22,parcial,Mecanismos de evaluación
+^DM25-(5|5\.1)$,C01,parcial,Proyecto educativo del programa
+^DM25-5\.(2|3)$,C18,parcial,Estructura curricular y actividades académicas
+^DM25-5\.4$,C05,parcial,Créditos académicos y trabajo independiente
+^DM25-(6|6\.[1-4]|ACTIVIDADES-ACADEMICAS-DOCENTES-Y)$,C34,parcial,Formación para la investigación
+^DM25-6\.[5-9]$,C35,parcial,"Líneas, producción y planta de investigación"
+^DM25-7(\.\d+)?$,C26,parcial,Relación con el sector externo
+^DM25-8(\.[1-3])?$,C10,parcial,"Profesores: número, perfiles y asignación"
+^DM25-8\.4$,C11,parcial,Desarrollo profesoral
+^DM25-8\.5$,C09,parcial,Estatuto profesoral
+^DM25-8\.6$,C43,apoyo,Comunicación con profesores
+^DM25-9(\.[1256])?$,C40,parcial,Medios educativos
+^DM25-9\.3$,C48,parcial,Sistemas informáticos
+^DM25-9\.4$,C39,apoyo,Fortalecimiento de habilidades de estudiantes
+^DM25-10(\.[1345])?$,C47,parcial,Infraestructura física
+^DM25-10\.2$,C48,parcial,Infraestructura tecnológica
+^DM19-1(\.\d+)*$,C01,apoyo,"Aspectos institucionales (misión, visión, principios)"
+^DM19-1(\.\d+)?-2$,C01,parcial,Denominación y marco normativo
+^DM19-2(\.\d+)*$,C02,parcial,Justificación: pertinencia y oferta
+^DM19-3(\.1|\.3|\.3\.[12]|\.8)?$,C18,parcial,Contenidos curriculares y plan de estudios
+^DM19-3\.2(\.1(\.\d)?|\.3(\.\d)?)?$,C01,parcial,Propósitos de formación y perfiles
+^DM19-3\.2\.2$,C23,parcial,Competencias y REA 2019
+^DM19-3\.2\.2$,C24,apoyo,Competencias genéricas
+^DM19-3\.2\.4$,C01,parcial,Objetivos del programa
+^DM19-3\.3\.3$,C29,parcial,Plan de transición 2013-2020
+^DM19-3\.4$,C20,parcial,Interdisciplinaridad
+^DM19-3\.5$,C19,parcial,Integralidad y flexibilidad
+^DM19-3\.6(\.[134])?$,C21,parcial,Lineamientos pedagógicos y didácticos
+^DM19-3\.6\.2$,C04,parcial,Seguimiento y acompañamiento a estudiantes
+^DM19-3\.6\.5$,C03,parcial,Ciudadanía y formación integral
+^DM19-3\.7$,C33,parcial,Segunda lengua
+^DM19-4(\.\d+)*$,C18,apoyo,Organización de las actividades académicas
+^DM19-(5|5\.1)$,C34,parcial,Sistema de investigación
+^DM19-5\.2(\.\d+)*$,C35,parcial,Investigación del programa
+^DM19-6(\.2(\.\d)?)?$,C26,parcial,Relación con el sector externo
+^DM19-6\.1(\.\d)?$,C31,parcial,Interacción y convenios
+^DM19-7(\.[1-6])?$,C10,parcial,Personal docente
+^DM19-7\.2$,C38,apoyo,Virtualidad
+^DM19-7\.7$,C11,parcial,Desarrollo profesoral
+^DM19-8(\.[12])?$,C40,parcial,Recursos bibliográficos y bases de datos
+^DM19-8\.3$,C47,parcial,"Laboratorios, talleres y salas"
+^DM19-8\.4$,C43,parcial,Sistemas de información
+^DM19-(9(\.\d)?|PLANTA-FISICA-LA-SEDE)$,C47,parcial,Infraestructura física
+^DM19-10$,C30,parcial,Mecanismos de selección
+^DM19-10\.1$,C22,parcial,Evaluación de aprendizajes
+^DM19-10\.2$,C15,parcial,Evaluación del desempeño docente
+^DM19-11(\.\d)?$,C41,parcial,Estructura académica y administrativa
+^DM19-12(\.[123])?$,C25,parcial,Autoevaluación
+^DM19-12\.4$,C46,parcial,Plan de mejoramiento
+^DM19-13(\.[1356])?$,C16,parcial,Seguimiento a egresados
+^DM19-13\.[24]$,C17,parcial,Ocupación y reconocimientos de egresados
+^DM19-14(\.[124])?$,C36,parcial,Bienestar universitario
+^DM19-14\.3$,C28,parcial,Educación inclusiva
+^DM19-14\.5$,C27,parcial,Permanencia y graduación
+^DM19-15(\.\d)?$,C45,parcial,Recursos financieros
+^DM19-IV-PLAN-DE-ACCION$,C46,apoyo,Plan de acción del programa
+^AX-0[14]$,C01,apoyo,Estatuto General y PEI
+^AX-0[23]$,C18,apoyo,Lineamientos curriculares y MEDIT
+^AX-0[56]$,C01,parcial,Marco de cualificaciones y acuerdo de creación
+^AX-(0[789]|1[01])$,C02,parcial,Justificación: oferta y necesidades
+^AX-1[23]$,C29,parcial,Ajustes y transición de la ruta de aprendizaje
+^AX-1[45]$,C23,parcial,Construcción y coherencia de los resultados de aprendizaje
+^AX-(17|19|28)$,C39,apoyo,Plataforma Moodle y recursos digitales
+^AX-18$,C19,parcial,Armonización con la especialización
+^AX-20$,C23,apoyo,Gestión y evaluación de resultados de aprendizaje
+^AX-22$,C46,parcial,Aseguramiento de la calidad
+^AX-23$,C31,parcial,Política de internacionalización
+^AX-24$,C06,parcial,Reglamento estudiantil
+^AX-25$,C01,parcial,Proyecto educativo del programa
+^AX-26$,C47,parcial,Uso de laboratorios
+^AX-(27|30)$,C21,parcial,Experiencias formativas
+^AX-29$,C18,apoyo,Opciones de grado
+^AX-(31|38|39|40|41|42|43)$,C34,parcial,Política y organización de la investigación
+^AX-3[2-7]$,C35,parcial,"Proyectos, grupos, investigadores y publicaciones"
+^AX-(44|45|47|48|49|50|51|52|53)$,C26,parcial,Interacción social universitaria
+^AX-46(-\d+)?$,C31,parcial,Convenios nacionales e internacionales
+^AX-46(-\d+)?$,C32,apoyo,Convenios: movilidad de profesores y estudiantes
+^AX-5[46]$,C10,parcial,Vinculación y asignación docente
+^AX-(55|62|63|64)$,C11,parcial,Desarrollo y formación profesoral
+^AX-(57|58|59|60)$,C09,parcial,Estatuto y reglamentación profesoral
+^AX-61$,C12,parcial,Apoyo económico a funcionarios
+^AX-65$,C15,parcial,Evaluación docente
+^AX-6[67]$,C40,parcial,Bases de datos y medios educativos
+^AX-68$,C43,apoyo,Tratamiento de datos personales
+^AX-69$,C43,parcial,Sistemas de información

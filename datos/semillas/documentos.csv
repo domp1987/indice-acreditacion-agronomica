@@ -1,3 +1,3 @@
-patron,prefijo,proceso,titulo
-DOCUMENTO MAESTRO RRC ING AGRONOMICA 2025,DM25,resignificacion,Documento maestro RRC 2025
-Documento Maestro Resig. MEN Ing. Agronómica 2019,DM19,acreditacion,Documento maestro 2019 (resignificación MEN)
+patron,prefijo,proceso,nivel,titulo
+Documento Maestro Resig. MEN Ing. Agronómica 2019,DM19,acreditacion,principal,Documento maestro 2019 (resignificación MEN)
+DOCUMENTO MAESTRO RRC ING AGRONOMICA 2025,DM25,resignificacion,escenario,Documento maestro RRC 2025
