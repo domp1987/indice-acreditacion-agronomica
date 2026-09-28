@@ -21,3 +21,6 @@ __pycache__/
 
 # Anexos del RRC 2025 (documentos institucionales; el Anexo 21 tiene datos personales sensibles)
 ANEXOS/
+
+# GitHub Pages: solo la versión para compartir (indice publicar)
+!docs/tablas_csv.zip

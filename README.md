@@ -42,6 +42,8 @@ Siempre hay dos versiones de los productos:
 
 En cada carpeta, `indice_acreditacion_abet.html` es el tablero: un solo archivo que se abre con doble clic, sin instalar nada. `tablas_csv.zip` trae las 27 tablas para Excel o Power BI. El tablero compartido lo indica en su encabezado. Para omitir más evidencias en la versión compartida, agrega una fila a `privacidad.csv` (expresión regular sobre el código de la evidencia y el motivo).
 
+**Publicación web (GitHub Pages):** `indice publicar` copia la versión para compartir a `docs/` (`index.html` y `tablas_csv.zip`; se niega si no es la versión compartida). Después `git add docs && git commit && git push` y el sitio se actualiza en <https://domp1987.github.io/indice-acreditacion-agronomica/>. La versión completa nunca va a `docs/`.
+
 Para que otras personas **trabajen** sobre el índice:
 - **Sin instalar nada:** comparte `datos/semillas/` en una carpeta de OneDrive. El comité edita los CSV (sobre todo `curso_outcomes.csv`: `estado` validada o descartada y `validado_por`; también `brechas.csv`, `correspondencias.csv`, `documento_nodos.csv`) y quien mantiene el índice corre `indice todo` y vuelve a publicar los tableros. Si se editan en Excel, deben guardarse como «CSV UTF-8».
 - **Con el código:** clona el repositorio privado, `pip install -e .[dev]`, copia las fuentes (presentaciones, `PADs/`, documentos maestros, `ANEXOS/`, `plan-estudios-agronomica-v4.pdf`) desde la carpeta institucional y corre `indice todo`. Las fuentes y `salida/` no se versionan: contienen datos institucionales y personales.

@@ -18,7 +18,7 @@ from indice.semillas import leer
 from indice.pptx import extraer_pptx
 from indice.reproyectar import reproyectar
 from indice.tablero import tablero
-from indice.compartir import compartir
+from indice.compartir import compartir, publicar
 from indice.validacion import validar
 
 
@@ -54,6 +54,7 @@ def main(argv=None):
     sub.add_parser('outcomes', parents=[comun], help='propone la matriz cursos × Student Outcomes (I/R/E) desde los PAD en curso_outcomes.csv, sin tocar las decisiones del comité')
     sub.add_parser('exportar', parents=[comun], help='genera data.json y los CSV')
     sub.add_parser('tablero', parents=[comun], help='genera el tablero HTML autocontenido')
+    sub.add_parser('publicar', parents=[comun], help='copia la versión para compartir a docs/ (GitHub Pages); luego git commit y git push')
     sub.add_parser('compartir', parents=[comun], help='genera en salida/compartir/ el tablero y los CSV sin datos personales (la versión completa no cambia)')
     sub.add_parser('todo', parents=[comun, con_pdf, motor, con_ocr, con_carga], help='ejecuta el flujo completo')
     v = sub.add_parser('validar', parents=[comun], help='abre la interfaz web local para que el comité valide correspondencias y etiquetas')
@@ -87,6 +88,7 @@ def main(argv=None):
         elif paso == 'exportar': exportar(r.db, r.data_json, r.csv, r.csv_zip)
         elif paso == 'tablero': tablero(r.data_json, PLANTILLA, r.tablero)
         elif paso == 'compartir': compartir(r.db, r.compartir, PLANTILLA, r.semillas)
+        elif paso == 'publicar': publicar(r.compartir, r.docs)
         elif paso == 'validar': validar(r.db, args.puerto, args.abrir)
     return 0
 

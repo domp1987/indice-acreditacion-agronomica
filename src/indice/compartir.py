@@ -68,6 +68,19 @@ def anonimizar_base(db, semillas):
     return dict(evidencias_omitidas=omitidas, tablas_quitadas=tablas)
 
 
+def publicar(compartida, docs):
+    """Copia a docs/ (GitHub Pages) el tablero y los CSV de la versión para compartir. Nunca la versión completa."""
+    compartida, docs = Path(compartida), Path(docs)
+    html = compartida / 'indice_acreditacion_abet.html'
+    if not html.exists() or '"version":"compartir"' not in html.read_text(encoding='utf-8'):
+        raise SystemExit(f'No está la versión para compartir en {compartida}. Ejecuta primero: indice compartir')
+    docs.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(html, docs / 'index.html')
+    shutil.copy2(compartida / 'tablas_csv.zip', docs / 'tablas_csv.zip')
+    (docs / '.nojekyll').write_text('', encoding='utf-8')   # GitHub Pages sirve los archivos tal cual
+    print(f'Publicación: {docs / "index.html"} y tablas_csv.zip (versión para compartir). Súbelos con git commit y git push.')
+
+
 def compartir(db, destino, plantilla, semillas):
     """Genera en `destino` la base, data.json, CSV y tablero sin datos personales."""
     db, destino = Path(db), Path(destino)
