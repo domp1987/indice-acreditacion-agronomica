@@ -1,55 +1,55 @@
-nombre,numero,componente_cma,creditos,periodo,categoria_abet,confianza,nota
-Introducción a las ciencias agrarias,1,Ingeniería aplicada,2,1,otro,alta,
-Agroclimatología,2,Ciencias básicas de ingeniería,2,1,otro,media,"Revisado con el PAD CAD602020106: climatología aplicada, medición y análisis de datos; sin ciencias de la ingeniería (antes: ingeniería, baja)"
-Geología y pedología,3,Ciencias básicas de ingeniería,2,1,ciencias_basicas,media,
-Química,4,Ciencias básicas,3,1,ciencias_basicas,alta,
-Ecología y recursos naturales,5,Ciencias básicas,3,1,ciencias_basicas,media,
-Topografía,6,Ciencias básicas,2,1,ingenieria,media,Clasificado por el programa como ciencia básica
-Física,7,Ciencias básicas,2,1,ciencias_basicas,alta,Intensidad baja para un programa de ingeniería
-"Hidráulica, riegos y drenajes",10,Ingeniería aplicada,3,2,ingenieria,alta,
-Matemática aplicada,11,Ciencias básicas,3,2,matematicas,alta,Único curso de matemáticas; no se evidencia cálculo diferencial e integral
-Suelos,12,Ciencias básicas de ingeniería,3,2,otro,media,"Revisado con el PAD CAD602020208: física, química y biología de suelos; no incluye mecánica de suelos (antes: ingeniería, baja)"
-Bioquímica,13,Ciencias básicas,3,2,ciencias_basicas,alta,
-Razonamiento lógico y cuantitativo,15,Institucional,2,2,educacion_general,alta,Nombre en la ruta v4; en el DM 2019 y las presentaciones CNA: Razonamiento argumentativo
-Comunicación y lectura crítica I,16,Institucional,2,2,educacion_general,alta,Nombre en la ruta v4; antes: Comunicación y pensamiento crítico I
-Sociología y desarrollo rural,17,Formación complementaria,2,3,educacion_general,media,
-Modelos estadísticos aplicados,18,Ciencias básicas de ingeniería,4,3,matematicas,alta,
-Manejo de la fertilidad agrícola,19,Ingeniería aplicada,3,3,otro,media,Ciencia agronómica aplicada
-Morfología y taxonomía vegetal,20,Ciencias básicas,4,3,ciencias_basicas,media,
-Lengua extranjera I,21,Institucional,2,3,educacion_general,alta,Nombre en la ruta v4; antes: Segunda lengua I
-Comunicación y lectura crítica II,23,Institucional,2,3,educacion_general,alta,Nombre en la ruta v4; antes: Comunicación y pensamiento crítico II
-Economía y administración agrícola,24,Formación complementaria,2,4,educacion_general,media,
-Biología celular y molecular,25,Ciencias básicas de ingeniería,4,4,ciencias_basicas,alta,
-Manejo de arvenses,26,Ingeniería aplicada,3,4,otro,media,Ciencia agronómica aplicada
-Fisiología vegetal,27,Ingeniería aplicada,3,4,otro,media,Ciencia agronómica aplicada
-Propagación vegetal,28,Ingeniería aplicada,2,4,otro,media,Ciencia agronómica aplicada
-Lengua extranjera II,29,Institucional,2,4,educacion_general,alta,Nombre en la ruta v4; antes: Segunda lengua II
-Ciudadanía siglo 21,30,Institucional,2,4,educacion_general,alta,2 créditos según la ruta v4 y el DM 2019 (antes figuraba con 1)
-Genética,31,Ciencias básicas de ingeniería,3,5,ciencias_basicas,alta,
-Microbiología agrícola,32,Ingeniería aplicada,3,5,otro,media,Ciencia agronómica aplicada
-Fisiología de cultivos y semillas,33,Ingeniería aplicada,3,5,otro,media,Ciencia agronómica aplicada
-Entomología agrícola,34,Ingeniería aplicada,5,5,otro,media,Ciencia agronómica aplicada
-Maquinaria y mecanización agrícola,35,Ingeniería aplicada,2,5,ingenieria,alta,
-Lengua extranjera III,36,Institucional,2,5,educacion_general,alta,Nombre en la ruta v4; antes: Segunda lengua III
-Mercadeo agrícola,39,Formación complementaria,3,6,educacion_general,media,
-Fitomejoramiento,40,Ingeniería aplicada,3,6,otro,media,Ciencia agronómica aplicada
-Fitopatología,41,Ingeniería aplicada,3,6,otro,media,Ciencia agronómica aplicada
-Agroecología,42,Ingeniería aplicada,3,6,otro,media,Ciencia agronómica aplicada
-Lengua extranjera IV,43,Institucional,2,6,educacion_general,alta,Nombre en la ruta v4; antes: Segunda lengua IV
-"Ciencia, tecnología e innovación I",44,Institucional,2,6,educacion_general,alta,
-Emprendimiento e innovación I,45,Institucional,2,6,educacion_general,alta,
-Formulación y evaluación de proyectos,46,Formación complementaria,2,7,educacion_general,media,"PAD CAD602020730: diseño y evaluación de proyectos de inversión (planeación, viabilidad); aporta a SO2 y SO4 más que a temas de ingeniería"
-Profundización I,47,Ingeniería aplicada,5,7,por_definir,baja,"Líneas SPAS / EDRT. PAD disponible (SPAS): modelos de producción y diagnóstico participativo; sin contenido de ingeniería"
-MIPE,48,Ingeniería aplicada,4,7,otro,media,Ciencia agronómica aplicada
-Electiva I,49,Ingeniería aplicada,2,7,por_definir,baja,"Opciones con PAD: cultivo de tejidos, agricultura de precisión (SIG)"
-Cátedra Generación Siglo 21,50,Institucional,1,7,educacion_general,alta,1 crédito según la ruta v4 y el DM 2019 (antes figuraba con 2)
-"Ciencia, tecnología e innovación II",51,Institucional,2,7,educacion_general,alta,
-Emprendimiento e innovación II,52,Institucional,2,7,educacion_general,alta,
-Extensión rural,53,Formación complementaria,3,8,educacion_general,media,
-Profundización II,54,Ingeniería aplicada,5,8,por_definir,baja,"Líneas SPAS / EDRT. PAD disponible (EDRT): mercadeo, TIC y agronegocios; sin contenido de ingeniería"
-Producción de cultivos,55,Ingeniería aplicada,4,8,otro,media,Ciencia agronómica aplicada
-Electiva II,56,Ingeniería aplicada,2,8,por_definir,baja,"Opciones con PAD: flores de exportación, producción de flores, viverismo y paisajismo"
-Poscosecha,57,Ingeniería aplicada,2,8,ingenieria,baja,"PAD CAD602020832: 1 de 3 REA diseña sistemas de manejo poscosecha (procesamiento, conservación); el resto es fisiología y bioquímica"
-"Ciencia, tecnología e innovación III",58,Institucional,2,8,educacion_general,alta,
-Profundización III,59,Ingeniería aplicada,10,9,por_definir,baja,"Candidato natural a experiencia de diseño mayor (C5d). PAD disponible (EDRT): diagnóstico y mejora de procesos en una organización; hoy no es diseño de ingeniería"
-Opción de grado,60,Ingeniería aplicada,1,9,otro,media,"Hoy admite monografía, pasantía, especialización u obra artística"
+nombre,numero,componente_cma,creditos,periodo,categoria_abet,categoria_atmae,confianza,nota
+Introducción a las ciencias agrarias,1,Ingeniería aplicada,2,1,otro,tecnica,alta,
+Agroclimatología,2,Ciencias básicas de ingeniería,2,1,otro,tecnica,media,"Revisado con el PAD CAD602020106: climatología aplicada, medición y análisis de datos; sin ciencias de la ingeniería (antes: ingeniería, baja)"
+Geología y pedología,3,Ciencias básicas de ingeniería,2,1,ciencias_basicas,ciencias_fisicas,media,
+Química,4,Ciencias básicas,3,1,ciencias_basicas,ciencias_fisicas,alta,
+Ecología y recursos naturales,5,Ciencias básicas,3,1,ciencias_basicas,ciencias_vida,media,
+Topografía,6,Ciencias básicas,2,1,ingenieria,tecnica,media,Clasificado por el programa como ciencia básica
+Física,7,Ciencias básicas,2,1,ciencias_basicas,ciencias_fisicas,alta,Intensidad baja para un programa de ingeniería
+"Hidráulica, riegos y drenajes",10,Ingeniería aplicada,3,2,ingenieria,tecnica,alta,
+Matemática aplicada,11,Ciencias básicas,3,2,matematicas,matematicas,alta,Único curso de matemáticas; no se evidencia cálculo diferencial e integral
+Suelos,12,Ciencias básicas de ingeniería,3,2,otro,tecnica,media,"Revisado con el PAD CAD602020208: física, química y biología de suelos; no incluye mecánica de suelos (antes: ingeniería, baja)"
+Bioquímica,13,Ciencias básicas,3,2,ciencias_basicas,ciencias_vida,alta,
+Razonamiento lógico y cuantitativo,15,Institucional,2,2,educacion_general,educacion_general,alta,Nombre en la ruta v4; en el DM 2019 y las presentaciones CNA: Razonamiento argumentativo
+Comunicación y lectura crítica I,16,Institucional,2,2,educacion_general,educacion_general,alta,Nombre en la ruta v4; antes: Comunicación y pensamiento crítico I
+Sociología y desarrollo rural,17,Formación complementaria,2,3,educacion_general,educacion_general,media,
+Modelos estadísticos aplicados,18,Ciencias básicas de ingeniería,4,3,matematicas,matematicas,alta,
+Manejo de la fertilidad agrícola,19,Ingeniería aplicada,3,3,otro,tecnica,media,Ciencia agronómica aplicada
+Morfología y taxonomía vegetal,20,Ciencias básicas,4,3,ciencias_basicas,ciencias_vida,media,
+Lengua extranjera I,21,Institucional,2,3,educacion_general,educacion_general,alta,Nombre en la ruta v4; antes: Segunda lengua I
+Comunicación y lectura crítica II,23,Institucional,2,3,educacion_general,educacion_general,alta,Nombre en la ruta v4; antes: Comunicación y pensamiento crítico II
+Economía y administración agrícola,24,Formación complementaria,2,4,educacion_general,gestion,media,
+Biología celular y molecular,25,Ciencias básicas de ingeniería,4,4,ciencias_basicas,ciencias_vida,alta,
+Manejo de arvenses,26,Ingeniería aplicada,3,4,otro,tecnica,media,Ciencia agronómica aplicada
+Fisiología vegetal,27,Ingeniería aplicada,3,4,otro,tecnica,media,Ciencia agronómica aplicada
+Propagación vegetal,28,Ingeniería aplicada,2,4,otro,tecnica,media,Ciencia agronómica aplicada
+Lengua extranjera II,29,Institucional,2,4,educacion_general,educacion_general,alta,Nombre en la ruta v4; antes: Segunda lengua II
+Ciudadanía siglo 21,30,Institucional,2,4,educacion_general,educacion_general,alta,2 créditos según la ruta v4 y el DM 2019 (antes figuraba con 1)
+Genética,31,Ciencias básicas de ingeniería,3,5,ciencias_basicas,ciencias_vida,alta,
+Microbiología agrícola,32,Ingeniería aplicada,3,5,otro,tecnica,media,Ciencia agronómica aplicada
+Fisiología de cultivos y semillas,33,Ingeniería aplicada,3,5,otro,tecnica,media,Ciencia agronómica aplicada
+Entomología agrícola,34,Ingeniería aplicada,5,5,otro,tecnica,media,Ciencia agronómica aplicada
+Maquinaria y mecanización agrícola,35,Ingeniería aplicada,2,5,ingenieria,tecnica,alta,
+Lengua extranjera III,36,Institucional,2,5,educacion_general,educacion_general,alta,Nombre en la ruta v4; antes: Segunda lengua III
+Mercadeo agrícola,39,Formación complementaria,3,6,educacion_general,gestion,media,
+Fitomejoramiento,40,Ingeniería aplicada,3,6,otro,tecnica,media,Ciencia agronómica aplicada
+Fitopatología,41,Ingeniería aplicada,3,6,otro,tecnica,media,Ciencia agronómica aplicada
+Agroecología,42,Ingeniería aplicada,3,6,otro,tecnica,media,Ciencia agronómica aplicada
+Lengua extranjera IV,43,Institucional,2,6,educacion_general,educacion_general,alta,Nombre en la ruta v4; antes: Segunda lengua IV
+"Ciencia, tecnología e innovación I",44,Institucional,2,6,educacion_general,educacion_general,alta,
+Emprendimiento e innovación I,45,Institucional,2,6,educacion_general,gestion,alta,
+Formulación y evaluación de proyectos,46,Formación complementaria,2,7,educacion_general,gestion,media,"PAD CAD602020730: diseño y evaluación de proyectos de inversión (planeación, viabilidad); aporta a SO2 y SO4 más que a temas de ingeniería"
+Profundización I,47,Ingeniería aplicada,5,7,por_definir,tecnica,baja,Líneas SPAS / EDRT. PAD disponible (SPAS): modelos de producción y diagnóstico participativo; sin contenido de ingeniería
+MIPE,48,Ingeniería aplicada,4,7,otro,tecnica,media,Ciencia agronómica aplicada
+Electiva I,49,Ingeniería aplicada,2,7,por_definir,electivas,baja,"Opciones con PAD: cultivo de tejidos, agricultura de precisión (SIG)"
+Cátedra Generación Siglo 21,50,Institucional,1,7,educacion_general,educacion_general,alta,1 crédito según la ruta v4 y el DM 2019 (antes figuraba con 2)
+"Ciencia, tecnología e innovación II",51,Institucional,2,7,educacion_general,educacion_general,alta,
+Emprendimiento e innovación II,52,Institucional,2,7,educacion_general,gestion,alta,
+Extensión rural,53,Formación complementaria,3,8,educacion_general,gestion,media,
+Profundización II,54,Ingeniería aplicada,5,8,por_definir,tecnica,baja,"Líneas SPAS / EDRT. PAD disponible (EDRT): mercadeo, TIC y agronegocios; sin contenido de ingeniería"
+Producción de cultivos,55,Ingeniería aplicada,4,8,otro,tecnica,media,Ciencia agronómica aplicada
+Electiva II,56,Ingeniería aplicada,2,8,por_definir,electivas,baja,"Opciones con PAD: flores de exportación, producción de flores, viverismo y paisajismo"
+Poscosecha,57,Ingeniería aplicada,2,8,ingenieria,tecnica,baja,"PAD CAD602020832: 1 de 3 REA diseña sistemas de manejo poscosecha (procesamiento, conservación); el resto es fisiología y bioquímica"
+"Ciencia, tecnología e innovación III",58,Institucional,2,8,educacion_general,educacion_general,alta,
+Profundización III,59,Ingeniería aplicada,10,9,por_definir,tecnica,baja,Candidato natural a experiencia de diseño mayor (C5d). PAD disponible (EDRT): diagnóstico y mejora de procesos en una organización; hoy no es diseño de ingeniería
+Opción de grado,60,Ingeniería aplicada,1,9,otro,tecnica,media,"Hoy admite monografía, pasantía, especialización u obra artística"

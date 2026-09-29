@@ -10,6 +10,8 @@ semillas = "datos/semillas"
 pads = "PADs"
 # Anexos del documento maestro RRC 2025. Los documentos maestros se declaran en datos/semillas/documentos.csv
 anexos = "ANEXOS"
+# Proyecto Jardín Vivo RA (modelos 3D de plantas y fotografías 360): Modelos/, AR_models/, Imagenes360/
+recursos_ra = "F:/ProyectoPlantasRA"
 
 # Carpeta con pdftotext y pdfinfo, solo si no están en el PATH.
 # También se puede indicar con la variable de entorno INDICE_POPPLER.

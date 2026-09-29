@@ -15,6 +15,9 @@ import sqlite3
 from pathlib import Path
 
 ROL = {'equivalente': 'principal', 'parcial': 'parcial', 'apoyo': 'apoyo'}
+MARCOS_DESTINO = ('ABET-EAC', 'ATMAE-2027')
+# Nodo al que apoya una diapositiva de avance del plan de mejoramiento, en cada marco
+MEJORA = {'ABET-EAC': 'C4', 'ATMAE-2027': 'A11'}
 FUERZA = {'principal': 0, 'parcial': 1, 'apoyo': 2}
 AHORA = "strftime('%Y-%m-%dT%H:%M:%SZ','now')"
 
@@ -36,8 +39,10 @@ def etiquetas_deseadas(con, marco_destino):
         rol = max(ROL[tipo], rol_origen, key=FUERZA.get)
         if (eid, nid) not in deseadas or FUERZA[rol] < FUERZA[deseadas[(eid, nid)]]:
             deseadas[(eid, nid)] = rol
-    if marco_destino == 'ABET-EAC':
-        c4 = con.execute("SELECT n.id FROM nodo n JOIN marco m ON m.id=n.marco_id AND m.codigo='ABET-EAC' WHERE n.codigo='C4'").fetchone()
+    planes = []
+    if marco_destino in MEJORA:
+        c4 = con.execute("SELECT n.id FROM nodo n JOIN marco m ON m.id=n.marco_id AND m.codigo=? WHERE n.codigo=?",
+                         (marco_destino, MEJORA[marco_destino])).fetchone()
         planes = con.execute("""
             SELECT e.id FROM evidencia e
             JOIN evidencia_nodo en ON en.evidencia_id = e.id AND en.origen = 'extraccion'
@@ -45,7 +50,7 @@ def etiquetas_deseadas(con, marco_destino):
             WHERE e.tipo = 'plan_mejora' AND e.estado_revision <> 'obsoleta'""").fetchall()
         for (eid,) in planes:
             if c4: deseadas.setdefault((eid, c4[0]), 'apoyo')
-    return deseadas, len(filas) + (len(planes) if marco_destino == 'ABET-EAC' else 0)
+    return deseadas, len(filas) + len(planes)
 
 
 def reproyectar(db, marco_destino='ABET-EAC'):

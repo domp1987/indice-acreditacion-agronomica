@@ -28,6 +28,7 @@ indice tablero
 indice maestro              # solo los documentos maestros declarados en datos/semillas/documentos.csv
 indice anexos               # solo los anexos (ANEXOS/, con OCR de los escaneados)
 indice outcomes             # propone la matriz cursos × Student Outcomes en datos/semillas/curso_outcomes.csv
+indice recursos             # inventario de Jardín Vivo RA (modelos 3D e imágenes 360; ruta recursos_ra en indice.toml)
 indice compartir            # versión sin datos personales en salida/compartir/ (también la genera `indice todo`)
 indice validar --abrir      # interfaz web local del comité (http://127.0.0.1:8765)
 ```

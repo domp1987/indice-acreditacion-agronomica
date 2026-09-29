@@ -13,10 +13,11 @@ from indice.pad import extraer_pads
 from indice.maestro import extraer_maestros
 from indice.anexos import extraer_anexos
 from indice.outcomes import actualizar_semilla
+from indice.recursos_ra import inventariar
 from indice.config import PROYECTO
 from indice.semillas import leer
 from indice.pptx import extraer_pptx
-from indice.reproyectar import reproyectar
+from indice.reproyectar import MARCOS_DESTINO, reproyectar
 from indice.tablero import tablero
 from indice.compartir import compartir, publicar
 from indice.validacion import validar
@@ -50,7 +51,8 @@ def main(argv=None):
     sub.add_parser('maestro', parents=[comun], help='solo lee los documentos maestros declarados en documentos.csv (con caché)')
     sub.add_parser('anexos', parents=[comun], help='solo indexa los anexos (ANEXOS/, con OCR de los escaneados y caché)')
     sub.add_parser('cargar', parents=[comun, con_carga], help='actualiza la base SQLite (incremental) desde lo extraído y las semillas')
-    sub.add_parser('reproyectar', parents=[comun], help='infiere etiquetas ABET desde CNA y REA vía correspondencias')
+    sub.add_parser('reproyectar', parents=[comun], help='infiere etiquetas ABET y ATMAE desde CNA y REA vía correspondencias')
+    sub.add_parser('recursos', parents=[comun], help='solo inventaría los recursos de Jardín Vivo RA (modelos 3D e imágenes 360)')
     sub.add_parser('outcomes', parents=[comun], help='propone la matriz cursos × Student Outcomes (I/R/E) desde los PAD en curso_outcomes.csv, sin tocar las decisiones del comité')
     sub.add_parser('exportar', parents=[comun], help='genera data.json y los CSV')
     sub.add_parser('tablero', parents=[comun], help='genera el tablero HTML autocontenido')
@@ -76,12 +78,15 @@ def main(argv=None):
             extraer_pads(r.pads, r.pads_json, r.poppler)
             extraer_maestros(PROYECTO, leer(r.semillas, 'documentos'), r.salida, r.poppler)
             extraer_anexos(r.anexos, r.anexos_json, r.poppler, not args.sin_ocr)
+            if r.recursos_ra: inventariar(r.recursos_ra, r.recursos_ra_json)
         elif paso == 'ocr': ocr(fuentes, r.ocr_json, r.poppler, args.rehacer_ocr)
         elif paso == 'pads': extraer_pads(r.pads, r.pads_json, r.poppler)
         elif paso == 'maestro': extraer_maestros(PROYECTO, leer(r.semillas, 'documentos'), r.salida, r.poppler)
         elif paso == 'anexos': extraer_anexos(r.anexos, r.anexos_json, r.poppler)
-        elif paso == 'cargar': cargar(r.db, r.diapositivas, r.semillas, r.pptx_json, r.ocr_json, args.reconstruir, r.pads_json, r.salida, r.anexos_json)
-        elif paso == 'reproyectar': reproyectar(r.db)
+        elif paso == 'cargar': cargar(r.db, r.diapositivas, r.semillas, r.pptx_json, r.ocr_json, args.reconstruir, r.pads_json, r.salida, r.anexos_json, r.recursos_ra_json)
+        elif paso == 'reproyectar':
+            for marco in MARCOS_DESTINO: reproyectar(r.db, marco)
+        elif paso == 'recursos': inventariar(r.recursos_ra, r.recursos_ra_json)
         elif paso == 'outcomes':
             actualizar_semilla(r.db, r.semillas / 'curso_outcomes.csv')
             print('Revisa datos/semillas/curso_outcomes.csv y ejecuta: indice cargar')

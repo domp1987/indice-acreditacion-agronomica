@@ -15,7 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from indice.decisiones import ROLES, DecisionInvalida, agregar_etiqueta, decidir_correspondencia, decidir_etiqueta
-from indice.reproyectar import reproyectar
+from indice.reproyectar import MARCOS_DESTINO, reproyectar
 
 NIVELES = {'principal': 'base ABET (CNA, PAD, DM 2019)', 'complementaria': 'complementaria (anexos)',
            'escenario': 'escenario solo renovación (DM 2025)'}
@@ -427,7 +427,8 @@ def crear_manejador(db):
                         elif partes[0] == 'e':
                             decidir_etiqueta(con, int(partes[1]), int(partes[2]), accion, validador, comentario)
                     con.close()
-                    if hubo_corr: reproyectar(db)   # sincroniza las inferidas con la nueva decisión
+                    if hubo_corr:   # sincroniza las inferidas con la nueva decisión
+                        for marco in MARCOS_DESTINO: reproyectar(db, marco)
                     mensaje = f'{len(items)} decisión(es) registrada(s): {accion}'
                 elif self.path == '/agregar':
                     agregar_etiqueta(con, int(uno('evidencia_id')), int(uno('nodo_id')), uno('rol'), validador, uno('comentario'))

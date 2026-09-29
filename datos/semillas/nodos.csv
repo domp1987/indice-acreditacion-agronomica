@@ -91,3 +91,36 @@ REA-IA,REA5,REA5,rea,,5,"Liderar ética y solidariamente procesos de transformac
 REA-IA-2025,REA1,REA 1 (2025),rea,,1,Diseñar sistemas productivos agrícolas sostenibles integrando herramientas de planificación y diagnóstico técnico en contextos rurales diversos.
 REA-IA-2025,REA2,REA 2 (2025),rea,,2,Aplicar tecnología agronómica considerando criterios éticos y de responsabilidad social para atender problemáticas del agro en contextos locales y translocales.
 REA-IA-2025,REA3,REA 3 (2025),rea,,3,Formular alternativas tecnológicas fundamentadas en criterios científicos para optimizar la productividad y sostenibilidad del agroecosistema.
+ATMAE-2027,A1,Metas del programa,criterio,,1,"Metas operativas de corto y largo plazo, medibles y alineadas con la unidad académica y la institución, con planes para lograrlas; deben incluir metas de mantenimiento y mejora de instalaciones y equipos. En reacreditación: evidencia de metas pasadas y su uso para mejorar."
+ATMAE-2027,A2,Resultados de aprendizaje del programa (PLO),criterio,,2,"PLO medibles, validados por el comité asesor de la industria; los resultados de cada curso (SLO) mapeados a los PLO; cada PLO evaluado con medidas directas e indirectas."
+ATMAE-2027,A3,Estructura del programa y secuencia de cursos,criterio,,3,Mínimos y máximos de horas semestrales por área (tabla A-2 para pregrado) y justificación si se excede un máximo.
+ATMAE-2027,A3.1,Currículo mínimo (pregrado),subcriterio,A3,4,"Mínimo 120 horas semestrales: educación general 18-36 (con al menos un curso de comunicación oral y uno escrito), matemáticas 6-18, ciencias físicas 6-18 (ciencias de la vida pueden ser apropiadas), gestión/técnica/especialización 42-60 (gestión máximo 24), electivas 0-18; 15 horas de cursos de últimos años en la institución."
+ATMAE-2027,A3.2,Secuencia de cursos,subcriterio,A3,5,"La secuencia asegura que matemáticas, ciencias y comunicación se apliquen en los cursos técnicos y de gestión, y que los cursos avanzados se construyan sobre los básicos."
+ATMAE-2027,A3.3,Actividades de laboratorio,subcriterio,A3,6,"Equilibrio entre el ""cómo"" práctico y el ""por qué"" conceptual; en pregrado, laboratorios apropiados, que pueden incluir experiencias de laboratorio virtual."
+ATMAE-2027,A4,"Admisión, matrícula y retención",criterio,,7,"Prácticas de admisión, matrícula y retención comparables con otros programas de la institución."
+ATMAE-2027,A4.1,Admisión,subcriterio,A4,8,Estándares de admisión y calidad de los estudiantes comparables (p. ej. puntajes de pruebas y posiciones).
+ATMAE-2027,A4.2,Matrícula,subcriterio,A4,9,"Matrícula registrada y verificada, suficiente para sostener el programa según estándares institucionales o estatales."
+ATMAE-2027,A4.3,Retención,subcriterio,A4,10,"Estándares de retención comparables: promedios y criterios de buen rendimiento, advertencia, prueba académica y suspensión."
+ATMAE-2027,A5,Apoyo administrativo y cualificación docente,criterio,,11,Personal suficiente para apoyar el programa.
+ATMAE-2027,A5.1,Administradores,subcriterio,A5,12,Administradores cualificados y servicios de colocación laboral para los graduados.
+ATMAE-2027,A5.2,Profesores,subcriterio,A5,13,"Suficientes profesores de tiempo completo cualificados; formación académica, experiencia en la industria, membresía en asociaciones profesionales y actividad académica; en pregrado, título de posgrado y al menos 50 % de los profesores de tiempo completo con doctorado; políticas de selección, cargas y remuneración comparables; criterios para profesores de cátedra."
+ATMAE-2027,A6,"Instalaciones, equipos, apoyo y seguridad",criterio,,14,Instalaciones y equipos suficientes para los resultados de aprendizaje del programa.
+ATMAE-2027,A6.1,Instalaciones y equipos,subcriterio,A6,15,"Instalaciones, aulas, laboratorios, equipos, herramientas, materiales, computadores y software modernos, funcionales y mantenidos."
+ATMAE-2027,A6.2,Personal de apoyo técnico,subcriterio,A6,16,"Personal técnico que mantenga y apoye instalaciones, equipos y software durante la instrucción."
+ATMAE-2027,A6.3,Seguridad,subcriterio,A6,17,"Protocolos de seguridad y salud alineados con OSHA (en Colombia, el equivalente es el SG-SST), documentados, accesibles en el lugar de uso y cumplidos."
+ATMAE-2027,A7,Operación del programa,criterio,,18,"Instrucción, recursos y presupuesto adecuados."
+ATMAE-2027,A7.1,Instrucción,subcriterio,A7,19,"Programación de la instrucción y consejería, calidad de la instrucción y supervisión de la instrucción."
+ATMAE-2027,A7.2,Recursos,subcriterio,A7,20,"Materiales de recurso; formación para diseñar, impartir y evaluar; infraestructura tecnológica; tecnologías y medios con protocolos de seguridad de exámenes y detección de plagio; diseñadores instruccionales; herramientas para que el estudiante siga su progreso y reciba retroalimentación oportuna."
+ATMAE-2027,A7.3,Presupuesto,subcriterio,A7,21,Presupuesto de operación suficiente y comparable con otros programas equivalentes.
+ATMAE-2027,A8,Satisfacción de los graduados,criterio,,22,Opinión de los graduados sobre los PLO recogida y analizada al menos cada 2 a 5 años.
+ATMAE-2027,A8.1,Satisfacción de graduados,subcriterio,A8,23,Datos resumidos de satisfacción y actitudes de los graduados frente a los PLO.
+ATMAE-2027,A8.2,Empleo de graduados,subcriterio,A8,24,"Datos de empleo, colocación, cargos y salarios de los graduados."
+ATMAE-2027,A8.3,Ascenso laboral de graduados,subcriterio,A8,25,Datos de ascensos a cargos de mayor responsabilidad.
+ATMAE-2027,A9,Satisfacción de los empleadores,criterio,,26,"Opinión de los empleadores sobre la preparación de los graduados frente a los PLO, recogida y analizada al menos cada 2 a 5 años."
+ATMAE-2027,A10,Comité asesor de la industria,criterio,,27,Comité asesor activo con representantes cualificados de la industria.
+ATMAE-2027,A10.1,Reglamento del comité,subcriterio,A10,28,"Criterios y procedimiento de selección de miembros, duración, al menos una reunión al año y forma de trabajo."
+ATMAE-2027,A10.2,Responsabilidades del comité,subcriterio,A10,29,"Participa en definir PLO y metas, aporta para mejorar el programa y valida los PLO."
+ATMAE-2027,A10.3,Lista de miembros,subcriterio,A10,30,Lista de miembros con datos de contacto.
+ATMAE-2027,A10.4,Agendas y actas,subcriterio,A10,31,Agendas y actas de las reuniones.
+ATMAE-2027,A11,Medidas de resultado para mejorar el programa,criterio,,32,"Cada PLO evaluado con medidas directas e indirectas (satisfacción y empleo de graduados, empleadores, comité asesor, medidas directas en cursos); ciclo completo PLO → medidas → resultados → análisis → mejora (tabla B por PLO)."
+ATMAE-2027,A12,Transparencia pública del programa,criterio,,33,"Página web del programa con la sección o enlace titulado exactamente ""Student Performance and Achievement Information"": tasas de graduación y retención, entre otros datos de logro, respetando la normativa de protección de datos."

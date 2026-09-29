@@ -69,3 +69,66 @@ REA-IA-2025,REA1,ABET-EAC,SO1,apoyo,Diagnóstico técnico y planificación; no p
 REA-IA-2025,REA2,ABET-EAC,SO4,parcial,Criterios éticos y de responsabilidad social en la aplicación de tecnología
 REA-IA-2025,REA3,ABET-EAC,SO1,parcial,Alternativas tecnológicas con criterios científicos para optimizar el agroecosistema
 REA-IA-2025,REA3,ABET-EAC,SO6,apoyo,Fundamentación científica; no nombra experimentación ni análisis de datos
+CNA,C01,ATMAE-2027,A1,parcial,El PEP contiene propósitos; ATMAE pide metas operativas medibles con plan
+CNA,C01,ATMAE-2027,A2,apoyo,
+CNA,C02,ATMAE-2027,A1,apoyo,
+CNA,C04,ATMAE-2027,A4.3,parcial,Acompañamiento y seguimiento académico
+CNA,C04,ATMAE-2027,A7.1,apoyo,Consejería
+CNA,C06,ATMAE-2027,A4.3,parcial,"Reglamento: promedios, prueba académica, suspensión"
+CNA,C06,ATMAE-2027,A4.1,apoyo,
+CNA,C08,ATMAE-2027,A5.2,parcial,"Selección, vinculación y permanencia de profesores"
+CNA,C09,ATMAE-2027,A5.2,parcial,Estatuto profesoral: políticas de selección y carrera
+CNA,C10,ATMAE-2027,A5.2,parcial,"Número, formación y experiencia; ATMAE exige 50 % de doctores en tiempo completo"
+CNA,C11,ATMAE-2027,A5.2,apoyo,
+CNA,C11,ATMAE-2027,A7.2,apoyo,Formación para diseñar y evaluar la instrucción
+CNA,C12,ATMAE-2027,A5.2,apoyo,
+CNA,C13,ATMAE-2027,A7.2,parcial,Material docente
+CNA,C14,ATMAE-2027,A5.2,apoyo,Remuneración comparable
+CNA,C15,ATMAE-2027,A7.1,parcial,Evaluación de profesores como supervisión de la instrucción
+CNA,C16,ATMAE-2027,A8.2,parcial,Seguimiento a graduados (empleo)
+CNA,C16,ATMAE-2027,A8.1,apoyo,
+CNA,C17,ATMAE-2027,A8.3,parcial,Impacto de graduados
+CNA,C17,ATMAE-2027,A9,apoyo,
+CNA,C18,ATMAE-2027,A3.1,parcial,Integralidad curricular: distribución de créditos
+CNA,C18,ATMAE-2027,A3.2,parcial,Secuencia y prerrequisitos
+CNA,C19,ATMAE-2027,A3,apoyo,
+CNA,C20,ATMAE-2027,A3,apoyo,
+CNA,C21,ATMAE-2027,A3.3,parcial,"Estrategias pedagógicas: prácticas, campo y laboratorio"
+CNA,C21,ATMAE-2027,A7.1,apoyo,
+CNA,C22,ATMAE-2027,A11,apoyo,Evaluación en los cursos como medida directa
+CNA,C22,ATMAE-2027,A7.2,apoyo,Retroalimentación al estudiante
+CNA,C23,ATMAE-2027,A2,parcial,Los REA equivalen a PLO; falta validación del comité asesor
+CNA,C23,ATMAE-2027,A11,parcial,Evaluación de resultados de aprendizaje
+CNA,C24,ATMAE-2027,A2,apoyo,
+CNA,C25,ATMAE-2027,A11,parcial,Autoevaluación y autorregulación
+CNA,C25,ATMAE-2027,A1,apoyo,
+CNA,C26,ATMAE-2027,A10,apoyo,Relación con el sector externo; no es un comité asesor formal
+CNA,C27,ATMAE-2027,A4.3,parcial,Permanencia y graduación
+CNA,C27,ATMAE-2027,A12,apoyo,Tasas de graduación que deberían publicarse
+CNA,C28,ATMAE-2027,A4.3,apoyo,Alertas tempranas
+CNA,C29,ATMAE-2027,A11,apoyo,Ajustes curriculares como mejora
+CNA,C30,ATMAE-2027,A4.1,parcial,Mecanismos de selección
+CNA,C32,ATMAE-2027,A5.2,apoyo,Redes y asociaciones profesionales de profesores
+CNA,C34,ATMAE-2027,A3.3,apoyo,
+CNA,C35,ATMAE-2027,A5.2,apoyo,Actividad académica de profesores
+CNA,C38,ATMAE-2027,A7.2,parcial,Apoyo a profesores
+CNA,C39,ATMAE-2027,A7.2,parcial,Apoyo a estudiantes y seguimiento de su progreso
+CNA,C40,ATMAE-2027,A7.2,parcial,Recursos bibliográficos
+CNA,C41,ATMAE-2027,A5.1,parcial,Organización y administración
+CNA,C42,ATMAE-2027,A5.1,parcial,Dirección del programa
+CNA,C42,ATMAE-2027,A1,apoyo,
+CNA,C43,ATMAE-2027,A7.2,apoyo,Infraestructura de comunicación
+CNA,C43,ATMAE-2027,A12,apoyo,
+CNA,C44,ATMAE-2027,A4.2,parcial,Estudiantes y capacidad institucional
+CNA,C45,ATMAE-2027,A7.3,parcial,Financiación del programa
+CNA,C46,ATMAE-2027,A11,parcial,Aseguramiento de la calidad y mejora continua
+CNA,C46,ATMAE-2027,A1,apoyo,
+CNA,C47,ATMAE-2027,A6.1,parcial,Infraestructura física y tecnológica
+CNA,C47,ATMAE-2027,A6.2,apoyo,
+CNA,C48,ATMAE-2027,A6.1,parcial,Recursos informáticos
+CNA,C48,ATMAE-2027,A7.2,apoyo,
+REA-IA,REA1,ATMAE-2027,A2,parcial,REA 2019 como PLO candidato
+REA-IA,REA2,ATMAE-2027,A2,parcial,REA 2019 como PLO candidato
+REA-IA,REA3,ATMAE-2027,A2,parcial,REA 2019 como PLO candidato
+REA-IA,REA4,ATMAE-2027,A2,parcial,REA 2019 como PLO candidato
+REA-IA,REA5,ATMAE-2027,A2,parcial,REA 2019 como PLO candidato

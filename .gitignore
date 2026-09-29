@@ -24,3 +24,6 @@ ANEXOS/
 
 # GitHub Pages: solo la versión para compartir (indice publicar)
 !docs/tablas_csv.zip
+
+# Documentos oficiales de referencia (ATMAE): se descargan de atmae.org
+referencias/

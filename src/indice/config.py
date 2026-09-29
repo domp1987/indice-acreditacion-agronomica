@@ -17,6 +17,7 @@ class Rutas:
     semillas: Path
     pads: Path | None = None
     anexos: Path | None = None
+    recursos_ra: Path | None = None
     poppler: Path | None = None
 
     @property
@@ -26,6 +27,8 @@ class Rutas:
     def anexos_json(self): return self.salida / 'anexos.json'
     @property
     def compartir(self): return self.salida / 'compartir'
+    @property
+    def recursos_ra_json(self): return self.salida / 'recursos_ra.json'
     @property
     def docs(self): return PROYECTO / 'docs'   # GitHub Pages (solo la versión para compartir)
 
@@ -79,5 +82,6 @@ def cargar_rutas(pdf=None, salida=None, config=None):
                  semillas=ruta(None, 'semillas', 'datos/semillas'),
                  pads=ruta(None, 'pads', 'PADs'),
                  anexos=ruta(None, 'anexos', 'ANEXOS'),
+                 recursos_ra=ruta(None, 'recursos_ra', None),
                  poppler=Path(poppler) if poppler else ruta(None, 'poppler', None))
 

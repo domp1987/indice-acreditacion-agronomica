@@ -17,6 +17,7 @@ from indice.ocr import texto_nuevo
 from indice.pad import normalizar as normalizar_texto
 from indice.maestro import evidencias_maestro, leer_maestros, plan_2025, rea_por_cadi, transicion_2025
 from indice.anexos import evidencias_anexos
+from indice.recursos_ra import evidencias_ra
 from indice.semillas import leer_todas
 
 
@@ -285,8 +286,8 @@ def cargar_indicadores(cur, nodos, ev_ids, semillas):
 
 
 def cargar_cursos_y_brechas(cur, nodos, semillas):
-    cur.executemany("INSERT INTO curso(nombre,numero,componente_cma,creditos,periodo,categoria_abet,confianza,nota) "
-                    "VALUES (:nombre,:numero,:componente_cma,:creditos,:periodo,:categoria_abet,:confianza,:nota)", semillas['cursos'])
+    cur.executemany("INSERT INTO curso(nombre,numero,componente_cma,creditos,periodo,categoria_abet,categoria_atmae,confianza,nota) "
+                    "VALUES (:nombre,:numero,:componente_cma,:creditos,:periodo,:categoria_abet,:categoria_atmae,:confianza,:nota)", semillas['cursos'])
     ids = dict(cur.execute('SELECT nombre, id FROM curso'))
     cur.executemany('INSERT INTO curso_prerrequisito(curso_id, requisito_id, requisito) VALUES (?,?,?)',
                     [(ids[x['curso']], ids.get(x['requisito']), x['requisito']) for x in semillas['prerrequisitos']])
@@ -426,14 +427,15 @@ def _leer_ocr(ocr_json):
     return {(fuente, int(p)): lineas for fuente, c in cache.items() for p, lineas in c['paginas'].items()}
 
 
-VERSION_ESQUEMA = 10
+VERSION_ESQUEMA = 11
 # Migraciones que agregan tablas sin tocar los datos existentes: {versión destino: script}
 MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql', 4: PAQUETE / 'esquema_pad_v4.sql',
                5: PAQUETE / 'esquema_v5_decision.sql', 6: PAQUETE / 'esquema_v6_maestro.sql',
                7: PAQUETE / 'esquema_v7_procesos.sql',
                8: PAQUETE / 'esquema_v8_nivel.sql',
                9: PAQUETE / 'esquema_v9_ruta.sql',
-               10: PAQUETE / 'esquema_v10_outcomes.sql'}
+               10: PAQUETE / 'esquema_v10_outcomes.sql',
+               11: PAQUETE / 'esquema_v11_atmae.sql'}
 # Tablas que son copia directa de semillas, presentaciones o PAD: se vacían y se vuelven a llenar en cada carga
 # (hijas antes que padres). Su fuente de verdad son los CSV y los documentos, no la base.
 DERIVADAS = ['plan_2025_rea', 'plan_2025', 'transicion_2025', 'pad_fase', 'pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad',
@@ -499,7 +501,7 @@ def _migrar(db, desde, avisar=True):
         con.close()
 
 
-def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, reconstruir=False, pads_json=None, maestros_dir=None, anexos_json=None):
+def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, reconstruir=False, pads_json=None, maestros_dir=None, anexos_json=None, ra_json=None):
     """Carga incremental: actualiza la base sin perder las decisiones del comité (ver schema.sql)."""
     diapositivas = Path(diapositivas)
     if not diapositivas.exists():
@@ -523,7 +525,8 @@ def cargar(db, diapositivas, semillas_dir, pptx_json=None, ocr_json=None, recons
         for m in maestros:
             if m.get('prefijo') in declarados:
                 m.update(proceso=declarados[m['prefijo']]['proceso'], nivel=declarados[m['prefijo']]['nivel'])
-        ev_documentos = [e for m in maestros for e in evidencias_maestro(m)] + evidencias_anexos(anexos)
+        ra = json.loads(Path(ra_json).read_text(encoding='utf-8')) if ra_json and Path(ra_json).exists() else None
+        ev_documentos = [e for m in maestros for e in evidencias_maestro(m)] + evidencias_anexos(anexos) + evidencias_ra(ra)
         ev_ids, cambios = sincronizar_evidencias(cur, nodos, slides, _leer_ocr(ocr_json), adicionales=ev_pads + ev_documentos,
                                                  reglas=semillas['documento_nodos'])
         for t in DERIVADAS:

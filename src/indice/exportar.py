@@ -11,11 +11,11 @@ TABLAS = ['marco', 'nodo', 'correspondencia', 'evidencia', 'evidencia_nodo', 'in
           'plan_2025', 'plan_2025_rea', 'transicion_2025']
 
 
-def datos_tablero(c):
-    q = lambda s, *a: [dict(r) for r in c.execute(s, a)]
-    abet = q("""SELECT n.id,n.codigo,n.nombre,n.tipo,n.descripcion,p.codigo padre FROM nodo n LEFT JOIN nodo p ON p.id=n.padre_id
-                JOIN marco m ON m.id=n.marco_id AND m.codigo='ABET-EAC' ORDER BY n.orden""")
-    for a in abet:
+def _nodos_destino(q, marco):
+    """Nodos de un marco destino (ABET o ATMAE) con sus evidencias, fuentes, brechas e indicadores."""
+    nodos = q("""SELECT n.id,n.codigo,n.nombre,n.tipo,n.descripcion,p.codigo padre FROM nodo n LEFT JOIN nodo p ON p.id=n.padre_id
+                JOIN marco m ON m.id=n.marco_id AND m.codigo=? ORDER BY n.orden""", marco)
+    for a in nodos:
         a['ev'] = q("""SELECT e.codigo,en.rol,en.origen FROM evidencia_nodo en JOIN evidencia e ON e.id=en.evidencia_id
                        WHERE en.nodo_id=? AND en.estado<>'descartada' AND e.estado_revision<>'obsoleta'
                        ORDER BY CASE en.rol WHEN 'principal' THEN 0 WHEN 'parcial' THEN 1 ELSE 2 END, e.codigo""", a['id'])
@@ -23,6 +23,13 @@ def datos_tablero(c):
                             WHERE c.destino_id=? ORDER BY m.id,o.codigo""", a['id'])
         a['brechas'] = q("SELECT titulo,descripcion,severidad,accion,estado FROM brecha WHERE nodo_id=?", a['id'])
         a['indicadores'] = q("SELECT i.codigo,i.nombre FROM indicador_nodo x JOIN indicador i ON i.id=x.indicador_id WHERE x.nodo_id=?", a['id'])
+    return nodos
+
+
+def datos_tablero(c):
+    q = lambda s, *a: [dict(r) for r in c.execute(s, a)]
+    abet = _nodos_destino(q, 'ABET-EAC')
+    atmae = _nodos_destino(q, 'ATMAE-2027')
     cna = q("""SELECT n.codigo,n.nombre,n.tipo,p.codigo padre FROM nodo n LEFT JOIN nodo p ON p.id=n.padre_id
                JOIN marco m ON m.id=n.marco_id AND m.codigo='CNA' ORDER BY n.orden""")
     ev = q("SELECT id,codigo,titulo,tipo,texto,texto_ocr,fuente,archivo,pagina,proceso,nivel FROM evidencia WHERE estado_revision<>'obsoleta' ORDER BY codigo")
@@ -38,14 +45,15 @@ def datos_tablero(c):
     for i in ind:
         i['m'] = q("SELECT periodo,sede,valor,desagregacion d,nota FROM medicion WHERE indicador_id=? ORDER BY id", i.pop('id'))
     return dict(
-        abet=abet, cna=cna, evidencias=ev, indicadores=ind,
-        cursos=q("SELECT nombre,numero,periodo,componente_cma,creditos,categoria_abet,confianza,nota FROM curso ORDER BY periodo,numero"),
+        abet=abet, atmae=atmae, cna=cna, evidencias=ev, indicadores=ind,
+        creditos_atmae=q("SELECT area,creditos,cursos,minimo,maximo FROM v_creditos_atmae"),
+        cursos=q("SELECT nombre,numero,periodo,componente_cma,creditos,categoria_abet,categoria_atmae,confianza,nota FROM curso ORDER BY periodo,numero"),
         matriz=q("""SELECT c.nombre curso,n.codigo so,co.nivel,co.estado,co.origen,co.justificacion j FROM curso_outcome co
                     JOIN curso c ON c.id=co.curso_id JOIN nodo n ON n.id=co.nodo_id ORDER BY c.periodo,c.numero,n.orden"""),
         inconsistencias=q("SELECT * FROM v_inconsistencias"),
         normativa=q("""SELECT n.tipo,n.numero,n.anio,n.organo,GROUP_CONCAT(e.codigo) evs FROM normativa n JOIN normativa_mencion m ON m.normativa_id=n.id
                        JOIN evidencia e ON e.id=m.evidencia_id GROUP BY n.id ORDER BY n.anio DESC,n.numero"""),
-        brechas=q("""SELECT n.codigo nodo,b.titulo,b.descripcion,b.severidad,b.accion,b.estado FROM brecha b JOIN nodo n ON n.id=b.nodo_id
+        brechas=q("""SELECT m.codigo marco,n.codigo nodo,b.titulo,b.descripcion,b.severidad,b.accion,b.estado FROM brecha b JOIN nodo n ON n.id=b.nodo_id JOIN marco m ON m.id=n.marco_id
                      ORDER BY CASE b.severidad WHEN 'alta' THEN 0 WHEN 'media' THEN 1 ELSE 2 END"""),
         rea=q("SELECT n.codigo,n.descripcion FROM nodo n JOIN marco m ON m.id=n.marco_id AND m.codigo='REA-IA' ORDER BY n.orden"))
 
