@@ -172,6 +172,7 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
 </header>
 
 <nav role="tablist" aria-label="Vistas">
+  <button role="tab" aria-selected="false" data-tab="cna">CNA alta calidad</button>
   <button role="tab" aria-selected="false" data-tab="radar">Comparación</button>
   <button role="tab" aria-selected="true" data-tab="mapa">Cobertura ABET</button>
   <button role="tab" aria-selected="false" data-tab="atmae">Cobertura ATMAE</button>
@@ -182,6 +183,19 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
   <button role="tab" aria-selected="false" data-tab="brechas">Brechas</button>
   <button role="tab" aria-selected="false" data-tab="normativa">Normativa</button>
 </nav>
+
+<section id="cna" role="tabpanel" hidden>
+  <div class="panel" style="margin-bottom:18px">
+    <h2 style="margin-bottom:6px">Acreditación en alta calidad (CNA, Acuerdo CESU 02 de 2020)</h2>
+    <p class="note">Valoraciones de la autoevaluación del programa (12 factores, 48 características). Grado de cumplimiento según los propios informes: 4,5 o más «se cumple plenamente»; 3,7 a 4,4 «se cumple en alto grado». La acreditación se otorga por 6, 8 o 10 años según consolidación, sostenibilidad e impacto. <b>Riesgo de sobrevaloración</b>: característica valorada alto que ABET, ATMAE o ANECA señalan con brechas altas por una correspondencia directa; es lo que los pares podrían cuestionar.</p>
+    <div class="figs" id="figsCna" style="margin:14px 0 4px"></div>
+  </div>
+  <div class="radares">
+    <div class="panel"><div class="radar" id="radarCNA" role="img" aria-label="Radar de los 12 factores CNA"></div></div>
+    <div class="panel"><h3 style="margin-bottom:8px">Factores</h3><div class="wide"><table id="tcnaf"></table></div></div>
+  </div>
+  <div class="panel" style="margin-top:18px"><h3 style="margin-bottom:8px">Características, de mayor a menor riesgo</h3><div class="wide"><table id="tcnac"></table></div></div>
+</section>
 
 <section id="radar" role="tabpanel" hidden>
   <div class="panel" style="margin-bottom:18px">
@@ -308,7 +322,7 @@ function show(id){
   tabs.forEach(b=>b.setAttribute('aria-selected', b.dataset.tab===id));
   document.querySelectorAll('section[role=tabpanel]').forEach(s=>s.hidden = s.id!==id);
 }
-tabs.forEach(b=>b.addEventListener('click',()=>{show(b.dataset.tab); if(b.dataset.tab==='radar') dibujarRadares();}));
+tabs.forEach(b=>b.addEventListener('click',()=>{show(b.dataset.tab); if(b.dataset.tab==='radar') dibujarRadares(); if(b.dataset.tab==='cna') dibujarRadarCNA();}));
 
 // Cifras
 const cred = {}; D.cursos.forEach(c=>cred[c.categoria_abet]=(cred[c.categoria_abet]||0)+c.creditos);
@@ -418,7 +432,45 @@ function dibujarRadares(){
     return g;
   });
 }
-window.addEventListener('resize',()=>graficos&&graficos.forEach(g=>g.resize()));
+window.addEventListener('resize',()=>{graficos&&graficos.forEach(g=>g.resize()); graficoCNA&&graficoCNA.resize();});
+
+// CNA alta calidad: autoevaluación del programa
+const VC = D.valoracion_cna, FC = D.factores_cna;
+const promedio = (FC.reduce((s,f)=>s+(f.valoracion||0),0)/FC.length);
+const ORDEN_RIESGO = {alto:0, medio:1, bajo:2};
+$('#figsCna').innerHTML = [
+  [promedio.toFixed(2).replace('.',','), 'valoración media de los 12 factores'],
+  [FC.filter(f=>f.valoracion>=4.5).length+'/12', 'factores «se cumple plenamente»'],
+  [VC.filter(c=>c.valoracion>=4.5).length+'/48', 'características «plenamente»'],
+  [VC.filter(c=>c.riesgo_sobrevaloracion==='alto').length+' + '+VC.filter(c=>c.riesgo_sobrevaloracion==='medio').length, 'riesgo alto + medio de sobrevaloración']
+].map(([b,s])=>`<div class="fig"><b>${b}</b><span>${s}</span></div>`).join('');
+$('#tcnaf').innerHTML = '<thead><tr><th>Factor</th><th class="n">Valoración</th><th class="n">Cumplimiento</th><th>Grado</th></tr></thead><tbody>' +
+  FC.map(f=>`<tr><td>${f.codigo} ${esc(f.nombre)}</td><td class="n">${String(f.valoracion).replace('.',',')}</td><td class="n">${f.cumplimiento} %</td><td>${f.valoracion>=4.5?'<span class="tag principal">plenamente</span>':'<span class="tag parcial">alto grado</span>'}</td></tr>`).join('') + '</tbody>';
+$('#tcnac').innerHTML = '<thead><tr><th>Característica</th><th>Factor</th><th class="n">Ponderación</th><th class="n">Valoración</th><th>Grado</th><th class="n">Evidencias</th><th class="n">Brechas externas (altas / medias)</th><th>Riesgo de sobrevaloración</th></tr></thead><tbody>' +
+  [...VC].sort((a,b)=>(ORDEN_RIESGO[a.riesgo_sobrevaloracion]-ORDEN_RIESGO[b.riesgo_sobrevaloracion]) || (a.valoracion-b.valoracion)).map(c=>
+    `<tr><td>${c.codigo} ${esc(c.nombre)}</td><td>${c.factor}</td><td class="n">${c.ponderacion} %</td><td class="n">${String(c.valoracion).replace('.',',')}</td><td>${esc(c.grado)}</td><td class="n">${c.evidencias}${c.evidencias<3?' <span class="tag alta" title="poca evidencia en el índice">poca</span>':''}</td><td class="n">${c.senales_altas} / ${c.senales_medias}</td><td><span class="tag ${c.riesgo_sobrevaloracion==='alto'?'alta':c.riesgo_sobrevaloracion==='medio'?'media':'principal'}">${c.riesgo_sobrevaloracion}</span></td></tr>`).join('') + '</tbody>';
+let graficoCNA = null;
+function dibujarRadarCNA(){
+  if(typeof echarts==='undefined') return;
+  const css = getComputedStyle(document.documentElement), tit = css.getPropertyValue('--titulos').trim(), suave = css.getPropertyValue('--muted').trim(), linea = css.getPropertyValue('--line').trim();
+  if(graficoCNA) graficoCNA.dispose();
+  graficoCNA = echarts.init(document.getElementById('radarCNA'));
+  graficoCNA.setOption({
+    color:['#DAAA00', '#00482B'],
+    title:{text:'CNA: factores (autoevaluación)', subtext:`Valoración media ${promedio.toFixed(2).replace('.',',')} de 5`, left:'center', textStyle:{color:tit,fontSize:16}, subtextStyle:{color:suave}},
+    legend:{bottom:0, textStyle:{color:suave}},
+    tooltip:{trigger:'item', confine:true, formatter:p=>p.name+'<br>'+FC.map((f,i)=>`${f.codigo} ${corto(f.nombre)}: <b>${String(p.value[i]).replace('.',',')}</b>`).join('<br>')},
+    radar:{indicator: FC.map(f=>({text:`${f.codigo} ${corto(f.nombre)}`, min:3, max:5})), center:['50%','56%'], radius:'46%', startAngle:90, splitNumber:4, shape:'circle',
+      axisName:{formatter:'【{value}】', color:tit||suave, fontSize:11, fontFamily:'Montserrat, Century Gothic, sans-serif'},
+      splitArea:{areaStyle:{color:['rgba(241,246,243,0.9)','rgba(213,227,220,0.7)','rgba(169,199,184,0.55)','rgba(110,156,133,0.45)'], shadowColor:'rgba(0,0,0,0.12)', shadowBlur:8}},
+      axisLine:{lineStyle:{color:linea}}, splitLine:{lineStyle:{color:linea}}},
+    series:[{type:'radar', emphasis:{lineStyle:{width:4}}, data:[
+      {value:FC.map(()=>4.5), name:'«Se cumple plenamente» (4,5)', symbol:'none', lineStyle:{type:'dashed', width:1.5}},
+      {value:FC.map(f=>f.valoracion), name:'Programa (autoevaluación)', symbol:'rect', symbolSize:7,
+       areaStyle:{color:new echarts.graphic.RadialGradient(0.5,0.5,1,[{color:'rgba(121,192,0,0.25)',offset:0},{color:'rgba(0,123,62,0.7)',offset:1}])},
+       label:{show:true, color:tit, fontSize:10, formatter:p=>String(p.value).replace('.',',')}}]}]
+  });
+}
 $('#tradar').innerHTML = '<thead><tr><th>Acreditadora</th><th>Criterio</th><th class="n">Evidencias</th><th class="n">Puntos por evidencia (40)</th><th class="n">Brechas abiertas</th><th class="n">Puntos sin brechas (60)</th><th class="n">Preparación</th></tr></thead><tbody>' +
   MARCOS.flatMap(m=>m.datos.map(x=>`<tr><td>${m.n}</td><td>${x.codigo} ${esc(x.nombre)}</td><td class="n">${x.nev}</td><td class="n">${x.ptsEv}</td><td class="n">${x.nbr}</td><td class="n">${x.ptsBr}</td><td class="n"><b>${x.total}</b></td></tr>`)).join('') + '</tbody>';
 
@@ -530,7 +582,7 @@ render();
 
 // Brechas
 $('#tbrechas').innerHTML='<thead><tr><th>ABET</th><th>Severidad</th><th>Brecha</th><th>Acción propuesta</th><th>Estado</th></tr></thead><tbody>'+
-  D.brechas.map(b=>`<tr><td>${b.marco==="ATMAE-2027"?"ATMAE ":b.marco==="ANECA-EURACE"?"ANECA ":"ABET "}${b.nodo}</td><td><span class="tag ${b.severidad}">${b.severidad}</span></td><td><strong>${esc(b.titulo)}</strong><br>${esc(b.descripcion)}</td><td>${esc(b.accion)}</td><td>${b.estado}</td></tr>`).join('')+'</tbody>';
+  D.brechas.map(b=>`<tr><td>${b.marco==="ATMAE-2027"?"ATMAE ":b.marco==="ANECA-EURACE"?"ANECA ":b.marco==="CNA"?"CNA ":"ABET "}${b.nodo}</td><td><span class="tag ${b.severidad}">${b.severidad}</span></td><td><strong>${esc(b.titulo)}</strong><br>${esc(b.descripcion)}</td><td>${esc(b.accion)}</td><td>${b.estado}</td></tr>`).join('')+'</tbody>';
 
 // Normativa
 $('#tnorm').innerHTML='<thead><tr><th>Norma</th><th>Órgano</th><th>Citada en</th></tr></thead><tbody>'+

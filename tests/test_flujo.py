@@ -124,7 +124,7 @@ def test_igual_al_prototipo(salida):
     # Brechas: cambia la descripción de C5b (9 créditos de ingeniería tras revisar los PAD) y se agregan las de ATMAE (A…)
     solo_a, solo_b = difs.get('brecha', ([], []))
     assert len(solo_a) <= 1 and all(r[0] == 'C5b' for r in solo_a)
-    assert all(r[0] == 'C5b' or r[0].startswith(('A', 'E')) for r in solo_b)   # + brechas ATMAE (A…) y ANECA (E…)
+    assert all(r[0] == 'C5b' or r[0].startswith(('A', 'E')) or r[0] in ('C10', 'C23', 'C27', 'C09', 'F02', 'C07', 'F01') for r in solo_b)   # + brechas ATMAE (A…), ANECA (E…) y CNA
     # Matriz cursos × SO: en el prototipo estaba vacía; ahora solo se agrega (curso_outcomes.csv)
     assert not difs.get('curso_outcome', ([], []))[0]
     # Etiquetas: las de las diapositivas son las mismas; solo se agregan las de documentos maestros y anexos

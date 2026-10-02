@@ -48,6 +48,11 @@ def datos_tablero(c):
     return dict(
         abet=abet, atmae=atmae, aneca=aneca, cna=cna, evidencias=ev, indicadores=ind,
         creditos_aneca=q("SELECT modulo,creditos,ects,cursos,minimo_ects FROM v_creditos_aneca"),
+        valoracion_cna=q("SELECT * FROM v_valoracion_cna"),
+        factores_cna=q("""SELECT n.codigo,n.nombre,
+            (SELECT m.valor FROM medicion m JOIN indicador i ON i.id=m.indicador_id WHERE i.codigo='CNA_VAL_FACTOR' AND m.desagregacion=n.codigo) valoracion,
+            (SELECT m.valor FROM medicion m JOIN indicador i ON i.id=m.indicador_id WHERE i.codigo='CNA_CUMPL_FACTOR' AND m.desagregacion=n.codigo) cumplimiento
+            FROM nodo n JOIN marco m ON m.id=n.marco_id AND m.codigo='CNA' WHERE n.tipo='factor' ORDER BY n.orden"""),
         creditos_atmae=q("SELECT area,creditos,cursos,minimo,maximo FROM v_creditos_atmae"),
         cursos=q("SELECT nombre,numero,periodo,componente_cma,creditos,categoria_abet,categoria_atmae,modulo_cin,confianza,nota FROM curso ORDER BY periodo,numero"),
         matriz=q("""SELECT c.nombre curso,n.codigo so,co.nivel,co.estado,co.origen,co.justificacion j FROM curso_outcome co
