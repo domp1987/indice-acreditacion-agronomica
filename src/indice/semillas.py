@@ -14,7 +14,7 @@ ARCHIVOS = {
     'indicadores': ['codigo', 'nombre', 'unidad', 'descripcion'],
     'indicador_nodos': ['indicador', 'marco', 'nodo', 'rol'],
     'mediciones': ['indicador', 'periodo', 'sede', 'valor', 'desagregacion', 'evidencia', 'nota'],
-    'cursos': ['nombre', 'numero', 'componente_cma', 'creditos', 'periodo', 'categoria_abet', 'categoria_atmae', 'confianza', 'nota'],
+    'cursos': ['nombre', 'numero', 'componente_cma', 'creditos', 'periodo', 'categoria_abet', 'categoria_atmae', 'modulo_cin', 'confianza', 'nota'],
     'prerrequisitos': ['curso', 'requisito'],
     'curso_outcomes': ['curso', 'outcome', 'nivel', 'estado', 'origen', 'puntaje', 'justificacion', 'validado_por'],
     'brechas': ['marco', 'nodo', 'titulo', 'descripcion', 'severidad', 'accion', 'responsable', 'estado'],
@@ -111,6 +111,9 @@ def validar(d):
     for c in d['cursos']:
         if c['categoria_atmae'] not in ('educacion_general', 'matematicas', 'ciencias_fisicas', 'ciencias_vida', 'gestion', 'tecnica', 'electivas'):
             errores.append(f'cursos.csv: categoria_atmae "{c["categoria_atmae"]}" en {c["nombre"]}')
+    for c in d['cursos']:
+        if c['modulo_cin'] not in ('basico', 'comun_agricola', 'tecnologia_especifica', 'tfg', 'transversal'):
+            errores.append(f'cursos.csv: modulo_cin "{c["modulo_cin"]}" en {c["nombre"]}')
     numeros = [c['numero'] for c in d['cursos'] if c['numero'] is not None]
     if len(numeros) != len(set(numeros)): errores.append('cursos.csv: número de la ruta repetido')
     for x in d['documentos']:

@@ -59,8 +59,8 @@ def test_conteos(con):
     n = lambda q: con.execute(q).fetchone()[0]
     assert n("SELECT COUNT(*) FROM evidencia WHERE codigo LIKE 'F%'") == 240      # como el prototipo
     assert n("SELECT COUNT(*) FROM evidencia WHERE codigo LIKE 'S%'") == 52       # sesión de inicio (Rectoría y Facultad)
-    assert n('SELECT COUNT(*) FROM evidencia_nodo') == 1827   # 240 de diapositivas + 415 propuestas por sección y RA (documento_nodos.csv) + 597 inferidas ABET + 575 ATMAE
-    assert n('SELECT COUNT(*) FROM nodo') == 125   # 89 + los 3 REA de la ruta 2025 + 33 de ATMAE 2027
+    assert n('SELECT COUNT(*) FROM evidencia_nodo') == 2252   # 240 de diapositivas + 415 propuestas por sección y RA (documento_nodos.csv) + 597 inferidas ABET + 575 ATMAE + 425 ANECA
+    assert n('SELECT COUNT(*) FROM nodo') == 142   # 89 + los 3 REA de la ruta 2025 + 33 de ATMAE 2027 + 17 de ANECA
     assert n('SELECT COUNT(*) FROM medicion') == 299   # 224 del prototipo + 3 (corrección F04-P006) + 72 (ponderaciones y factores CNA)
     assert n('SELECT COUNT(*) FROM curso') == 54
     assert n('SELECT SUM(creditos) FROM curso') == 150
@@ -80,7 +80,7 @@ def test_data_json_completo(salida):
 
 def test_reproyectar_es_idempotente(salida, con):
     assert main(['reproyectar', '--salida', str(salida)]) == 0
-    assert con.execute('SELECT COUNT(*) FROM evidencia_nodo').fetchone()[0] == 1827
+    assert con.execute('SELECT COUNT(*) FROM evidencia_nodo').fetchone()[0] == 2252
 
 
 def test_graficas_y_tablas_pptx(con):
@@ -124,13 +124,13 @@ def test_igual_al_prototipo(salida):
     # Brechas: cambia la descripción de C5b (9 créditos de ingeniería tras revisar los PAD) y se agregan las de ATMAE (A…)
     solo_a, solo_b = difs.get('brecha', ([], []))
     assert len(solo_a) <= 1 and all(r[0] == 'C5b' for r in solo_a)
-    assert all(r[0] == 'C5b' or r[0].startswith('A') for r in solo_b)
+    assert all(r[0] == 'C5b' or r[0].startswith(('A', 'E')) for r in solo_b)   # + brechas ATMAE (A…) y ANECA (E…)
     # Matriz cursos × SO: en el prototipo estaba vacía; ahora solo se agrega (curso_outcomes.csv)
     assert not difs.get('curso_outcome', ([], []))[0]
     # Etiquetas: las de las diapositivas son las mismas; solo se agregan las de documentos maestros y anexos
     # (propuestas por sección en documento_nodos.csv, y sus inferidas), que también cambian la cobertura ABET
     solo_a, solo_b = difs.get('evidencia_nodo', ([], []))
-    assert not solo_a and all(es_sesion(r) or r[1] == 'ATMAE-2027' or r[0].startswith('RA-') for r in solo_b)   # + marco ATMAE y Jardín Vivo RA
+    assert not solo_a and all(es_sesion(r) or r[1] in ('ATMAE-2027', 'ANECA-EURACE') or r[0].startswith('RA-') for r in solo_b)   # + marco ATMAE y Jardín Vivo RA
     # Marco REA-IA-2025 (documento maestro): solo se agrega
     for t in ('marco', 'nodo', 'correspondencia'):
         assert not difs.get(t, ([], []))[0], t

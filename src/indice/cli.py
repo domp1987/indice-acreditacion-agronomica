@@ -51,7 +51,7 @@ def main(argv=None):
     sub.add_parser('maestro', parents=[comun], help='solo lee los documentos maestros declarados en documentos.csv (con caché)')
     sub.add_parser('anexos', parents=[comun], help='solo indexa los anexos (ANEXOS/, con OCR de los escaneados y caché)')
     sub.add_parser('cargar', parents=[comun, con_carga], help='actualiza la base SQLite (incremental) desde lo extraído y las semillas')
-    sub.add_parser('reproyectar', parents=[comun], help='infiere etiquetas ABET y ATMAE desde CNA y REA vía correspondencias')
+    sub.add_parser('reproyectar', parents=[comun], help='infiere etiquetas ABET, ATMAE y ANECA (EUR-ACE) desde CNA y REA vía correspondencias')
     sub.add_parser('recursos', parents=[comun], help='solo inventaría los recursos de Jardín Vivo RA (modelos 3D e imágenes 360)')
     sub.add_parser('outcomes', parents=[comun], help='propone la matriz cursos × Student Outcomes (I/R/E) desde los PAD en curso_outcomes.csv, sin tocar las decisiones del comité')
     sub.add_parser('exportar', parents=[comun], help='genera data.json y los CSV')

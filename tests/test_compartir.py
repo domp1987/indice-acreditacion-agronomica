@@ -12,6 +12,7 @@ from indice.config import cargar_rutas
 
 rutas = cargar_rutas()
 CORREO = re.compile(r'[\w.+-]+@[\w-]+(\.[\w-]+)+')
+INSTITUCIONALES = {'sellosinternacionalescalidad@aneca.es'}   # contactos de agencias citados en las brechas
 
 
 def test_anonimizar_texto():
@@ -31,7 +32,7 @@ def test_version_para_compartir(tmp_path):
     with zipfile.ZipFile(tmp_path / 'tablas_csv.zip') as z:
         csvs = ''.join(z.read(n).decode('utf-8-sig') for n in z.namelist())
     for texto in (html, csvs):
-        assert not CORREO.search(texto)
+        assert not [m.group() for m in CORREO.finditer(texto) if m.group() not in INSTITUCIONALES]
         assert not re.search(r'profesor l[ií]der\s+[A-ZÁÉÍÓÚÑ]{3,}', texto, re.I)
     d = json.loads((tmp_path / 'data.json').read_text(encoding='utf-8'))
     ev = {e['codigo']: e for e in d['evidencias']}

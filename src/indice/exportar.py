@@ -30,6 +30,7 @@ def datos_tablero(c):
     q = lambda s, *a: [dict(r) for r in c.execute(s, a)]
     abet = _nodos_destino(q, 'ABET-EAC')
     atmae = _nodos_destino(q, 'ATMAE-2027')
+    aneca = _nodos_destino(q, 'ANECA-EURACE')
     cna = q("""SELECT n.codigo,n.nombre,n.tipo,p.codigo padre FROM nodo n LEFT JOIN nodo p ON p.id=n.padre_id
                JOIN marco m ON m.id=n.marco_id AND m.codigo='CNA' ORDER BY n.orden""")
     ev = q("SELECT id,codigo,titulo,tipo,texto,texto_ocr,fuente,archivo,pagina,proceso,nivel FROM evidencia WHERE estado_revision<>'obsoleta' ORDER BY codigo")
@@ -45,9 +46,10 @@ def datos_tablero(c):
     for i in ind:
         i['m'] = q("SELECT periodo,sede,valor,desagregacion d,nota FROM medicion WHERE indicador_id=? ORDER BY id", i.pop('id'))
     return dict(
-        abet=abet, atmae=atmae, cna=cna, evidencias=ev, indicadores=ind,
+        abet=abet, atmae=atmae, aneca=aneca, cna=cna, evidencias=ev, indicadores=ind,
+        creditos_aneca=q("SELECT modulo,creditos,ects,cursos,minimo_ects FROM v_creditos_aneca"),
         creditos_atmae=q("SELECT area,creditos,cursos,minimo,maximo FROM v_creditos_atmae"),
-        cursos=q("SELECT nombre,numero,periodo,componente_cma,creditos,categoria_abet,categoria_atmae,confianza,nota FROM curso ORDER BY periodo,numero"),
+        cursos=q("SELECT nombre,numero,periodo,componente_cma,creditos,categoria_abet,categoria_atmae,modulo_cin,confianza,nota FROM curso ORDER BY periodo,numero"),
         matriz=q("""SELECT c.nombre curso,n.codigo so,co.nivel,co.estado,co.origen,co.justificacion j FROM curso_outcome co
                     JOIN curso c ON c.id=co.curso_id JOIN nodo n ON n.id=co.nodo_id ORDER BY c.periodo,c.numero,n.orden"""),
         inconsistencias=q("SELECT * FROM v_inconsistencias"),

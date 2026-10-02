@@ -4,3 +4,4 @@ id,codigo,nombre,version,descripcion
 3,REA-IA,Resultados de aprendizaje del programa,Documento maestro 2019,5 REA de Ingeniería Agronómica
 4,REA-IA-2025,Resultados de aprendizaje del programa (ruta 2025),Documento maestro RRC 2025,3 REA del programa y 3 perfiles de la ruta de aprendizaje propuesta; sustituyen a los 5 REA de 2019
 5,ATMAE-2027,"ATMAE - Association of Technology, Management, and Applied Engineering",Estándares 2027 (vigentes desde el 1-sep-2026),"12 estándares de programa; textos parafraseados del 2027 ATMAE Accreditation Handbook, verificar contra el documento oficial (referencias/atmae/)"
+6,ANECA-EURACE,ANECA - Sello Internacional de Calidad EUR-ACE (ingeniería),Programa ACREDITA PLUS / Sellos Internacionales de Calidad; EAFSG de ENAEE (rev. 2015),"4 dimensiones y 9 criterios de ANECA más las 8 áreas de resultados EUR-ACE de grado; textos parafraseados, verificar contra los documentos oficiales (referencias/aneca/)"

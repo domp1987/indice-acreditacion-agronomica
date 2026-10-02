@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Índice de acreditación CNA → ABET y ATMAE · Ingeniería Agronómica</title>
+<title>Índice de acreditación CNA → ABET, ATMAE y ANECA · Ingeniería Agronómica</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
@@ -137,8 +137,8 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
 <div class="wrap">
 <header>
   <div>
-    <h1>Evidencias CNA reproyectadas a ABET y ATMAE</h1>
-    <p class="lede">Ingeniería Agronómica, UCundinamarca (Fusagasugá y ALD Facatativá). Cada diapositiva de la autoevaluación CNA, cada PAD, cada sección del documento maestro 2019 y los recursos de realidad aumentada de Jardín Vivo son evidencia de base; los anexos se consultan como fuente complementaria (solo apoyo) y el documento maestro RRC 2025, ruta aún no confirmada, como escenario sin proyección. Las correspondencias proponen la evidencia para los criterios de ABET EAC y los estándares de ATMAE 2027. Las propuestas deben validarse en el comité.</p>
+    <h1>Evidencias CNA reproyectadas a ABET, ATMAE y ANECA</h1>
+    <p class="lede">Ingeniería Agronómica, UCundinamarca (Fusagasugá y ALD Facatativá). Cada diapositiva de la autoevaluación CNA, cada PAD, cada sección del documento maestro 2019 y los recursos de realidad aumentada de Jardín Vivo son evidencia de base; los anexos se consultan como fuente complementaria (solo apoyo) y el documento maestro RRC 2025, ruta aún no confirmada, como escenario sin proyección. Las correspondencias proponen la evidencia para los criterios de ABET EAC, los estándares de ATMAE 2027 y los criterios de ANECA para el sello EUR-ACE. Las propuestas deben validarse en el comité.</p>
   </div>
   <div class="figs" id="figs"></div>
 </header>
@@ -146,6 +146,7 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
 <nav role="tablist" aria-label="Vistas">
   <button role="tab" aria-selected="true" data-tab="mapa">Cobertura ABET</button>
   <button role="tab" aria-selected="false" data-tab="atmae">Cobertura ATMAE</button>
+  <button role="tab" aria-selected="false" data-tab="aneca">Cobertura ANECA</button>
   <button role="tab" aria-selected="false" data-tab="curriculo">Currículo</button>
   <button role="tab" aria-selected="false" data-tab="indicadores">Indicadores</button>
   <button role="tab" aria-selected="false" data-tab="evidencias">Evidencias</button>
@@ -174,6 +175,20 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
     <span><i class="sw p"></i>Principal</span><span><i class="sw q"></i>Parcial</span><span><i class="sw a"></i>De apoyo</span><span><i class="sw g"></i>Sin evidencia</span>
   </div>
   <div class="tray" id="trayAtmae"></div>
+</section>
+
+<section id="aneca" role="tabpanel" hidden>
+  <div class="panel" style="margin-bottom:18px">
+    <h2 style="margin-bottom:6px">ANECA: sello EUR-ACE de ingeniería</h2>
+    <p class="note">Modelo de evaluación de ANECA para el sello EUR-ACE (4 dimensiones y 9 criterios) con las 8 áreas de resultados de aprendizaje de ENAEE para grado. Hoy ANECA está recuperando ante ENAEE su autorización para otorgar el sello EUR-ACE (ver brecha E8). Estructura curricular comparada con la Orden CIN/323/2009 (Ingeniero Técnico Agrícola en España), en ECTS equivalentes: 1 crédito colombiano = 48 h y 1 ECTS = 30 h.</p>
+    <div class="wide"><table id="tanecacin"></table></div>
+    <h3 style="margin:16px 0 6px">Áreas EUR-ACE en los cursos (según la matriz cursos × Student Outcomes)</h3>
+    <div class="wide"><table id="tanecaso"></table></div>
+  </div>
+  <div class="legend">
+    <span><i class="sw p"></i>Principal</span><span><i class="sw q"></i>Parcial</span><span><i class="sw a"></i>De apoyo</span><span><i class="sw g"></i>Sin evidencia</span>
+  </div>
+  <div class="tray" id="trayAneca"></div>
 </section>
 
 <section id="curriculo" role="tabpanel" hidden>
@@ -289,7 +304,17 @@ const AREAS = {educacion_general:'Educación general (con un curso oral y uno es
 $('#tatmae31').innerHTML = '<thead><tr><th>Área (estándar 3.1, pregrado)</th><th class="n">Créditos del programa</th><th class="n">Mínimo</th><th class="n">Máximo</th><th>Estado</th></tr></thead><tbody>' +
   D.creditos_atmae.map(x=>`<tr><td>${AREAS[x.area]||x.area}</td><td class="n">${x.creditos}</td><td class="n">${x.minimo}</td><td class="n">${x.maximo}</td><td>${x.creditos<x.minimo?'<span class="tag alta">bajo el mínimo</span>':x.creditos>x.maximo?'<span class="tag media">excede el máximo: justificar</span>':'<span class="tag principal">cumple</span>'}</td></tr>`).join('') +
   `<tr><td><b>Total</b></td><td class="n"><b>${D.cursos.reduce((s,c)=>s+c.creditos,0)}</b></td><td class="n">120</td><td class="n">—</td><td>${D.cursos.reduce((s,c)=>s+c.creditos,0)>=120?'<span class="tag principal">cumple</span>':'<span class="tag alta">bajo el mínimo</span>'}</td></tr></tbody>`;
-['#tray','#trayAtmae'].forEach(sel=>{
+$('#trayAneca').innerHTML = D.aneca.map(rowHTML).join('');
+const MODS = {basico:'Formación básica (matemáticas, física, química, biología, geología, empresa, expresión gráfica, informática)',comun_agricola:'Común a la rama agrícola',tecnologia_especifica:'Tecnología específica',tfg:'Trabajo fin de grado (proyecto individual defendido ante tribunal)',transversal:'Formación transversal institucional'};
+$('#tanecacin').innerHTML = '<thead><tr><th>Módulo (Orden CIN/323/2009)</th><th class="n">Créditos</th><th class="n">ECTS equiv.</th><th class="n">Mínimo ECTS</th><th>Estado</th></tr></thead><tbody>' +
+  D.creditos_aneca.map(x=>`<tr><td>${MODS[x.modulo]||x.modulo}</td><td class="n">${x.creditos}</td><td class="n">${x.ects}</td><td class="n">${x.minimo_ects||'—'}</td><td>${!x.minimo_ects?'':x.ects<x.minimo_ects?'<span class="tag alta">bajo el mínimo</span>':'<span class="tag principal">cumple</span>'}</td></tr>`).join('') +
+  `<tr><td><b>Total</b></td><td class="n"><b>${D.creditos_aneca.reduce((s,x)=>s+x.creditos,0)}</b></td><td class="n"><b>${D.creditos_aneca.reduce((s,x)=>s+x.ects,0)}</b></td><td class="n">240</td><td></td></tr></tbody>`;
+const SO2EA = {SO1:['E8.2','Análisis en ingeniería'],SO2:['E8.3','Proyectos (diseño) de ingeniería'],SO6:['E8.4','Investigación e innovación'],SO4:['E8.6','Elaboración de juicios'],SO3:['E8.7','Comunicación (y trabajo en equipo)'],SO5:['E8.7','Trabajo en equipo (y comunicación)'],SO7:['E8.8','Formación continua']};
+$('#tanecaso').innerHTML = '<thead><tr><th>Área EUR-ACE</th><th>Desde</th><th class="n">Cursos I</th><th class="n">Cursos R</th><th class="n">Cursos E</th></tr></thead><tbody>' +
+  Object.entries(SO2EA).map(([so,[ea,nom]])=>{const f=n=>D.matriz.filter(m=>m.so===so&&m.estado!=='descartada'&&m.nivel===n).length;
+    return `<tr><td>${ea} ${nom}</td><td>${so}</td><td class="n">${f('I')}</td><td class="n">${f('R')}</td><td class="n">${f('E')}</td></tr>`}).join('') +
+  '<tr><td colspan="5" class="note">E8.1 (conocimiento) y E8.5 (aplicación práctica) se valoran con la estructura curricular de arriba y los laboratorios y prácticas de los PAD.</td></tr></tbody>';
+['#tray','#trayAtmae','#trayAneca'].forEach(sel=>{
   $(sel).addEventListener('click', e=>{
     const open = e.target.closest('[data-open]');
     if(open){ $('#fAbet').value=open.dataset.open; $('#fFactor').value=''; $('#q').value=''; render(); show('evidencias'); return; }
@@ -300,7 +325,7 @@ $('#tatmae31').innerHTML = '<thead><tr><th>Área (estándar 3.1, pregrado)</th><
 function toggle(r){
   const nx = r.nextElementSibling;
   if(nx && nx.classList.contains('detail')){ nx.remove(); r.setAttribute('aria-expanded','false'); return; }
-  const a = D.abet.concat(D.atmae).find(x=>x.codigo===r.dataset.id);
+  const a = D.abet.concat(D.atmae, D.aneca).find(x=>x.codigo===r.dataset.id);
   r.insertAdjacentHTML('afterend', detailHTML(a)); r.setAttribute('aria-expanded','true');
 }
 
@@ -381,8 +406,9 @@ $('#charts').innerHTML=charts;
 // Explorador de evidencias
 const facts=[...new Set(D.evidencias.map(e=>e.codigo.slice(0,3)))];
 $('#fFactor').innerHTML='<option value="">Todos los factores CNA</option>'+D.cna.filter(n=>n.tipo==='factor').map(n=>`<option value="${n.codigo}">${n.codigo.replace('F0','F')} ${esc(n.nombre)}</option>`).join('');
-$('#fAbet').innerHTML='<option value="">Todos los criterios ABET y ATMAE</option><optgroup label="ABET EAC">'+D.abet.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('')+
-  '</optgroup><optgroup label="ATMAE 2027">'+D.atmae.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('')+'</optgroup>';
+$('#fAbet').innerHTML='<option value="">Todos los criterios ABET, ATMAE y ANECA</option><optgroup label="ABET EAC">'+D.abet.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('')+
+  '</optgroup><optgroup label="ATMAE 2027">'+D.atmae.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('')+
+  '</optgroup><optgroup label="ANECA (EUR-ACE)">'+D.aneca.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('')+'</optgroup>';
 const TIPOS={diapositiva:'Diapositiva',valoracion:'Valoración del factor',logros:'Logros e impacto',plan_mejora:'Plan de mejoramiento',pad:'Plan de Aprendizaje Digital',documento_maestro:'Sección de documento maestro',anexo:'Anexo del RRC 2025'};
 const NIVELES={principal:'Base ABET',complementaria:'Complementaria',escenario:'Escenario RRC 2025'};
 // factor CNA de cada característica, para que el filtro por factor incluya documentos y anexos etiquetados
@@ -392,12 +418,12 @@ $('#fTipo').innerHTML='<option value="">Todos los tipos</option>'+Object.entries
 let limit=40;
 function render(){
   const q=$('#q').value.trim().toLowerCase(), f=$('#fFactor').value, a=$('#fAbet').value, t=$('#fTipo').value, nv=$('#fNivel').value;
-  const res=D.evidencias.filter(e=>(!f||enFactor(e,f))&&(!t||e.tipo===t)&&(!nv||e.nivel===nv)&&(!a||e.tags.some(g=>(g[0]==='ABET-EAC'||g[0]==='ATMAE-2027')&&g[1]===a))&&(!q||(e.titulo+' '+e.texto).toLowerCase().includes(q)));
+  const res=D.evidencias.filter(e=>(!f||enFactor(e,f))&&(!t||e.tipo===t)&&(!nv||e.nivel===nv)&&(!a||e.tags.some(g=>g[0]!=='CNA'&&g[0]!=='REA-IA'&&g[1]===a))&&(!q||(e.titulo+' '+e.texto).toLowerCase().includes(q)));
   $('#count').textContent=`${res.length} evidencia${res.length===1?'':'s'}`;
   const hl=s=>{s=esc(s); if(!q) return s; const i=s.toLowerCase().indexOf(esc(q)); return i<0?s:s.slice(0,i)+'<mark>'+s.slice(i,i+esc(q).length)+'</mark>'+s.slice(i+esc(q).length)};
   $('#list').innerHTML=res.slice(0,limit).map(e=>{
     const cna=e.tags.filter(g=>g[0]==='CNA').map(g=>`<span class="tag${g[3]==='extraccion'&&e.tipo!=='diapositiva'&&!['valoracion','logros','plan_mejora'].includes(e.tipo)?' '+g[2]:''}" title="${e.tipo==='anexo'||e.tipo==='documento_maestro'?'Propuesta por sección (documento_nodos.csv)':'Del encabezado de la diapositiva'}">${g[1].startsWith('C')?'Car. '+(+g[1].slice(1)):'Factor '+(+g[1].slice(1))}</span>`).join('');
-    const ab=e.tags.filter(g=>g[0]==='ABET-EAC'||g[0]==='ATMAE-2027').map(g=>`<span class="tag ${g[2]}" title="${g[0]} · ${g[3]==='inferida'?'Propuesta por correspondencia':'Asignada'}">${g[0]==='ATMAE-2027'?'ATMAE ':''}${g[1]} · ${g[2]}</span>`).join('');
+    const ab=e.tags.filter(g=>['ABET-EAC','ATMAE-2027','ANECA-EURACE'].includes(g[0])).map(g=>`<span class="tag ${g[2]}" title="${g[0]} · ${g[3]==='inferida'?'Propuesta por correspondencia':'Asignada'}">${g[0]==='ATMAE-2027'?'ATMAE ':g[0]==='ANECA-EURACE'?'ANECA ':''}${g[1]} · ${g[2]}</span>`).join('');
     let snip='';
     if(q){const i=e.texto.toLowerCase().indexOf(q); if(i>=0) snip=`<p>…${hl(e.texto.slice(Math.max(0,i-80),i+120).replace(/\s+/g,' '))}…</p>`;}
     return `<details class="ev"><summary><span class="cd">${e.codigo}</span><span><strong>${hl(e.titulo)}</strong><br><span class="proc ${e.nivel||''}">${NIVELES[e.nivel]||''}</span>${cna}${ab}${snip}</span></summary>
@@ -411,7 +437,7 @@ render();
 
 // Brechas
 $('#tbrechas').innerHTML='<thead><tr><th>ABET</th><th>Severidad</th><th>Brecha</th><th>Acción propuesta</th><th>Estado</th></tr></thead><tbody>'+
-  D.brechas.map(b=>`<tr><td>${b.marco==="ATMAE-2027"?"ATMAE ":"ABET "}${b.nodo}</td><td><span class="tag ${b.severidad}">${b.severidad}</span></td><td><strong>${esc(b.titulo)}</strong><br>${esc(b.descripcion)}</td><td>${esc(b.accion)}</td><td>${b.estado}</td></tr>`).join('')+'</tbody>';
+  D.brechas.map(b=>`<tr><td>${b.marco==="ATMAE-2027"?"ATMAE ":b.marco==="ANECA-EURACE"?"ANECA ":"ABET "}${b.nodo}</td><td><span class="tag ${b.severidad}">${b.severidad}</span></td><td><strong>${esc(b.titulo)}</strong><br>${esc(b.descripcion)}</td><td>${esc(b.accion)}</td><td>${b.estado}</td></tr>`).join('')+'</tbody>';
 
 // Normativa
 $('#tnorm').innerHTML='<thead><tr><th>Norma</th><th>Órgano</th><th>Citada en</th></tr></thead><tbody>'+
