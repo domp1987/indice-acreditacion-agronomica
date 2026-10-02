@@ -52,7 +52,7 @@ def test_genera_todos_los_productos(salida):
     for nombre in ['diapositivas.json', 'pptx.json', 'indice_acreditacion.sqlite', 'data.json', 'tablas_csv.zip', 'indice_acreditacion_abet.html']:
         assert (salida / nombre).stat().st_size > 0, nombre
     html = (salida / 'indice_acreditacion_abet.html').read_text(encoding='utf-8')
-    assert '__DATA__' not in html
+    assert '__DATA__' not in html and '__ECHARTS__' not in html and 'echarts' in html   # ECharts incrustado (radares)
 
 
 def test_conteos(con):
