@@ -6,46 +6,66 @@
 <title>Índice de acreditación CNA → ABET, ATMAE y ANECA · Ingeniería Agronómica</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#EEF2EE; --surface:#FFFFFF; --ink:#16241B; --muted:#56655B; --line:#D3DCD5;
-  --moss:#2E6B3E; --ochre:#B7862A; --sage:#9DB3A5; --mulberry:#8B2D4E; --tray:#E3EAE4;
-  --focus:#1D5FA8;
-  --font:"Archivo", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Imagen institucional UCundinamarca (Manual ECOM002, ver IMAGEN_INSTITUCIONAL_UCUNDINAMARCA.md) */
+  --verde:#007B3E; --verde-oscuro:#00482B; --amarillo:#FBE122; --dorado:#DAAA00;
+  --verde-lima:#79C000; --teal:#00A99D; --naranja:#F7931E; --gris-inst:#4D4D4D; --negro:#111111; --error:#B00020;
+  --grad-vital:linear-gradient(180deg,#79C000 0%,#007B3E 100%);
+  --grad-franja:linear-gradient(90deg,#00482B 0%,#007B3E 55%,#79C000 100%);
+  /* tokens del tablero */
+  --bg:#F5F6F5; --surface:#FFFFFF; --ink:#111111; --muted:#4D4D4D; --line:#D5E3DC;
+  --moss:#007B3E; --ochre:#DAAA00; --sage:#A9C7B8; --mulberry:#B00020; --tray:#F1F6F3;
+  --titulos:#00482B; --focus:#79C000;
+  --font:"Montserrat", "Century Gothic", "Segoe UI", Arial, sans-serif;
+  --font-titulos:"Century Gothic", "Montserrat", sans-serif;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#101712; --surface:#18221B; --ink:#E4ECE6; --muted:#9FB0A5; --line:#2C3A30;
-    --moss:#5FA873; --ochre:#D6A64A; --sage:#5E7466; --mulberry:#D0698D; --tray:#1F2B23; --focus:#7FB2F0;
+    --bg:#0E1712; --surface:#15241B; --ink:#EEF3EF; --muted:#B4C3BA; --line:#2A3D31;
+    --moss:#79C000; --ochre:#DAAA00; --sage:#6E9C85; --mulberry:#FF8A8A; --tray:#1B2E22; --focus:#FBE122; --titulos:#91C256;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#101712; --surface:#18221B; --ink:#E4ECE6; --muted:#9FB0A5; --line:#2C3A30;
-  --moss:#5FA873; --ochre:#D6A64A; --sage:#5E7466; --mulberry:#D0698D; --tray:#1F2B23; --focus:#7FB2F0;
+  --bg:#0E1712; --surface:#15241B; --ink:#EEF3EF; --muted:#B4C3BA; --line:#2A3D31;
+  --moss:#79C000; --ochre:#DAAA00; --sage:#6E9C85; --mulberry:#FF8A8A; --tray:#1B2E22; --focus:#FBE122; --titulos:#91C256;
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55}
+/* Encabezado institucional: blanco con el imagotipo (enlaza a ucundinamarca.edu.co) y franja degradada de 12 px */
+.institucional{background:#FFFFFF;position:relative;padding-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.institucional::after{content:"";position:absolute;inset:auto 0 0 0;height:12px;background:var(--grad-franja)}
+.institucional .barra{max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.institucional .logo{display:inline-block;padding:6px}
+.institucional .logo img{display:block;height:56px;width:auto}
+.institucional .dependencia{font-family:var(--font-titulos);font-style:italic;color:#4D4D4D;font-size:.95rem;line-height:1.3;text-align:right}
+/* Pie institucional */
+.pie{background:var(--negro);color:#D5D5D5;margin-top:24px}
+.pie .barra{max-width:1180px;margin:0 auto;padding:22px 20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.85rem}
+.pie a{color:#FFFFFF} .pie a:hover{color:var(--verde-lima)}
+.pie strong{font-family:var(--font-titulos);color:#FFFFFF;font-weight:400}
+@media (max-width:900px){header{grid-template-columns:1fr} .institucional .dependencia{text-align:left}}
 .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 64px}
-h1,h2,h3{font-stretch:118%;line-height:1.1;margin:0}
-h1{font-size:clamp(1.9rem,4.4vw,3.1rem);font-weight:780;letter-spacing:-.01em;max-width:18ch}
+h1,h2,h3{font-family:var(--font-titulos);color:var(--titulos);line-height:1.15;margin:0}
+h1{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:700;max-width:22ch}
 h2{font-size:1.45rem;font-weight:720}
 h3{font-size:1.02rem;font-weight:680;font-stretch:108%}
 p{margin:.4em 0}
 .lede{color:var(--muted);max-width:64ch;margin-top:12px}
-header{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;padding-bottom:22px;border-bottom:2px solid var(--ink)}
+header{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;padding-bottom:22px;border-bottom:2px solid var(--verde-oscuro)}
 .figs{display:flex;gap:26px;flex-wrap:wrap}
-.fig b{display:block;font-size:1.9rem;font-stretch:125%;font-weight:760;line-height:1}
+.fig b{display:block;font-family:var(--font-titulos);font-size:1.9rem;font-weight:800;line-height:1;color:var(--titulos)}
 .fig span{color:var(--muted);font-size:.84rem}
 nav{display:flex;gap:4px;flex-wrap:wrap;margin:20px 0 22px}
 nav button{font:inherit;font-weight:600;font-size:.95rem;background:transparent;color:var(--muted);border:1px solid transparent;border-radius:999px;padding:7px 15px;cursor:pointer}
-nav button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+nav button[aria-selected="true"]{background:var(--moss);color:#FFFFFF}
 nav button[aria-selected="false"]:hover{color:var(--ink);border-color:var(--line)}
 button:focus-visible,input:focus-visible,select:focus-visible,.row:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 section[hidden]{display:none}
@@ -136,6 +156,12 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
 </style>
 </head>
 <body>
+<div class="institucional" role="banner">
+  <div class="barra">
+    <a class="logo" href="https://www.ucundinamarca.edu.co" title="Universidad de Cundinamarca"><img src="__LOGO__" alt="Universidad de Cundinamarca" width="161" height="56"></a>
+    <div class="dependencia">Facultad de Ciencias Agropecuarias<br>Ingeniería Agronómica · Fusagasugá y Facatativá</div>
+  </div>
+</div>
 <div class="wrap">
 <header>
   <div>
@@ -371,21 +397,21 @@ function dibujarRadares(){
     const g = echarts.init(document.getElementById(m.id));
     const media = Math.round(m.datos.reduce((s,x)=>s+x.total,0)/m.datos.length);
     g.setOption({
-      color:[mora, musgo],
+      color:['#DAAA00', '#00482B'],
       title:{text:m.n, subtext:`Preparación media estimada: ${media}/100`, left:'center', textStyle:{color:tinta,fontSize:16}, subtextStyle:{color:suave}},
       legend:{bottom:0, textStyle:{color:suave}},
       tooltip:{trigger:'item', confine:true, formatter:p=>p.name+'<br>'+m.datos.map((x,i)=>`${x.codigo} ${corto(x.nombre)}: <b>${p.value[i]}</b>`).join('<br>')},
       radar:{
         indicator: m.datos.map(x=>({text:`${x.codigo} ${corto(x.nombre)}`, max:100})),
         center:['50%','56%'], radius:'46%', startAngle:90, splitNumber:4, shape:'circle',
-        axisName:{formatter:'【{value}】', color:suave, fontSize:11},
-        splitArea:{areaStyle:{color:['rgba(46,107,62,0.04)','rgba(46,107,62,0.08)','rgba(46,107,62,0.12)','rgba(46,107,62,0.16)'], shadowColor:'rgba(0,0,0,0.12)', shadowBlur:8}},
+        axisName:{formatter:'【{value}】', color:css.getPropertyValue('--titulos').trim()||suave, fontSize:11, fontFamily:'Montserrat, Century Gothic, sans-serif'},
+        splitArea:{areaStyle:{color:['rgba(241,246,243,0.9)','rgba(213,227,220,0.7)','rgba(169,199,184,0.55)','rgba(110,156,133,0.45)'], shadowColor:'rgba(0,0,0,0.12)', shadowBlur:8}},
         axisLine:{lineStyle:{color:linea}}, splitLine:{lineStyle:{color:linea}}
       },
       series:[{type:'radar', emphasis:{lineStyle:{width:4}}, data:[
         {value:m.datos.map(()=>100), name:'Exigido', symbol:'none', lineStyle:{type:'dashed', width:1.5}},
         {value:m.datos.map(x=>x.total), name:'Programa (estimado)', symbol:'rect', symbolSize:7,
-         areaStyle:{color:new echarts.graphic.RadialGradient(0.5,0.5,1,[{color:'rgba(46,107,62,0.15)',offset:0},{color:'rgba(46,107,62,0.65)',offset:1}])},
+         areaStyle:{color:new echarts.graphic.RadialGradient(0.5,0.5,1,[{color:'rgba(121,192,0,0.25)',offset:0},{color:'rgba(0,123,62,0.7)',offset:1}])},
          label:{show:true, color:tinta, fontSize:10, formatter:p=>p.value}}
       ]}]
     });
@@ -512,5 +538,11 @@ $('#tnorm').innerHTML='<thead><tr><th>Norma</th><th>Órgano</th><th>Citada en</t
 $('#tnorm').addEventListener('click',e=>{const b=e.target.closest('[data-ev]'); if(!b) return; $('#q').value=''; $('#fFactor').value=''; $('#fAbet').value=''; $('#fTipo').value=''; limit=400; render();
   show('evidencias'); const el=[...document.querySelectorAll('details.ev')].find(d=>d.querySelector('.cd').textContent===b.dataset.ev); if(el){el.open=true; el.scrollIntoView({block:'start'});}});
 </script>
+<footer class="pie">
+  <div class="barra">
+    <div><strong>Universidad de Cundinamarca</strong><br>Facultad de Ciencias Agropecuarias · Programa de Ingeniería Agronómica<br>Índice de acreditación CNA → ABET, ATMAE y ANECA (EUR-ACE)</div>
+    <div style="text-align:right"><a href="https://www.ucundinamarca.edu.co">www.ucundinamarca.edu.co</a><br>Vigilada MinEducación</div>
+  </div>
+</footer>
 </body>
 </html>
