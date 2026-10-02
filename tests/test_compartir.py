@@ -37,7 +37,7 @@ def test_version_para_compartir(tmp_path):
     d = json.loads((tmp_path / 'data.json').read_text(encoding='utf-8'))
     ev = {e['codigo']: e for e in d['evidencias']}
     assert ev['AX-36']['texto'].startswith('[Texto omitido')
-    assert len(d['evidencias']) == 716 and d['matriz']   # nada más cambia: mismas evidencias, etiquetas y matriz
+    assert len(d['evidencias']) == 732 and d['matriz']   # nada más cambia: mismas evidencias, etiquetas y matriz
 
 
 def test_credenciales_ocultas():

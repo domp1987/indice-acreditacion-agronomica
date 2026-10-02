@@ -75,7 +75,7 @@ def test_sesion_de_inicio(con):
 
 def test_data_json_completo(salida):
     d = json.loads((salida / 'data.json').read_text(encoding='utf-8'))
-    assert len(d['abet']) == 24 and len(d['cna']) == 60 and len(d['evidencias']) == 716   # 292 diapositivas + 53 PAD + 126 secciones DM25 + 107 DM19 + 135 anexos + 3 Jardín Vivo RA
+    assert len(d['abet']) == 24 and len(d['cna']) == 60 and len(d['evidencias']) == 732   # 292 diapositivas + 69 PAD + 126 secciones DM25 + 107 DM19 + 135 anexos + 3 Jardín Vivo RA
 
 
 def test_reproyectar_es_idempotente(salida, con):

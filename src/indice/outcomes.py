@@ -24,7 +24,7 @@ CAMPOS = ['curso', 'outcome', 'nivel', 'estado', 'origen', 'puntaje', 'justifica
 
 PATRONES = {
     'SO1': r'\bresolv|\bsolucion(ar|es)?\b|\bcalcul|\bmodel(o|os|ar|acion)\b|\bcuantific|\boptimiz',
-    'SO2': r'\bdisen(ar|o|os|a|e)\b(?!\s+(de\s+)?experiment)|\bdimension(ar|amiento)|\bplan de manejo|\bpropuesta tecnica|\bprototipo',
+    'SO2': r'\bdisen(ar|o|os|a|e)\b(?!\s+(de\s+(la\s+)?)?(experiment|investigaci|investigativ|metodologic|muestral))|\bdimension(ar|amiento)|\bplan de manejo|\bpropuesta tecnica|\bprototipo',
     'SO3': r'\bexposicion|\bsustentacion|\bsocializ|\binforme|\bpresentacion oral|\bposter\b|\binfografia|\bpodcast|\bvideo\b|\bcomunic(ar|acion)',
     'SO4': r'\betic[ao]s?\b|\bresponsabilidad social|\bimpacto (social|ambiental)|\bnormativ|\bbienestar (animal|social)|\bderechos',
     'SO5': r'\bequipo|\bgrupal|\ben grupo|\bcolaborativ|\bparejas|\bcooperativ',
@@ -93,18 +93,43 @@ def proponer(db):
                 for comp, so in SABER_PRO.items():
                     if comp in normalizar(comps):
                         puntaje[so] += 1
-            for (texto,) in con.execute("""SELECT coalesce(a.nombre,'')||' '||coalesce(a.descripcion,'')||' '||coalesce(a.trabajo_estudiante,'')||' '||
+            # el REA general del PAD pesa como un REA específico
+            (general,) = con.execute('SELECT coalesce(rea_general, \'\') FROM pad WHERE id=?', (pid,)).fetchone()
+            for so, p in patrones.items():
+                m = p.search(normalizar(general))
+                if m:
+                    puntaje[so] += 3; con_rea[so] = True
+                    motivos[so].append(f'{codigo} REA general: «{m.group().strip()}»')
+            actividades = con.execute("""SELECT coalesce(a.nombre,'')||' '||coalesce(a.descripcion,'')||' '||coalesce(a.trabajo_estudiante,'')||' '||
                         coalesce(a.descripcion_instrumentos,'')||' '||coalesce(a.tipo_actividad,'')||' '||coalesce(a.instrumentos,'')
-                    FROM pad_actividad a JOIN pad_experiencia x ON x.id=a.experiencia_id WHERE x.pad_id=?""", (pid,)):
+                    FROM pad_actividad a JOIN pad_experiencia x ON x.id=a.experiencia_id WHERE x.pad_id=?""", (pid,)).fetchall()
+            for (texto,) in actividades:
                 t = normalizar(texto)
                 for so, p in patrones.items():
                     if p.search(t): puntaje[so] += 1
+            if not actividades:
+                # plantillas (p. ej. las de los CAI) cuyas actividades no se extraen: indicios distintos en el texto completo,
+                # con tope de 3 puntos por outcome
+                (texto,) = con.execute('SELECT coalesce(e.texto, \'\') FROM pad p LEFT JOIN evidencia e ON e.id=p.evidencia_id WHERE p.id=?', (pid,)).fetchone()
+                t = normalizar(texto)
+                for so, p in patrones.items():
+                    distintos = {m.group().strip() for m in p.finditer(t)}
+                    if distintos:
+                        puntaje[so] += min(3, len(distintos))
+                        motivos[so].append(f'{codigo} texto del PAD: «{"», «".join(sorted(distintos)[:3])}»')
         for so in PATRONES:
             if puntaje[so] < UMBRAL: continue
             actividades = puntaje[so] - 3 * sum('REA' in m for m in motivos[so])
             resumen = '; '.join(dict.fromkeys(motivos[so]))[:400] or f'{actividades} indicios en actividades o competencias'
             propuestas[(curso, so)] = dict(curso=curso, outcome=so, nivel=_nivel(periodo, con_rea[so]), estado='propuesta',
                                            origen='pad', puntaje=puntaje[so], justificacion=resumen)
+        # cursos institucionales: si el PAD no alcanza el umbral para su outcome natural, se conserva la propuesta por nombre
+        for patron, sos in POR_NOMBRE:
+            if re.search(patron, normalizar(curso)):
+                for so in sos:
+                    propuestas.setdefault((curso, so), dict(curso=curso, outcome=so, nivel=_nivel(periodo, False), estado='propuesta',
+                                                             origen='nombre', puntaje=puntaje[so],
+                                                             justificacion='El PAD no alcanza el umbral: propuesta por el nombre del curso'))
     con.close()
     return propuestas
 

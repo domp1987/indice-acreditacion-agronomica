@@ -27,3 +27,9 @@ ANEXOS/
 
 # Documentos oficiales de referencia (ATMAE): se descargan de atmae.org
 referencias/
+
+# Fuentes institucionales en cualquier formato (PAD en Word, comprimidos): no se versionan
+PADs/
+*.docx
+*.zip
+!docs/tablas_csv.zip

@@ -24,13 +24,18 @@ from indice.tablero import tablero
 
 CORREO = re.compile(r'[\w.+-]+@[\w-]+(\.[\w-]+)+')
 LIDER = re.compile(r'((?:nombre\s+(?:del\s+)?)?(?:profesor|docente)(?:a)?\s+l[ií]der:?)[^\n]*', re.I)
+# PAD institucionales: «Líder CAI  Nombre» y «Nombre profesor … (salto de línea) NOMBRE APELLIDO»
+LIDER_CAI = re.compile(r'((?i:l[ií]der\s+CAI))[ \t]+[^\n]+')
+LIDER_SIGUIENTE = re.compile(r'((?i:nombre\s+(?:del\s+)?profesor)[^\n]*\n[ \t]*)((?:[A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ]+[ \t]+){1,4}[A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ]+)')
 PERSONAS = re.compile(r'profesor|docente|investigador|estudiante|egresad|graduad|integrante', re.I)
 AVISO = '[Texto omitido en la versión para compartir: {motivo}. Está en la versión completa del índice.]'
 
 
 def anonimizar_texto(t):
     if not t: return t
-    return ocultar_credenciales(LIDER.sub(r'\1 [omitido]', CORREO.sub('[correo omitido]', t)))
+    t = LIDER_SIGUIENTE.sub(r'\1[omitido]', CORREO.sub('[correo omitido]', t))
+    t = LIDER_CAI.sub(r'\1 [omitido]', LIDER.sub(r'\1 [omitido]', t))
+    return ocultar_credenciales(t)
 
 
 def _tabla_de_personas(filas):

@@ -90,7 +90,7 @@ def test_documentos_etiquetados_por_seccion():
         JOIN nodo n ON n.id=en.nodo_id WHERE e.codigo=?""", (c,))}
     assert {'C23', 'C24'} <= tags('DM19-3.2.2') and 'C31' in tags('AX-46-34') and 'C11' in tags('DM25-8.4.2')
     # base ABET = presentaciones CNA, PAD y DM19; anexos complementarios (solo apoyo); DM25 escenario (sin ABET)
-    assert n("SELECT COUNT(*) FROM evidencia WHERE nivel='principal'") == 455
+    assert n("SELECT COUNT(*) FROM evidencia WHERE nivel='principal'") == 471
     assert n("SELECT COUNT(*) FROM evidencia WHERE codigo LIKE 'DM19-%' AND nivel<>'principal'") == 0
     abet = lambda nivel, extra='': n(f"""SELECT COUNT(*) FROM evidencia_nodo en JOIN evidencia e ON e.id=en.evidencia_id
         JOIN nodo x ON x.id=en.nodo_id JOIN marco m ON m.id=x.marco_id AND m.codigo='ABET-EAC' WHERE e.nivel='{nivel}' {extra}""")

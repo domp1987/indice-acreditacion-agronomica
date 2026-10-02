@@ -15,6 +15,7 @@ El nombre del profesor líder no se extrae: es un dato personal (CLAUDE.md, priv
 import csv
 import io
 import json
+import os
 import re
 import subprocess
 import unicodedata
@@ -22,6 +23,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from indice.extraer import binario, ejecutar
+from indice.pad_cai import complementar
 
 
 # ---------- Geometría: palabras → líneas → segmentos → celdas ----------
@@ -791,13 +793,44 @@ def leer_pad(pdf, poppler=None):
         paginas=max(s.p for s in segs), texto=_texto_completo(pdf, pdftotext))
 
 
+def _docx_a_pdf(docx, cache):
+    """Convierte un PAD en Word a PDF con Word (COM), con caché por fecha de modificación. None si no se puede."""
+    cache.mkdir(parents=True, exist_ok=True)
+    pdf = cache / (docx.stem + '.pdf')
+    if pdf.exists() and pdf.stat().st_mtime >= docx.stat().st_mtime:
+        return pdf
+    if os.name != 'nt':
+        print(f'Aviso: {docx.name} está en Word y solo se convierte en Windows con Word instalado; se omite.')
+        return None
+    r = subprocess.run(['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', str(Path(__file__).parent / 'docx_a_pdf.ps1'),
+                        '-Docx', str(docx.resolve()), '-Pdf', str(pdf.resolve())], capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode != 0 or not pdf.exists():
+        print(f'Aviso: no se pudo convertir {docx.name} a PDF: {r.stderr.strip()[:200]}')
+        return None
+    return pdf
+
+
 def extraer_pads(carpeta, destino, poppler=None):
-    """Lee todos los PAD (PDF, con subcarpetas) y escribe pads.json."""
+    """Lee todos los PAD (PDF y Word, con subcarpetas) y escribe pads.json. Los .docx se convierten a PDF con Word
+    (caché en salida/pdf_convertidos/pads/) y se leen con el mismo analizador; el PAD conserva el nombre del .docx."""
     carpeta = Path(carpeta)
     if not carpeta.exists():
         print(f'Aviso: no existe la carpeta de PAD {carpeta}; se omiten.')
         return []
     pads = [leer_pad(f, poppler) for f in sorted(carpeta.rglob('*.pdf'))]
+    cache = Path(destino).parent / 'pdf_convertidos' / 'pads'
+    for docx in sorted(f for f in carpeta.rglob('*.docx') if not f.name.startswith('~$')):
+        pdf = _docx_a_pdf(docx, cache)
+        if not pdf: continue
+        p = leer_pad(pdf, poppler)
+        p.update(archivo=docx.name, carpeta=docx.parent.name)
+        pads.append(p)
+    # Los PAD de los Campos de Aprendizaje Institucional usan otras plantillas: se completan con el lector de texto
+    pdftotext = binario('pdftotext', poppler)
+    for p in pads:
+        origen = next((f for f in carpeta.rglob(p['archivo'])), None)
+        if origen is not None and origen.suffix.lower() == '.docx': origen = cache / (origen.stem + '.pdf')
+        if origen is not None and origen.exists(): complementar(p, origen, pdftotext)
     repetidos = {p['codigo'] for p in pads if sum(q['codigo'] == p['codigo'] for q in pads) > 1}
     for p in pads:
         if p['codigo'] in repetidos:   # mismo código en dos archivos: se distingue por el nombre del archivo

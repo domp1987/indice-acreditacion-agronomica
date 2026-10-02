@@ -51,7 +51,7 @@ def test_todos_los_pad_estan_relacionados():
     if not rutas.pads_json.exists(): pytest.skip('falta salida/pads.json')
     import json
     pads = json.loads(rutas.pads_json.read_text(encoding='utf-8'))
-    assert len(pads) == 53
+    assert len(pads) == 69   # 53 disciplinares y de especialización + 16 de los CAI institucionales (7 en Word)
     assert {p['codigo'] for p in pads} <= relacion
 
 
@@ -59,16 +59,18 @@ def test_todos_los_pad_estan_relacionados():
 def test_pad_en_la_base():
     con = sqlite3.connect(rutas.db)
     n = lambda q: con.execute(q).fetchone()[0]
-    assert n('SELECT COUNT(*) FROM pad') == 53
-    assert n("SELECT COUNT(*) FROM evidencia WHERE tipo='pad'") == 53
+    assert n('SELECT COUNT(*) FROM pad') == 69
+    assert n("SELECT COUNT(*) FROM evidencia WHERE tipo='pad'") == 69
     assert n("SELECT COUNT(*) FROM v_pad_curso WHERE estado='créditos distintos'") == 0
-    assert n("SELECT COUNT(DISTINCT curso) FROM v_pad_curso WHERE estado='ok'") == 40
+    assert n("SELECT COUNT(DISTINCT curso) FROM v_pad_curso WHERE estado='ok'") == 50
     # el período lo da la ruta v4 para los 54 cursos, y el semestre de cada PAD del plan coincide con él
     assert n('SELECT COUNT(*) FROM curso WHERE periodo IS NOT NULL') == 54
-    assert n('SELECT COUNT(*) FROM pad p JOIN curso c ON c.id=p.curso_id WHERE p.semestre <> c.periodo') == 0
+    # solo difiere el PAD de Cátedra Generación Siglo 21 (sexto semestre; la ruta v4 lo ubica en el séptimo)
+    assert [c for (c,) in con.execute('SELECT c.nombre FROM pad p JOIN curso c ON c.id=p.curso_id WHERE p.semestre <> c.periodo')] == ['Cátedra Generación Siglo 21']
     assert n('SELECT COUNT(*) FROM curso_prerrequisito') == 34
-    # Solo los cursos institucionales quedan sin PAD
-    assert {c for (c,) in con.execute("SELECT curso FROM v_pad_curso WHERE estado='sin PAD'")} == {c for (c,) in con.execute("SELECT nombre FROM curso WHERE componente_cma='Institucional'")}
+    # Con los PAD de los CAI solo quedan sin PAD cuatro cursos institucionales (de ellos solo llegó el nivelatorio)
+    assert {c for (c,) in con.execute("SELECT curso FROM v_pad_curso WHERE estado='sin PAD'")} == {
+        'Ciudadanía siglo 21', 'Emprendimiento e innovación I', 'Emprendimiento e innovación II', 'Lengua extranjera II'}
     con.close()
 
 
