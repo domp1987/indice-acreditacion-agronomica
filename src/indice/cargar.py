@@ -17,6 +17,7 @@ from indice.ocr import texto_nuevo
 from indice.pad import normalizar as normalizar_texto
 from indice.maestro import evidencias_maestro, leer_maestros, plan_2025, rea_por_cadi, transicion_2025
 from indice.anexos import evidencias_anexos
+from indice.credenciales import ocultar_credenciales
 from indice.recursos_ra import evidencias_ra
 from indice.semillas import leer_todas
 
@@ -170,6 +171,8 @@ def sincronizar_evidencias(cur, nodos, slides, ocr=None, adicionales=(), reglas=
 
     def upsert(valores):
         nonlocal nuevas, actualizadas
+        # ninguna credencial (usuario/contraseña) que traigan las fuentes entra a la base
+        valores = dict(valores, texto=ocultar_credenciales(valores.get('texto')), texto_ocr=ocultar_credenciales(valores.get('texto_ocr')))
         existe = cur.execute('SELECT id FROM evidencia WHERE codigo=?', (valores['codigo'],)).fetchone()
         cur.execute(f"""INSERT INTO evidencia(codigo,{','.join(_CAMPOS_EVIDENCIA)},creado_en,actualizado_en)
                         VALUES (:codigo,{','.join(':' + c for c in _CAMPOS_EVIDENCIA)},{AHORA},{AHORA})
@@ -316,7 +319,7 @@ def cargar_pptx(cur, pptx, ev_ids):
                             [(gid, so, s['nombre'], po, cat, v) for so, s in enumerate(g['series'], 1) for po, (cat, v) in enumerate(s['puntos'], 1)])
         for orden, t in enumerate(d['tablas'], 1):
             cur.execute("INSERT INTO tabla_diapositiva(evidencia_id,orden,filas,columnas,celdas) VALUES (?,?,?,?,?)",
-                        (eid, orden, len(t), max((len(f) for f in t), default=0), json.dumps(t, ensure_ascii=False)))
+                        (eid, orden, len(t), max((len(f) for f in t), default=0), ocultar_credenciales(json.dumps(t, ensure_ascii=False))))
     return huerfanas
 
 
@@ -400,7 +403,7 @@ def cargar_documentos(cur, maestros, ev_documentos, ev_ids):
         for orden, t in enumerate(e['_tablas'], 1):
             cur.execute("INSERT INTO tabla_diapositiva(evidencia_id,orden,filas,columnas,celdas,leyenda) VALUES (?,?,?,?,?,?)",
                         (eid, orden, len(t['filas']), max((len(f) for f in t['filas']), default=0),
-                         json.dumps(t['filas'], ensure_ascii=False), t['leyenda']))
+                         ocultar_credenciales(json.dumps(t['filas'], ensure_ascii=False)), t['leyenda']))
     maestro = next((m for m in maestros if m.get('prefijo') == 'DM25'), None)
     if not maestro: return []
     for x in plan_2025(maestro):

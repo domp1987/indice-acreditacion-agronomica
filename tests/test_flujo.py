@@ -148,7 +148,7 @@ def test_igual_al_prototipo(salida):
     antes = sorted((renombres.get(r[0], r[0]), r[1], creditos.get(r[0], r[2]), *revisados.get(r[0], (r[4], r[5]))) for r in solo_a)
     assert antes == sorted((r[0], r[1], r[2], r[4], r[5]) for r in solo_b)
     assert all(r[3] is not None for r in solo_b)
-    assert {r[0] for r in difs.get('evidencia.texto', ([], []))[1] if not es_sesion(r)} <= {'F05-P016', 'F07-P020', 'F11-P006'}
+    assert {r[0] for r in difs.get('evidencia.texto', ([], []))[1] if not es_sesion(r)} <= {'F05-P016', 'F07-P020', 'F11-P006', 'F07-P019'}   # F07-P019: credencial ocultada
     assert {r[0] for r in difs.get('evidencia', ([], []))[1] if not es_sesion(r)} <= {'F07-P020'}
     # Mediciones: corrección de F04-P006, vínculos de evidencia que el prototipo no resolvía o resolvía mal
     # (retención y deserción, series de Facatativá, valoraciones CNA) e indicadores nuevos de las tablas de valoración
