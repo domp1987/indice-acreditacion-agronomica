@@ -17,6 +17,7 @@ import shutil
 import sqlite3
 from pathlib import Path
 
+from indice.credenciales import ocultar_credenciales
 from indice.exportar import exportar
 from indice.semillas import leer
 from indice.tablero import tablero
@@ -29,7 +30,7 @@ AVISO = '[Texto omitido en la versión para compartir: {motivo}. Está en la ver
 
 def anonimizar_texto(t):
     if not t: return t
-    return LIDER.sub(r'\1 [omitido]', CORREO.sub('[correo omitido]', t))
+    return ocultar_credenciales(LIDER.sub(r'\1 [omitido]', CORREO.sub('[correo omitido]', t)))
 
 
 def _tabla_de_personas(filas):

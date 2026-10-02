@@ -18,6 +18,7 @@ import zipfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from indice.credenciales import ocultar_credenciales, ocultar_en_tablas
 from indice.extraer import binario
 from indice.ocr import elegir_motor, ocr_pdf
 
@@ -148,7 +149,7 @@ def evidencias_anexos(datos):
     for a in datos['archivos']:
         if a['estado'] != 'indexado': continue
         titulo = f'Anexo {a["numero"]} · {a["nombre"]}' + (f' · {Path(a["archivo"]).stem}' if a['codigo'].count('-') == 2 else '')
-        out.append(dict(codigo=a['codigo'], titulo=titulo[:110], tipo='anexo', texto=a['texto'] or None, texto_ocr=None,
+        out.append(dict(codigo=a['codigo'], titulo=titulo[:110], tipo='anexo', texto=ocultar_credenciales(a['texto']) or None, texto_ocr=None,
                         fuente=f'Anexos RRC 2025 · {a["condicion"]}', archivo=a['archivo'], pagina=None, sede='Programa',
-                        proceso='resignificacion', nivel='complementaria', _tablas=a['tablas']))
+                        proceso='resignificacion', nivel='complementaria', _tablas=ocultar_en_tablas(a['tablas'])))
     return out

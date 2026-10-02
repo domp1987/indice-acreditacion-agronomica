@@ -38,3 +38,20 @@ def test_version_para_compartir(tmp_path):
     ev = {e['codigo']: e for e in d['evidencias']}
     assert ev['AX-36']['texto'].startswith('[Texto omitido')
     assert len(d['evidencias']) == 716 and d['matriz']   # nada más cambia: mismas evidencias, etiquetas y matriz
+
+
+def test_credenciales_ocultas():
+    from indice.credenciales import ocultar_credenciales
+    t = 'ACCESO A CAMPOS\nUsuario: cuenta1\nContraseña: Secreta*2025\nEnlaces: https://x'
+    r = ocultar_credenciales(t)
+    assert 'cuenta1' not in r and 'Secreta' not in r and 'Usuario: [omitido]' in r and 'https://x' in r
+
+
+@pytest.mark.skipif(not rutas.db.exists(), reason='falta la base (ejecuta indice todo)')
+def test_ninguna_credencial_en_la_base():
+    import sqlite3
+    con = sqlite3.connect(rutas.db)
+    patron = re.compile(r'(?i)contrase(ñ|n)a\s*:\s*(?!\[omitido\])\S+')
+    textos = [t for (t,) in con.execute('SELECT coalesce(texto, \'\') || coalesce(texto_ocr, \'\') FROM evidencia')]
+    textos += [c for (c,) in con.execute('SELECT celdas FROM tabla_diapositiva')]
+    assert not [t for t in textos if patron.search(t)]
