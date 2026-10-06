@@ -14,7 +14,7 @@ pip install -e .[dev]
 ```
 
 ## Uso
-La carpeta de PDF y la de salida se configuran en `indice.toml`; `--pdf` y `--salida` las sobrescriben.
+La carpeta de PDF y la de salida se configuran en `indice.toml`; `--pdf` y `--salida` las sobrescriben. `pdf_institucional` apunta a las presentaciones de la autoevaluación institucional (`Presentaciones Institucionales`), que se indexan como `IF..`/`IP..` con el modelo institucional del CNA (CNA-INST).
 
 ```
 indice todo                 # flujo completo
