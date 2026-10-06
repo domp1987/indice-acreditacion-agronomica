@@ -196,6 +196,15 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
     <div class="panel ancho"><h3 style="margin-bottom:8px">Factores</h3><div class="wide"><table id="tcnaf"></table></div></div>
   </div>
   <div class="panel" style="margin-top:18px"><h3 style="margin-bottom:8px">Características, de mayor a menor riesgo</h3><div class="wide"><table id="tcnac"></table></div></div>
+  <div class="panel" style="margin-top:18px">
+    <h2 style="margin-bottom:6px">Autoevaluación institucional de la Universidad</h2>
+    <p class="note">Modelo institucional del CNA (12 factores, 38 características), según las presentaciones institucionales de octubre de 2025. Respalda al programa: cada característica institucional se relaciona con las características del programa que sostiene (por ejemplo, planta profesoral → número, dedicación y formación del profesorado). La diferencia muestra dónde la institución y el programa se valoran distinto.</p>
+  </div>
+  <div class="radares" style="margin-top:18px">
+    <div class="panel ancho"><div class="radar" id="radarCNAinst" role="img" aria-label="Radar de los factores institucionales"></div></div>
+    <div class="panel ancho"><h3 style="margin-bottom:8px">Factores institucionales</h3><div class="wide"><table id="tcnaif"></table></div></div>
+  </div>
+  <div class="panel" style="margin-top:18px"><h3 style="margin-bottom:8px">Coherencia programa–institución (mayores diferencias primero)</h3><div class="wide"><table id="tcnaip"></table></div></div>
 </section>
 
 <section id="radar" role="tabpanel" hidden>
@@ -449,7 +458,7 @@ function dibujarRadares(){
     return g;
   });
 }
-window.addEventListener('resize',()=>{graficos&&graficos.forEach(g=>g.resize()); graficoCNA&&graficoCNA.resize();});
+window.addEventListener('resize',()=>{graficos&&graficos.forEach(g=>g.resize()); graficoCNA&&graficoCNA.resize(); graficoCNAinst&&graficoCNAinst.resize();});
 
 // CNA alta calidad: autoevaluación del programa
 const VC = D.valoracion_cna, FC = D.factores_cna;
@@ -466,11 +475,37 @@ $('#tcnaf').innerHTML = '<thead><tr><th>Factor</th><th class="n">Valoración</th
 $('#tcnac').innerHTML = '<thead><tr><th>Característica</th><th>Factor</th><th class="n">Ponderación</th><th class="n">Valoración</th><th>Grado</th><th class="n">Evidencias</th><th class="n">Brechas externas (altas / medias)</th><th>Riesgo de sobrevaloración</th></tr></thead><tbody>' +
   [...VC].sort((a,b)=>(ORDEN_RIESGO[a.riesgo_sobrevaloracion]-ORDEN_RIESGO[b.riesgo_sobrevaloracion]) || (a.valoracion-b.valoracion)).map(c=>
     `<tr><td>${c.codigo} ${esc(c.nombre)}</td><td>${c.factor}</td><td class="n">${c.ponderacion} %</td><td class="n">${String(c.valoracion).replace('.',',')}</td><td>${esc(c.grado)}</td><td class="n">${c.evidencias}${c.evidencias<3?' <span class="tag alta" title="poca evidencia en el índice">poca</span>':''}</td><td class="n">${c.senales_altas} / ${c.senales_medias}</td><td><span class="tag ${c.riesgo_sobrevaloracion==='alto'?'alta':c.riesgo_sobrevaloracion==='medio'?'media':'principal'}">${c.riesgo_sobrevaloracion}</span></td></tr>`).join('') + '</tbody>';
+const FI = D.factores_cna_inst, PI = D.cna_inst_programa;
+const fmt1 = v => v==null ? '—' : String(v).replace('.',',');
+$('#tcnaif').innerHTML = '<thead><tr><th>Factor</th><th class="n">Valoración</th><th class="n">Cumplimiento</th><th>Grado</th><th>Observación</th></tr></thead><tbody>' +
+  FI.map(f=>`<tr><td>${f.codigo} ${esc(f.nombre)}</td><td class="n">${fmt1(f.valoracion)}</td><td class="n">${f.cumplimiento!=null?f.cumplimiento+' %':'—'}</td><td>${f.valoracion==null?'<span class="tag alta">sin presentación</span>':f.valoracion>=4.5?'<span class="tag principal">plenamente</span>':'<span class="tag parcial">alto grado</span>'}</td><td class="suave">${esc(f.nota||'')}</td></tr>`).join('') + '</tbody>';
+$('#tcnaip').innerHTML = '<thead><tr><th>Característica institucional</th><th class="n">Institución</th><th>Característica del programa</th><th class="n">Programa</th><th class="n">Diferencia</th></tr></thead><tbody>' +
+  PI.filter(x=>x.val_inst!=null && x.val_programa!=null).map(x=>`<tr><td>${x.inst} ${esc(x.inst_nombre)}</td><td class="n">${fmt1(x.val_inst)}</td><td>${x.programa} ${esc(x.programa_nombre)}</td><td class="n">${fmt1(x.val_programa)}</td><td class="n"><b>${x.diferencia>0?'+':''}${fmt1(x.diferencia)}</b></td></tr>`).join('') + '</tbody>';
+let graficoCNAinst = null;
 let graficoCNA = null;
 function dibujarRadarCNA(){
   if(typeof echarts==='undefined') return;
   const css = getComputedStyle(document.documentElement), tit = css.getPropertyValue('--titulos').trim(), suave = css.getPropertyValue('--muted').trim(), linea = css.getPropertyValue('--line').trim();
   if(graficoCNA) graficoCNA.dispose();
+  // radar institucional (los factores sin presentación no se dibujan)
+  const FIv = FI.filter(f=>f.valoracion!=null);
+  if(graficoCNAinst) graficoCNAinst.dispose();
+  graficoCNAinst = echarts.init(document.getElementById('radarCNAinst'));
+  graficoCNAinst.setOption({
+    color:['#DAAA00', '#00482B'],
+    title:{text:'Autoevaluación institucional: factores', subtext:`Valoración media ${(FIv.reduce((s,f)=>s+f.valoracion,0)/FIv.length).toFixed(2).replace('.',',')} de 5 · ${FI.length-FIv.length} factor(es) sin presentación`, left:'center', textStyle:{color:tit,fontSize:16}, subtextStyle:{color:suave}},
+    legend:{bottom:0, textStyle:{color:suave}},
+    tooltip:{trigger:'item', confine:true, formatter:p=>p.name+'<br>'+FIv.map((f,i)=>`${f.codigo} ${esc(f.nombre)}: <b>${fmt1(p.value[i])}</b>`).join('<br>')},
+    radar:{indicator: FIv.map(f=>({text:etiqueta(f.codigo, f.nombre, FIv.length), min:3, max:5})), center:['50%','53%'], radius:'58%', startAngle:90, splitNumber:4, shape:'circle', nameGap:10,
+      axisName:{formatter:nombreEje, rich:RICO, color:tit||suave, fontSize:10, lineHeight:13, fontFamily:'Montserrat, Century Gothic, sans-serif'},
+      splitArea:{areaStyle:{color:['rgba(241,246,243,0.9)','rgba(213,227,220,0.7)','rgba(169,199,184,0.55)','rgba(110,156,133,0.45)'], shadowColor:'rgba(0,0,0,0.12)', shadowBlur:8}},
+      axisLine:{lineStyle:{color:linea}}, splitLine:{lineStyle:{color:linea}}},
+    series:[{type:'radar', data:[
+      {value:FIv.map(()=>4.5), name:'«Se cumple plenamente» (4,5)', symbol:'none', lineStyle:{type:'dashed', width:1.5}},
+      {value:FIv.map(f=>f.valoracion), name:'Universidad (autoevaluación institucional)', symbol:'rect', symbolSize:7,
+       areaStyle:{color:new echarts.graphic.RadialGradient(0.5,0.5,1,[{color:'rgba(121,192,0,0.25)',offset:0},{color:'rgba(0,123,62,0.7)',offset:1}])},
+       label:{show:true, color:tit, fontSize:10, formatter:p=>fmt1(p.value)}}]}]
+  });
   graficoCNA = echarts.init(document.getElementById('radarCNA'));
   graficoCNA.setOption({
     color:['#DAAA00', '#00482B'],

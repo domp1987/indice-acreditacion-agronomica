@@ -30,3 +30,7 @@ CNA_VAL,Valoración CNA de la característica (autoevaluación),escala 0-5,
 CNA_POND,Ponderación CNA de la característica dentro de su factor,%,Tabla de valoración interpretativa de cada factor
 CNA_VAL_FACTOR,Valoración CNA del factor (autoevaluación),escala 0-5,Tabla de valoración interpretativa de cada factor
 CNA_CUMPL_FACTOR,Porcentaje de cumplimiento del factor (autoevaluación),%,Tabla de valoración interpretativa de cada factor
+CNA_INST_POND,Ponderación de la característica institucional dentro de su factor,%,"Autoevaluación institucional, tabla de valoración interpretativa de cada factor"
+CNA_INST_VAL,Valoración de la característica institucional (autoevaluación institucional),escala 0-5,Autoevaluación institucional
+CNA_INST_VAL_FACTOR,Valoración del factor institucional (autoevaluación institucional),escala 0-5,Autoevaluación institucional
+CNA_INST_CUMPL_FACTOR,Porcentaje de cumplimiento del factor institucional,%,Autoevaluación institucional

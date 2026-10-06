@@ -70,7 +70,10 @@ def main(argv=None):
     fuentes = None
     for paso in pasos:
         if paso in ('extraer', 'ocr') and fuentes is None:
-            fuentes = convertir_faltantes(listar_fuentes(r.pdf), r.pdf_convertidos)
+            fuentes = listar_fuentes(r.pdf)
+            if r.pdf_institucional and r.pdf_institucional.exists():   # autoevaluación institucional de la Universidad
+                fuentes += listar_fuentes(r.pdf_institucional, 'institucional')
+            fuentes = convertir_faltantes(fuentes, r.pdf_convertidos)
         if paso == 'extraer':
             extraer(fuentes, r.diapositivas, args.motor, r.poppler)
             extraer_pptx(fuentes, r.pptx_json, r.diapositivas)

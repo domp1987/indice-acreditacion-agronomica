@@ -2,6 +2,9 @@
 
 - "Factor N. ....pdf/.pptx"            → fuente FNN (evidencias FNN-Pppp)
 - "N. ....pptx" (p. ej. Sesión de inicio) → fuente SNN (evidencias SNN-Pppp)
+- Presentaciones institucionales (autoevaluación de la Universidad, modelo institucional del CNA):
+  "Factor N. ..." → IFNN; las demás (p. ej. Presentación Rectoría) → IPNN. Su "Característica N." es la del modelo
+  institucional (38 características), no la del programa. Se omiten las hojas de vida (datos personales).
 
 Si una presentación no tiene PDF, se convierte con PowerPoint (solo Windows) a salida/pdf_convertidos/.
 """
@@ -16,6 +19,7 @@ from indice.config import PAQUETE
 
 PATRON_FACTOR = re.compile(r'Factor[ _](\d+)', re.I)
 PATRON_SESION = re.compile(r'(\d+)\.\s*(.+)')
+EXCLUIR = re.compile(r'\bHV\b|hoja[s]? de vida', re.I)   # hojas de vida de pares u otras personas
 
 
 @dataclass
@@ -25,6 +29,7 @@ class Fuente:
     factor: int | None          # número de factor CNA; None para presentaciones que no son de factor
     pdf: Path | None
     pptx: Path | None
+    ambito: str = 'programa'    # 'programa' o 'institucional'
 
     @property
     def archivo(self):
@@ -33,25 +38,31 @@ class Fuente:
 
     @property
     def sede(self):
-        return 'Programa' if self.factor else 'Institución'
+        return 'Programa' if self.factor and self.ambito == 'programa' else 'Institución'
 
 
-def listar_fuentes(carpeta):
+def listar_fuentes(carpeta, ambito='programa'):
     """Recorre la carpeta (y subcarpetas) y agrupa PDF y PPTX con el mismo nombre."""
-    grupos = {}
+    grupos, otras = {}, {}
     for f in sorted(Path(carpeta).rglob('*')):
-        if f.suffix.lower() not in ('.pdf', '.pptx') or f.name.startswith('~$'): continue
-        if m := PATRON_FACTOR.match(f.name):
+        if f.suffix.lower() not in ('.pdf', '.pptx') or f.name.startswith('~$') or EXCLUIR.search(f.name): continue
+        if ambito == 'institucional':
+            if m := PATRON_FACTOR.match(f.name):
+                codigo, factor, nombre = f'IF{int(m.group(1)):02d}', int(m.group(1)), re.sub(r'\s*\(OK\)\s*$', '', f.stem)
+            else:
+                codigo = otras.setdefault(f.stem, f'IP{len(otras) + 1:02d}')
+                factor, nombre = None, f.stem
+        elif m := PATRON_FACTOR.match(f.name):
             codigo, factor, nombre = f'F{int(m.group(1)):02d}', int(m.group(1)), f.stem
         elif m := PATRON_SESION.match(f.name):
             codigo, factor, nombre = f'S{int(m.group(1)):02d}', None, Path(m.group(2)).stem
         else:
             continue
-        g = grupos.setdefault(codigo, Fuente(codigo, nombre, factor, None, None))
+        g = grupos.setdefault(codigo, Fuente(codigo, nombre, factor, None, None, ambito))
         setattr(g, f.suffix.lower()[1:], f)
     if not grupos:
         raise SystemExit(f'No hay presentaciones ("Factor N...", "N. ...") en {carpeta}')
-    return sorted(grupos.values(), key=lambda g: (g.codigo[0] != 'F', g.codigo))
+    return sorted(grupos.values(), key=lambda g: ('FSI'.index(g.codigo[0]), g.codigo))
 
 
 def convertir_faltantes(fuentes, carpeta_salida):

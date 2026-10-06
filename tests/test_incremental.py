@@ -158,4 +158,4 @@ def test_migra_base_de_esquema_anterior(tmp_path):
     con = sqlite3.connect(tmp_path / 'base.sqlite')
     from indice.cargar import VERSION_ESQUEMA
     assert uno(con, "SELECT valor FROM meta WHERE clave='version_esquema'") == str(VERSION_ESQUEMA)
-    assert uno(con, 'SELECT COUNT(*) FROM evidencia_nodo') == 492
+    assert uno(con, 'SELECT COUNT(*) FROM evidencia_nodo') == 1513   # incluye las diapositivas institucionales

@@ -49,6 +49,13 @@ def datos_tablero(c):
         abet=abet, atmae=atmae, aneca=aneca, cna=cna, evidencias=ev, indicadores=ind,
         creditos_aneca=q("SELECT modulo,creditos,ects,cursos,minimo_ects FROM v_creditos_aneca"),
         valoracion_cna=q("SELECT * FROM v_valoracion_cna"),
+        valoracion_cna_inst=q("SELECT * FROM v_valoracion_cna_inst"),
+        cna_inst_programa=q("SELECT * FROM v_cna_inst_programa"),
+        factores_cna_inst=q("""SELECT n.codigo,n.nombre,
+            (SELECT m.valor FROM medicion m JOIN indicador i ON i.id=m.indicador_id WHERE i.codigo='CNA_INST_VAL_FACTOR' AND m.desagregacion=n.codigo) valoracion,
+            (SELECT m.valor FROM medicion m JOIN indicador i ON i.id=m.indicador_id WHERE i.codigo='CNA_INST_CUMPL_FACTOR' AND m.desagregacion=n.codigo) cumplimiento,
+            (SELECT m.nota FROM medicion m JOIN indicador i ON i.id=m.indicador_id WHERE i.codigo='CNA_INST_VAL_FACTOR' AND m.desagregacion=n.codigo) nota
+            FROM nodo n JOIN marco m ON m.id=n.marco_id AND m.codigo='CNA-INST' WHERE n.tipo='factor' ORDER BY n.orden"""),
         factores_cna=q("""SELECT n.codigo,n.nombre,
             (SELECT m.valor FROM medicion m JOIN indicador i ON i.id=m.indicador_id WHERE i.codigo='CNA_VAL_FACTOR' AND m.desagregacion=n.codigo) valoracion,
             (SELECT m.valor FROM medicion m JOIN indicador i ON i.id=m.indicador_id WHERE i.codigo='CNA_CUMPL_FACTOR' AND m.desagregacion=n.codigo) cumplimiento

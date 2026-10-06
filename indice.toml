@@ -3,6 +3,8 @@
 [rutas]
 # Carpeta de presentaciones: PDF y PPTX, incluidas subcarpetas ("Factor N. ..." y "N. ...")
 pdf = "OneDrive_1_9-23-2026"
+# Autoevaluación institucional de la Universidad (factores del modelo institucional del CNA y Presentación Rectoría)
+pdf_institucional = "Presentaciones Institucionales"
 salida = "salida"
 # Datos que no salen de las presentaciones (marcos, correspondencias, indicadores, cursos, brechas)
 semillas = "datos/semillas"

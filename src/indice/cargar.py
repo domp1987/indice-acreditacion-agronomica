@@ -28,6 +28,13 @@ class Nodos:
     def __init__(self, cur):
         self.ids = {(m, c): i for i, m, c in cur.execute("SELECT n.id, m.codigo, n.codigo FROM nodo n JOIN marco m ON m.id=n.marco_id")}
         self.caracteristicas = {c for (m, c), _ in self.ids.items() if m == 'CNA' and re.fullmatch(r'C\d\d', c)}
+        # característica o factor institucional → [(característica del programa, tipo de correspondencia)]
+        self.inst_a_programa = {}
+        for o, d, tipo in cur.execute("""SELECT o.codigo, d.codigo, c.tipo FROM correspondencia c
+                JOIN nodo o ON o.id=c.origen_id JOIN marco mo ON mo.id=o.marco_id AND mo.codigo='CNA-INST'
+                JOIN nodo d ON d.id=c.destino_id JOIN marco md ON md.id=d.marco_id AND md.codigo='CNA'
+                WHERE c.estado<>'descartada'"""):
+            self.inst_a_programa.setdefault(o, []).append((d, tipo))
 
     def __call__(self, marco, codigo):
         return self.ids[(marco, codigo)]
@@ -213,6 +220,18 @@ def sincronizar_evidencias(cur, nodos, slides, ocr=None, adicionales=(), reglas=
         eid = upsert(dict(codigo=codigo, titulo=titulo, tipo=tipo, texto=t, texto_ocr=texto_ocr,
                           fuente=fuentes[0].strip() if fuentes else None, archivo=s['archivo'], pagina=s['pagina'], sede=s['sede'],
                           proceso='acreditacion', nivel='principal'))
+        if s['fuente'].startswith('I'):
+            # Autoevaluación institucional: su "Característica N." es la del modelo institucional (CNA-INST); la
+            # evidencia respalda además, como propuesta, las características del programa que le corresponden
+            inst = f'IC{s["car"]:02d}' if s['car'] and ('CNA-INST', f'IC{s["car"]:02d}') in nodos.ids else None
+            inst = inst or (f'IF{s["factor"]:02d}' if s['factor'] and ('CNA-INST', f'IF{s["factor"]:02d}') in nodos.ids else None)
+            if inst:
+                etiquetas[(eid, nodos('CNA-INST', inst))] = ('principal', 'validada')
+                for destino, tipo in nodos.inst_a_programa.get(inst, []):
+                    rol = 'apoyo' if tipo == 'apoyo' else 'parcial'
+                    previo = etiquetas.get((eid, nodos('CNA', destino)))
+                    if not previo or FUERZA_ROL[rol] < FUERZA_ROL[previo[0]]: etiquetas[(eid, nodos('CNA', destino))] = (rol, 'propuesta')
+            continue
         # Etiquetado CNA extraído del encabezado de la diapositiva
         car = f'C{s["car"]:02d}' if s['car'] else None
         if car in nodos.caracteristicas: etiquetas[(eid, nodos('CNA', car))] = ('principal', 'validada')
@@ -430,7 +449,7 @@ def _leer_ocr(ocr_json):
     return {(fuente, int(p)): lineas for fuente, c in cache.items() for p, lineas in c['paginas'].items()}
 
 
-VERSION_ESQUEMA = 13
+VERSION_ESQUEMA = 14
 # Migraciones que agregan tablas sin tocar los datos existentes: {versión destino: script}
 MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql', 4: PAQUETE / 'esquema_pad_v4.sql',
                5: PAQUETE / 'esquema_v5_decision.sql', 6: PAQUETE / 'esquema_v6_maestro.sql',
@@ -440,7 +459,8 @@ MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql', 4: PAQUETE / 'esquema_pad_v4.sql'
                10: PAQUETE / 'esquema_v10_outcomes.sql',
                11: PAQUETE / 'esquema_v11_atmae.sql',
                12: PAQUETE / 'esquema_v12_aneca.sql',
-               13: PAQUETE / 'esquema_v13_cna.sql'}
+               13: PAQUETE / 'esquema_v13_cna.sql',
+               14: PAQUETE / 'esquema_v14_cna_inst.sql'}
 # Tablas que son copia directa de semillas, presentaciones o PAD: se vacían y se vuelven a llenar en cada carga
 # (hijas antes que padres). Su fuente de verdad son los CSV y los documentos, no la base.
 DERIVADAS = ['plan_2025_rea', 'plan_2025', 'transicion_2025', 'pad_fase', 'pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad',

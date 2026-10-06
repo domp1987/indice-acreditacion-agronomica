@@ -59,9 +59,9 @@ def test_conteos(con):
     n = lambda q: con.execute(q).fetchone()[0]
     assert n("SELECT COUNT(*) FROM evidencia WHERE codigo LIKE 'F%'") == 240      # como el prototipo
     assert n("SELECT COUNT(*) FROM evidencia WHERE codigo LIKE 'S%'") == 52       # sesión de inicio (Rectoría y Facultad)
-    assert n('SELECT COUNT(*) FROM evidencia_nodo') == 2252   # 240 de diapositivas + 415 propuestas por sección y RA (documento_nodos.csv) + 597 inferidas ABET + 575 ATMAE + 425 ANECA
-    assert n('SELECT COUNT(*) FROM nodo') == 142   # 89 + los 3 REA de la ruta 2025 + 33 de ATMAE 2027 + 17 de ANECA
-    assert n('SELECT COUNT(*) FROM medicion') == 299   # 224 del prototipo + 3 (corrección F04-P006) + 72 (ponderaciones y factores CNA)
+    assert n('SELECT COUNT(*) FROM evidencia_nodo') == 3932   # extracción: 240 diapositivas + 415 por sección y RA + 665 institucionales (334 CNA-INST + 331 hacia el programa); inferidas: 953 ABET + 967 ATMAE + 692 ANECA
+    assert n('SELECT COUNT(*) FROM nodo') == 192   # 89 + 3 REA de la ruta 2025 + 33 ATMAE 2027 + 17 ANECA + 50 del modelo institucional del CNA
+    assert n('SELECT COUNT(*) FROM medicion') == 393   # 224 del prototipo + 3 (corrección F04-P006) + 72 (ponderaciones y factores CNA) + 94 (autoevaluación institucional)
     assert n('SELECT COUNT(*) FROM curso') == 54
     assert n('SELECT SUM(creditos) FROM curso') == 150
 
@@ -75,12 +75,12 @@ def test_sesion_de_inicio(con):
 
 def test_data_json_completo(salida):
     d = json.loads((salida / 'data.json').read_text(encoding='utf-8'))
-    assert len(d['abet']) == 24 and len(d['cna']) == 60 and len(d['evidencias']) == 732   # 292 diapositivas + 69 PAD + 126 secciones DM25 + 107 DM19 + 135 anexos + 3 Jardín Vivo RA
+    assert len(d['abet']) == 24 and len(d['cna']) == 60 and len(d['evidencias']) == 1108   # 292 diapositivas + 376 institucionales + 69 PAD + 126 DM25 + 107 DM19 + 135 anexos + 3 Jardín Vivo RA
 
 
 def test_reproyectar_es_idempotente(salida, con):
     assert main(['reproyectar', '--salida', str(salida)]) == 0
-    assert con.execute('SELECT COUNT(*) FROM evidencia_nodo').fetchone()[0] == 2252
+    assert con.execute('SELECT COUNT(*) FROM evidencia_nodo').fetchone()[0] == 3932
 
 
 def test_graficas_y_tablas_pptx(con):
@@ -114,7 +114,7 @@ def test_inconsistencias_graduacion(con):
 def test_igual_al_prototipo(salida):
     difs = comparar(LEGADO, salida / 'indice_acreditacion.sqlite')
     # Evidencias que no existían en el prototipo: sesión de inicio (S..-P...) , PAD (PAD-...), documentos maestros (DM25-, DM19-) y anexos (AX-)
-    es_sesion = lambda fila: any(isinstance(v, str) and ((v[:1] == 'S' and v[1:3].isdigit() and '-P' in v) or v.startswith(('PAD-', 'DM25-', 'DM19-', 'AX-', 'RA-'))) for v in fila)
+    es_sesion = lambda fila: any(isinstance(v, str) and ((v[:1] == 'S' and v[1:3].isdigit() and '-P' in v) or v.startswith(('PAD-', 'DM25-', 'DM19-', 'AX-', 'RA-', 'IF', 'IP'))) for v in fila)
     # Diferencias esperadas: poppler 26.09 corta distinto las líneas de 3 diapositivas; la graduación acumulada
     # del factor 4 se corrigió con la gráfica del PPTX; y se agregaron las presentaciones de la sesión de inicio
     # (evidencias S.., con su normativa). El resto debe ser idéntico.
@@ -130,7 +130,7 @@ def test_igual_al_prototipo(salida):
     # Etiquetas: las de las diapositivas son las mismas; solo se agregan las de documentos maestros y anexos
     # (propuestas por sección en documento_nodos.csv, y sus inferidas), que también cambian la cobertura ABET
     solo_a, solo_b = difs.get('evidencia_nodo', ([], []))
-    assert not solo_a and all(es_sesion(r) or r[1] in ('ATMAE-2027', 'ANECA-EURACE') or r[0].startswith('RA-') for r in solo_b)   # + marco ATMAE y Jardín Vivo RA
+    assert not solo_a and all(es_sesion(r) or r[1] in ('ATMAE-2027', 'ANECA-EURACE', 'CNA-INST') or r[0].startswith(('RA-', 'IF', 'IP')) for r in solo_b)   # + marco ATMAE y Jardín Vivo RA
     # Marco REA-IA-2025 (documento maestro): solo se agrega
     for t in ('marco', 'nodo', 'correspondencia'):
         assert not difs.get(t, ([], []))[0], t
@@ -155,7 +155,7 @@ def test_igual_al_prototipo(salida):
     solo_a, solo_b = difs.get('medicion', ([], []))
     corregidas = {'GRAD_ACUM', 'GRAD_ACUM_NBC', 'RET', 'DES', 'INSC', 'ADM', 'PRIM', 'CNA_VAL'}
     assert {r[0] for r in solo_a} <= corregidas
-    assert {r[0] for r in solo_b} <= corregidas | {'CNA_POND', 'CNA_VAL_FACTOR', 'CNA_CUMPL_FACTOR'}
+    assert {r[0] for r in solo_b} <= corregidas | {'CNA_POND', 'CNA_VAL_FACTOR', 'CNA_CUMPL_FACTOR', 'CNA_INST_POND', 'CNA_INST_VAL', 'CNA_INST_VAL_FACTOR', 'CNA_INST_CUMPL_FACTOR'}
     assert all(r[0] != 'GRAD_ACUM' or r[5] == 'F04-P006' for r in solo_a + solo_b)
     assert set(difs.get('indicador', ([], []))[1]) <= {r for r in difs.get('indicador', ([], []))[1] if r[0].startswith('CNA_')}
     # Normativa: solo se agrega (nada del prototipo se pierde) y las menciones nuevas son de la sesión de inicio

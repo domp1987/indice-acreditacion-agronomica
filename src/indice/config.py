@@ -18,6 +18,7 @@ class Rutas:
     pads: Path | None = None
     anexos: Path | None = None
     recursos_ra: Path | None = None
+    pdf_institucional: Path | None = None
     poppler: Path | None = None
 
     @property
@@ -83,5 +84,6 @@ def cargar_rutas(pdf=None, salida=None, config=None):
                  pads=ruta(None, 'pads', 'PADs'),
                  anexos=ruta(None, 'anexos', 'ANEXOS'),
                  recursos_ra=ruta(None, 'recursos_ra', None),
+                 pdf_institucional=ruta(None, 'pdf_institucional', None),
                  poppler=Path(poppler) if poppler else ruta(None, 'poppler', None))
 
