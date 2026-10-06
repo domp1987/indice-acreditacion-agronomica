@@ -268,9 +268,15 @@ def cargar_normativa(cur, texto, ev_ids, semillas):
     excluir = {(n['tipo'], n['numero'], n['anio']) for n in semillas['normativa_excluir']}
     for codigo, eid in ev_ids.items():
         t = re.sub(r'\s+', ' ', texto.get(codigo, ''))
-        for m in _PATRON_NORMA.finditer(t):
+        pos = 0
+        while (m := _PATRON_NORMA.search(t, pos)):
+            pos = m.end()
             # 'de acuerdo con lo establecido en el decreto 1330…' no es un Acuerdo
             if re.match(r'\s+(con|a|al)\b', t[m.end(1):], re.I): continue
+            # 'Acuerdo CESU 02 de 2020 Decreto 1330 de 2019': el número es de otra norma citada después; se sigue
+            # buscando desde la palabra siguiente para no perder una norma posterior ('… • Acuerdo 002 de 2025')
+            if re.search(r'\b(decreto|ley|resoluci[oó]n|acuerdo|circular)\b|\b(19|20)\d\d\b', m.group(2), re.I):
+                pos = m.end(1); continue
             tipo = 'Acuerdo' if m.group(1).lower().startswith('acu') else 'Resolución'
             num, anio = int(m.group(3)), int(m.group(4))
             if (tipo, num, anio) in excluir or anio < 1990 or anio > 2026: continue

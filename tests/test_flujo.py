@@ -163,7 +163,7 @@ def test_igual_al_prototipo(salida):
     solo_a, solo_b = difs.get('normativa', ([], []))
     assert {r[:3] for r in solo_a} <= {r[:3] for r in solo_b} and all(r[3] is None for r in solo_a)
     solo_a, solo_b = difs.get('normativa_mencion', ([], []))
-    assert not solo_a and all(es_sesion(r) for r in solo_b)
+    assert not solo_a and all(es_sesion(r) or r[-1] == 'F05-P026' for r in solo_b)   # F05-P026: Resolución 088 de 2023, antes oculta tras «Acuerdo 001»
 
 
 def test_mediciones_ligadas_a_su_evidencia(con):
