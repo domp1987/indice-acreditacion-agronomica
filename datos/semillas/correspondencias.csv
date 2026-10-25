@@ -233,3 +233,74 @@ CNA-INST,IC35,CNA,C07,parcial,La política o resultado institucional respalda la
 CNA-INST,IC36,CNA,C16,parcial,La política o resultado institucional respalda la característica del programa
 CNA-INST,IC37,CNA,C17,apoyo,La política o resultado institucional respalda la característica del programa
 CNA-INST,IC38,CNA,C16,apoyo,La política o resultado institucional respalda la característica del programa
+CNA-INST,IC01,SOFIA,SF1.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC02,SOFIA,SF1.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC15,SOFIA,SF1.1,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC02,SOFIA,SF1.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC09,SOFIA,SF1.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC14,SOFIA,SF1.2,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC01,SOFIA,SF2.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC04,SOFIA,SF2.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC05,SOFIA,SF2.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC07,SOFIA,SF2.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC12,SOFIA,SF2.3,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC06,SOFIA,SF2.3,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC25,SOFIA,SF2.4,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC26,SOFIA,SF2.4,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC29,SOFIA,SF3.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC28,SOFIA,SF3.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC30,SOFIA,SF3.1,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC07,SOFIA,SF3.2,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC16,SOFIA,SF3.2,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC16,SOFIA,SF3.3,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC31,SOFIA,SF3.3,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC10,SOFIA,SF4.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC11,SOFIA,SF4.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC27,SOFIA,SF4.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC35,SOFIA,SF4.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC22,SOFIA,SF4.3,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC11,SOFIA,SF4.3,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC22,SOFIA,SF4.4,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC23,SOFIA,SF4.5,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC34,SOFIA,SF5.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA,C30,SOFIA,SF5.1,parcial,Evidencia del programa: sirve si Ingeniería Agronómica entra en la muestra de títulos que analiza el panel
+CNA,C04,SOFIA,SF5.1,apoyo,Evidencia del programa: sirve si Ingeniería Agronómica entra en la muestra de títulos que analiza el panel
+CNA-INST,IC17,SOFIA,SF5.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC20,SOFIA,SF5.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA,C18,SOFIA,SF5.2,parcial,Evidencia del programa: sirve si Ingeniería Agronómica entra en la muestra de títulos que analiza el panel
+CNA,C23,SOFIA,SF5.2,parcial,Evidencia del programa: sirve si Ingeniería Agronómica entra en la muestra de títulos que analiza el panel
+CNA,C24,SOFIA,SF5.2,apoyo,Evidencia del programa: sirve si Ingeniería Agronómica entra en la muestra de títulos que analiza el panel
+CNA-INST,IC18,SOFIA,SF5.3,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA,C21,SOFIA,SF5.3,parcial,Evidencia del programa: sirve si Ingeniería Agronómica entra en la muestra de títulos que analiza el panel
+CNA,C22,SOFIA,SF5.3,parcial,Evidencia del programa: sirve si Ingeniería Agronómica entra en la muestra de títulos que analiza el panel
+CNA,C23,SOFIA,SF5.3,apoyo,Evidencia del programa: sirve si Ingeniería Agronómica entra en la muestra de títulos que analiza el panel
+CNA-INST,IC26,SOFIA,SF5.4,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC33,SOFIA,SF5.4,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA,C19,SOFIA,SF5.4,apoyo,Evidencia del programa: sirve si Ingeniería Agronómica entra en la muestra de títulos que analiza el panel
+CNA-INST,IC22,SOFIA,SF6.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC21,SOFIA,SF6.1,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC22,SOFIA,SF6.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC22,SOFIA,SF6.3,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC21,SOFIA,SF6.3,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC23,SOFIA,SF7.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC19,SOFIA,SF7.1,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC23,SOFIA,SF7.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC24,SOFIA,SF7.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC38,SOFIA,SF7.2,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC15,SOFIA,SF8.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC13,SOFIA,SF8.1,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC15,SOFIA,SF8.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC14,SOFIA,SF8.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC14,SOFIA,SF9.1,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC36,SOFIA,SF9.1,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC09,SOFIA,SF9.1,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC06,SOFIA,SF9.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC08,SOFIA,SF9.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC08,SOFIA,SF9.3,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC05,SOFIA,SF9.3,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC14,SOFIA,SF10.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC13,SOFIA,SF10.1,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC14,SOFIA,SF10.2,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC37,SOFIA,SF10.2,apoyo,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC09,SOFIA,SF10.3,parcial,La característica institucional responde a este apartado de SOFÍA
+CNA-INST,IC02,SOFIA,SF10.3,apoyo,La característica institucional responde a este apartado de SOFÍA

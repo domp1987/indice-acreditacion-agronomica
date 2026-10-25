@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Índice de acreditación CNA → ABET, ATMAE y ANECA · Ingeniería Agronómica</title>
+<title>Índice de acreditación CNA → ABET, ATMAE, ANECA y SOFÍA · Ingeniería Agronómica</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
@@ -166,8 +166,8 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
 <div class="wrap">
 <header>
   <div>
-    <h1>Evidencias CNA reproyectadas a ABET, ATMAE y ANECA</h1>
-    <p class="lede">Ingeniería Agronómica, UCundinamarca (Fusagasugá y ALD Facatativá). Cada diapositiva de la autoevaluación CNA, cada PAD, cada sección del documento maestro 2019 y los recursos de realidad aumentada de Jardín Vivo son evidencia de base; los anexos se consultan como fuente complementaria (solo apoyo) y el documento maestro RRC 2025, ruta aún no confirmada, como escenario sin proyección. Las correspondencias proponen la evidencia para los criterios de ABET EAC, los estándares de ATMAE 2027 y los criterios de ANECA para el sello EUR-ACE. Las propuestas deben validarse en el comité.</p>
+    <h1>Evidencias CNA reproyectadas a ABET, ATMAE, ANECA y SOFÍA</h1>
+    <p class="lede">Ingeniería Agronómica, UCundinamarca (Fusagasugá y ALD Facatativá). Cada diapositiva de la autoevaluación CNA, cada PAD, cada sección del documento maestro 2019 y los recursos de realidad aumentada de Jardín Vivo son evidencia de base; los anexos se consultan como fuente complementaria (solo apoyo) y el documento maestro RRC 2025, ruta aún no confirmada, como escenario sin proyección. Las correspondencias proponen la evidencia para los criterios de ABET EAC, los estándares de ATMAE 2027, los criterios de ANECA para el sello EUR-ACE y, desde la autoevaluación institucional, los estándares del Sello SOFÍA de la Fundación madri+d. Las propuestas deben validarse en el comité.</p>
   </div>
   <div class="figs" id="figs"></div>
 </header>
@@ -178,6 +178,7 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
   <button role="tab" aria-selected="true" data-tab="mapa">Cobertura ABET</button>
   <button role="tab" aria-selected="false" data-tab="atmae">Cobertura ATMAE</button>
   <button role="tab" aria-selected="false" data-tab="aneca">Cobertura ANECA</button>
+  <button role="tab" aria-selected="false" data-tab="sofia">Sello SOFÍA</button>
   <button role="tab" aria-selected="false" data-tab="curriculo">Currículo</button>
   <button role="tab" aria-selected="false" data-tab="indicadores">Indicadores</button>
   <button role="tab" aria-selected="false" data-tab="evidencias">Evidencias</button>
@@ -217,6 +218,7 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
     <div class="panel"><div class="radar" id="radarANECA" role="img" aria-label="Radar ANECA EUR-ACE"></div></div>
     <div class="panel ancho"><div class="radar" id="radarATMAE" role="img" aria-label="Radar ATMAE 2027"></div></div>
     <div class="panel ancho"><div class="radar" id="radarCNAcomp" role="img" aria-label="Radar CNA, cumplimiento por factor"></div></div>
+    <div class="panel ancho"><div class="radar" id="radarSOFIA" role="img" aria-label="Radar Sello SOFÍA"></div></div>
   </div>
   <div class="panel" style="margin-top:18px"><div class="wide"><table id="tradar"></table></div></div>
 </section>
@@ -256,6 +258,19 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
     <span><i class="sw p"></i>Principal</span><span><i class="sw q"></i>Parcial</span><span><i class="sw a"></i>De apoyo</span><span><i class="sw g"></i>Sin evidencia</span>
   </div>
   <div class="tray" id="trayAneca"></div>
+</section>
+
+<section id="sofia" role="tabpanel" hidden>
+  <div class="panel" style="margin-bottom:18px">
+    <h2 style="margin-bottom:6px">Sello SOFÍA: acreditación institucional internacional (Fundación madri+d)</h2>
+    <p class="note">Guía SOFÍA 2023: 4 dimensiones (planificación, implantación, cumplimiento y programa de mejora) y 10 estándares basados en la Parte 1 de los ESG, otorgado por una agencia inscrita en EQAR. <b>Es institucional</b>: lo solicita la Universidad (rector) y cubre toda la institución; el programa participa si entra en la muestra de hasta siete títulos cuyos resultados de aprendizaje analiza el panel. La evidencia llega desde la autoevaluación institucional (modelo CNA-INST) y, solo para el estándar 5, desde el programa. Cada estándar se califica A (excelente), B (se alcanza), C (con condiciones) o D (no alcanzado); un solo C da «favorable con condiciones» y un solo D, «desfavorable». La lectura de abajo es indicativa: valoración institucional de las características que responden a cada estándar y brechas abiertas.</p>
+    <div class="figs" id="figsSofia" style="margin:14px 0 4px"></div>
+    <div class="wide"><table id="tsofia"></table></div>
+  </div>
+  <div class="legend">
+    <span><i class="sw p"></i>Principal</span><span><i class="sw q"></i>Parcial</span><span><i class="sw a"></i>De apoyo</span><span><i class="sw g"></i>Sin evidencia</span>
+  </div>
+  <div class="tray" id="traySofia"></div>
 </section>
 
 <section id="curriculo" role="tabpanel" hidden>
@@ -360,7 +375,7 @@ function rowHTML(a){
   </div>`;
 }
 function detailHTML(a){
-  const f = a.fuentes.length ? '<ul>'+a.fuentes.map(x=>`<li><span class="tag ${x.tipo}">${x.tipo}</span>${x.marco==='CNA'?x.codigo.replace('C','Car. ')+' ':''}${esc(x.nombre)}${x.nota?` <em>(${esc(x.nota)})</em>`:''}</li>`).join('')+'</ul>' : '<p>Ninguna característica CNA ni REA se proyecta aquí.</p>';
+  const f = a.fuentes.length ? '<ul>'+a.fuentes.map(x=>`<li><span class="tag ${x.tipo}">${x.tipo}</span>${x.marco==='CNA'?x.codigo.replace('C','Car. ')+' ':x.marco==='CNA-INST'?x.codigo+' ':''}${esc(x.nombre)}${x.nota?` <em>(${esc(x.nota)})</em>`:''}</li>`).join('')+'</ul>' : '<p>Ninguna característica CNA ni REA se proyecta aquí.</p>';
   const b = a.brechas.length ? '<ul>'+a.brechas.map(x=>`<li><span class="tag ${x.severidad}">${x.severidad}</span>${esc(x.titulo)}. ${esc(x.descripcion)} <br><strong>Acción:</strong> ${esc(x.accion)}</li>`).join('')+'</ul>' : '<p>Sin brechas registradas.</p>';
   const i = a.indicadores.length ? a.indicadores.map(x=>`<span class="tag">${esc(x.nombre)}</span>`).join('') : '<p>Ninguno.</p>';
   return `<div class="detail"><div>${a.descripcion?`<h4>Qué pide</h4><p>${esc(a.descripcion)}</p>`:''}<h4>De dónde viene la evidencia</h4>${f}</div>
@@ -373,6 +388,18 @@ $('#tatmae31').innerHTML = '<thead><tr><th>Área (estándar 3.1, pregrado)</th><
   D.creditos_atmae.map(x=>`<tr><td>${AREAS[x.area]||x.area}</td><td class="n">${x.creditos}</td><td class="n">${x.minimo}</td><td class="n">${x.maximo}</td><td>${x.creditos<x.minimo?'<span class="tag alta">bajo el mínimo</span>':x.creditos>x.maximo?'<span class="tag media">excede el máximo: justificar</span>':'<span class="tag principal">cumple</span>'}</td></tr>`).join('') +
   `<tr><td><b>Total</b></td><td class="n"><b>${D.cursos.reduce((s,c)=>s+c.creditos,0)}</b></td><td class="n">120</td><td class="n">—</td><td>${D.cursos.reduce((s,c)=>s+c.creditos,0)>=120?'<span class="tag principal">cumple</span>':'<span class="tag alta">bajo el mínimo</span>'}</td></tr></tbody>`;
 $('#trayAneca').innerHTML = D.aneca.map(rowHTML).join('');
+$('#traySofia').innerHTML = D.sofia.map(rowHTML).join('');
+const fmt1 = v => v==null ? '—' : String(v).replace('.',',');
+const VS = D.valoracion_sofia;
+const lecturaSofia = x => x.brechas_media_alta>0 ? ['media','riesgo de C (con condiciones)'] : x.valoracion_inst==null ? ['alta','sin valoración institucional'] : ['principal','B o mejor'];
+$('#figsSofia').innerHTML = [
+  [VS.filter(x=>x.brechas_media_alta===0 && x.valoracion_inst!=null).length+'/10', 'estándares sin brechas medias o altas'],
+  [VS.filter(x=>x.brechas_media_alta>0).length+'/10', 'estándares con riesgo de C'],
+  [fmt1(Math.round(VS.filter(x=>x.valoracion_inst!=null).reduce((s,x)=>s+x.valoracion_inst,0)/VS.filter(x=>x.valoracion_inst!=null).length*100)/100), 'valoración institucional media (CNA-INST)'],
+  [VS.some(x=>x.brechas_media_alta>0)?'Con condiciones':'Favorable', 'dictamen indicativo hoy']
+].map(([b,t])=>`<div class="fig"><b>${b}</b><span>${t}</span></div>`).join('');
+$('#tsofia').innerHTML = '<thead><tr><th>Estándar</th><th class="n">Valoración institucional</th><th class="n">Mínima</th><th>Características CNA-INST</th><th class="n">Evidencias</th><th class="n">Brechas (medias o altas)</th><th>Lectura indicativa</th></tr></thead><tbody>' +
+  VS.map(x=>{const [cl,tx]=lecturaSofia(x); return `<tr><td>${x.codigo} ${esc(x.nombre)}</td><td class="n">${fmt1(x.valoracion_inst)}</td><td class="n">${fmt1(x.minima_inst)}</td><td class="suave">${esc((x.caracteristicas||'').replace(/(\d)\.(\d)/g,'$1,$2'))}</td><td class="n">${x.evidencias}</td><td class="n">${x.brechas} (${x.brechas_media_alta})</td><td><span class="tag ${cl}">${tx}</span></td></tr>`}).join('') + '</tbody>';
 const MODS = {basico:'Formación básica (matemáticas, física, química, biología, geología, empresa, expresión gráfica, informática)',comun_agricola:'Común a la rama agrícola',tecnologia_especifica:'Tecnología específica',tfg:'Trabajo fin de grado (proyecto individual defendido ante tribunal)',transversal:'Formación transversal institucional'};
 $('#tanecacin').innerHTML = '<thead><tr><th>Módulo (Orden CIN/323/2009)</th><th class="n">Créditos</th><th class="n">ECTS equiv.</th><th class="n">Mínimo ECTS</th><th>Estado</th></tr></thead><tbody>' +
   D.creditos_aneca.map(x=>`<tr><td>${MODS[x.modulo]||x.modulo}</td><td class="n">${x.creditos}</td><td class="n">${x.ects}</td><td class="n">${x.minimo_ects||'—'}</td><td>${!x.minimo_ects?'':x.ects<x.minimo_ects?'<span class="tag alta">bajo el mínimo</span>':'<span class="tag principal">cumple</span>'}</td></tr>`).join('') +
@@ -382,7 +409,7 @@ $('#tanecaso').innerHTML = '<thead><tr><th>Área EUR-ACE</th><th>Desde</th><th c
   Object.entries(SO2EA).map(([so,[ea,nom]])=>{const f=n=>D.matriz.filter(m=>m.so===so&&m.estado!=='descartada'&&m.nivel===n).length;
     return `<tr><td>${ea} ${nom}</td><td>${so}</td><td class="n">${f('I')}</td><td class="n">${f('R')}</td><td class="n">${f('E')}</td></tr>`}).join('') +
   '<tr><td colspan="5" class="note">E8.1 (conocimiento) y E8.5 (aplicación práctica) se valoran con la estructura curricular de arriba y los laboratorios y prácticas de los PAD.</td></tr></tbody>';
-['#tray','#trayAtmae','#trayAneca'].forEach(sel=>{
+['#tray','#trayAtmae','#trayAneca','#traySofia'].forEach(sel=>{
   $(sel).addEventListener('click', e=>{
     const open = e.target.closest('[data-open]');
     if(open){ $('#fAbet').value=open.dataset.open; $('#fFactor').value=''; $('#q').value=''; render(); show('evidencias'); return; }
@@ -393,7 +420,7 @@ $('#tanecaso').innerHTML = '<thead><tr><th>Área EUR-ACE</th><th>Desde</th><th c
 function toggle(r){
   const nx = r.nextElementSibling;
   if(nx && nx.classList.contains('detail')){ nx.remove(); r.setAttribute('aria-expanded','false'); return; }
-  const a = D.abet.concat(D.atmae, D.aneca).find(x=>x.codigo===r.dataset.id);
+  const a = D.abet.concat(D.atmae, D.aneca, D.sofia).find(x=>x.codigo===r.dataset.id);
   r.insertAdjacentHTML('afterend', detailHTML(a)); r.setAttribute('aria-expanded','true');
 }
 
@@ -410,8 +437,8 @@ function preparacion(nodos){
     return {codigo:c.codigo, nombre:c.nombre, total:ptsEv+ptsBr, ptsEv, ptsBr, nev:evs.size, nbr:brechas.length};
   });
 }
-const MARCOS = [['radarABET','ABET EAC',D.abet],['radarATMAE','ATMAE 2027',D.atmae],['radarANECA','ANECA (EUR-ACE)',D.aneca]].map(([id,n,nodos])=>({id,n,datos:preparacion(nodos),
-  ref:100, nref:'Exigido', nprog:'Programa (estimado)', sub:d=>`Preparación media estimada: ${Math.round(d.reduce((s,x)=>s+x.total,0)/d.length)}/100`}));
+const MARCOS = [['radarABET','ABET EAC',D.abet],['radarATMAE','ATMAE 2027',D.atmae],['radarANECA','ANECA (EUR-ACE)',D.aneca],['radarSOFIA','Sello SOFÍA (institucional)',D.sofia]].map(([id,n,nodos])=>({id,n,datos:preparacion(nodos),
+  ref:100, nref:'Exigido', nprog:id==='radarSOFIA'?'Universidad (estimado)':'Programa (estimado)', sub:d=>`Preparación media estimada: ${Math.round(d.reduce((s,x)=>s+x.total,0)/d.length)}/100`}));
 // CNA: porcentaje de cumplimiento de cada factor según la autoevaluación, con la referencia «se cumple plenamente» (4,5 = 90 %)
 MARCOS.push({id:'radarCNAcomp', n:'CNA alta calidad (autoevaluación)', datos:D.factores_cna.map(f=>({codigo:f.codigo, nombre:f.nombre, total:f.cumplimiento})),
   ref:90, nref:'«Se cumple plenamente» (90 %)', nprog:'Programa (% de cumplimiento)', cna:true, min:70,
@@ -476,7 +503,6 @@ $('#tcnac').innerHTML = '<thead><tr><th>Característica</th><th>Factor</th><th c
   [...VC].sort((a,b)=>(ORDEN_RIESGO[a.riesgo_sobrevaloracion]-ORDEN_RIESGO[b.riesgo_sobrevaloracion]) || (a.valoracion-b.valoracion)).map(c=>
     `<tr><td>${c.codigo} ${esc(c.nombre)}</td><td>${c.factor}</td><td class="n">${c.ponderacion} %</td><td class="n">${String(c.valoracion).replace('.',',')}</td><td>${esc(c.grado)}</td><td class="n">${c.evidencias}${c.evidencias<3?' <span class="tag alta" title="poca evidencia en el índice">poca</span>':''}</td><td class="n">${c.senales_altas} / ${c.senales_medias}</td><td><span class="tag ${c.riesgo_sobrevaloracion==='alto'?'alta':c.riesgo_sobrevaloracion==='medio'?'media':'principal'}">${c.riesgo_sobrevaloracion}</span></td></tr>`).join('') + '</tbody>';
 const FI = D.factores_cna_inst, PI = D.cna_inst_programa;
-const fmt1 = v => v==null ? '—' : String(v).replace('.',',');
 $('#tcnaif').innerHTML = '<thead><tr><th>Factor</th><th class="n">Valoración</th><th class="n">Cumplimiento</th><th>Grado</th><th>Observación</th></tr></thead><tbody>' +
   FI.map(f=>`<tr><td>${f.codigo} ${esc(f.nombre)}</td><td class="n">${fmt1(f.valoracion)}</td><td class="n">${f.cumplimiento!=null?f.cumplimiento+' %':'—'}</td><td>${f.valoracion==null?'<span class="tag alta">sin presentación</span>':f.valoracion>=4.5?'<span class="tag principal">plenamente</span>':'<span class="tag parcial">alto grado</span>'}</td><td class="suave">${esc(f.nota||'')}</td></tr>`).join('') + '</tbody>';
 $('#tcnaip').innerHTML = '<thead><tr><th>Característica institucional</th><th class="n">Institución</th><th>Característica del programa</th><th class="n">Programa</th><th class="n">Diferencia</th></tr></thead><tbody>' +
@@ -603,9 +629,10 @@ $('#charts').innerHTML=charts;
 // Explorador de evidencias
 const facts=[...new Set(D.evidencias.map(e=>e.codigo.slice(0,3)))];
 $('#fFactor').innerHTML='<option value="">Todos los factores CNA</option>'+D.cna.filter(n=>n.tipo==='factor').map(n=>`<option value="${n.codigo}">${n.codigo.replace('F0','F')} ${esc(n.nombre)}</option>`).join('');
-$('#fAbet').innerHTML='<option value="">Todos los criterios ABET, ATMAE y ANECA</option><optgroup label="ABET EAC">'+D.abet.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('')+
+$('#fAbet').innerHTML='<option value="">Todos los criterios ABET, ATMAE, ANECA y SOFÍA</option><optgroup label="ABET EAC">'+D.abet.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('')+
   '</optgroup><optgroup label="ATMAE 2027">'+D.atmae.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('')+
-  '</optgroup><optgroup label="ANECA (EUR-ACE)">'+D.aneca.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('')+'</optgroup>';
+  '</optgroup><optgroup label="ANECA (EUR-ACE)">'+D.aneca.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('')+
+  '</optgroup><optgroup label="Sello SOFÍA">'+D.sofia.map(a=>`<option value="${a.codigo}">${a.codigo} ${esc(a.nombre)}</option>`).join('')+'</optgroup>';
 const TIPOS={diapositiva:'Diapositiva',valoracion:'Valoración del factor',logros:'Logros e impacto',plan_mejora:'Plan de mejoramiento',pad:'Plan de Aprendizaje Digital',documento_maestro:'Sección de documento maestro',anexo:'Anexo del RRC 2025'};
 const NIVELES={principal:'Base ABET',complementaria:'Complementaria',escenario:'Escenario RRC 2025'};
 // factor CNA de cada característica, para que el filtro por factor incluya documentos y anexos etiquetados
@@ -620,7 +647,7 @@ function render(){
   const hl=s=>{s=esc(s); if(!q) return s; const i=s.toLowerCase().indexOf(esc(q)); return i<0?s:s.slice(0,i)+'<mark>'+s.slice(i,i+esc(q).length)+'</mark>'+s.slice(i+esc(q).length)};
   $('#list').innerHTML=res.slice(0,limit).map(e=>{
     const cna=e.tags.filter(g=>g[0]==='CNA').map(g=>`<span class="tag${g[3]==='extraccion'&&e.tipo!=='diapositiva'&&!['valoracion','logros','plan_mejora'].includes(e.tipo)?' '+g[2]:''}" title="${e.tipo==='anexo'||e.tipo==='documento_maestro'?'Propuesta por sección (documento_nodos.csv)':'Del encabezado de la diapositiva'}">${g[1].startsWith('C')?'Car. '+(+g[1].slice(1)):'Factor '+(+g[1].slice(1))}</span>`).join('');
-    const ab=e.tags.filter(g=>['ABET-EAC','ATMAE-2027','ANECA-EURACE'].includes(g[0])).map(g=>`<span class="tag ${g[2]}" title="${g[0]} · ${g[3]==='inferida'?'Propuesta por correspondencia':'Asignada'}">${g[0]==='ATMAE-2027'?'ATMAE ':g[0]==='ANECA-EURACE'?'ANECA ':''}${g[1]} · ${g[2]}</span>`).join('');
+    const ab=e.tags.filter(g=>['ABET-EAC','ATMAE-2027','ANECA-EURACE','SOFIA'].includes(g[0])).map(g=>`<span class="tag ${g[2]}" title="${g[0]} · ${g[3]==='inferida'?'Propuesta por correspondencia':'Asignada'}">${g[0]==='ATMAE-2027'?'ATMAE ':g[0]==='ANECA-EURACE'?'ANECA ':g[0]==='SOFIA'?'SOFÍA ':''}${g[1]} · ${g[2]}</span>`).join('');
     let snip='';
     if(q){const i=e.texto.toLowerCase().indexOf(q); if(i>=0) snip=`<p>…${hl(e.texto.slice(Math.max(0,i-80),i+120).replace(/\s+/g,' '))}…</p>`;}
     return `<details class="ev"><summary><span class="cd">${e.codigo}</span><span><strong>${hl(e.titulo)}</strong><br><span class="proc ${e.nivel||''}">${NIVELES[e.nivel]||''}</span>${cna}${ab}${snip}</span></summary>
@@ -633,8 +660,8 @@ $('#more').addEventListener('click',()=>{limit+=40;render()});
 render();
 
 // Brechas
-$('#tbrechas').innerHTML='<thead><tr><th>ABET</th><th>Severidad</th><th>Brecha</th><th>Acción propuesta</th><th>Estado</th></tr></thead><tbody>'+
-  D.brechas.map(b=>`<tr><td>${b.marco==="ATMAE-2027"?"ATMAE ":b.marco==="ANECA-EURACE"?"ANECA ":b.marco==="CNA"?"CNA ":"ABET "}${b.nodo}</td><td><span class="tag ${b.severidad}">${b.severidad}</span></td><td><strong>${esc(b.titulo)}</strong><br>${esc(b.descripcion)}</td><td>${esc(b.accion)}</td><td>${b.estado}</td></tr>`).join('')+'</tbody>';
+$('#tbrechas').innerHTML='<thead><tr><th>Marco</th><th>Severidad</th><th>Brecha</th><th>Acción propuesta</th><th>Estado</th></tr></thead><tbody>'+
+  D.brechas.map(b=>`<tr><td>${({"ATMAE-2027":"ATMAE ","ANECA-EURACE":"ANECA ","CNA":"CNA ","CNA-INST":"CNA institucional ","SOFIA":"SOFÍA "})[b.marco]||"ABET "}${b.nodo}</td><td><span class="tag ${b.severidad}">${b.severidad}</span></td><td><strong>${esc(b.titulo)}</strong><br>${esc(b.descripcion)}</td><td>${esc(b.accion)}</td><td>${b.estado}</td></tr>`).join('')+'</tbody>';
 
 // Normativa
 $('#tnorm').innerHTML='<thead><tr><th>Norma</th><th>Órgano</th><th>Citada en</th></tr></thead><tbody>'+
@@ -644,7 +671,7 @@ $('#tnorm').addEventListener('click',e=>{const b=e.target.closest('[data-ev]'); 
 </script>
 <footer class="pie">
   <div class="barra">
-    <div><strong>Universidad de Cundinamarca</strong><br>Facultad de Ciencias Agropecuarias · Programa de Ingeniería Agronómica<br>Índice de acreditación CNA → ABET, ATMAE y ANECA (EUR-ACE)</div>
+    <div><strong>Universidad de Cundinamarca</strong><br>Facultad de Ciencias Agropecuarias · Programa de Ingeniería Agronómica<br>Índice de acreditación CNA → ABET, ATMAE, ANECA (EUR-ACE) y Sello SOFÍA</div>
     <div style="text-align:right"><a href="https://www.ucundinamarca.edu.co">www.ucundinamarca.edu.co</a><br>Vigilada MinEducación</div>
   </div>
 </footer>

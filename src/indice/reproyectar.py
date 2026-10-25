@@ -15,7 +15,7 @@ import sqlite3
 from pathlib import Path
 
 ROL = {'equivalente': 'principal', 'parcial': 'parcial', 'apoyo': 'apoyo'}
-MARCOS_DESTINO = ('ABET-EAC', 'ATMAE-2027', 'ANECA-EURACE')
+MARCOS_DESTINO = ('ABET-EAC', 'ATMAE-2027', 'ANECA-EURACE', 'SOFIA')
 # Nodo al que apoya una diapositiva de avance del plan de mejoramiento, en cada marco
 MEJORA = {'ABET-EAC': 'C4', 'ATMAE-2027': 'A11', 'ANECA-EURACE': 'E3'}
 FUERZA = {'principal': 0, 'parcial': 1, 'apoyo': 2}

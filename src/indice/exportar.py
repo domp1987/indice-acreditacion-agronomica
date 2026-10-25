@@ -31,6 +31,7 @@ def datos_tablero(c):
     abet = _nodos_destino(q, 'ABET-EAC')
     atmae = _nodos_destino(q, 'ATMAE-2027')
     aneca = _nodos_destino(q, 'ANECA-EURACE')
+    sofia = _nodos_destino(q, 'SOFIA')
     cna = q("""SELECT n.codigo,n.nombre,n.tipo,p.codigo padre FROM nodo n LEFT JOIN nodo p ON p.id=n.padre_id
                JOIN marco m ON m.id=n.marco_id AND m.codigo='CNA' ORDER BY n.orden""")
     ev = q("SELECT id,codigo,titulo,tipo,texto,texto_ocr,fuente,archivo,pagina,proceso,nivel FROM evidencia WHERE estado_revision<>'obsoleta' ORDER BY codigo")
@@ -46,10 +47,11 @@ def datos_tablero(c):
     for i in ind:
         i['m'] = q("SELECT periodo,sede,valor,desagregacion d,nota FROM medicion WHERE indicador_id=? ORDER BY id", i.pop('id'))
     return dict(
-        abet=abet, atmae=atmae, aneca=aneca, cna=cna, evidencias=ev, indicadores=ind,
+        abet=abet, atmae=atmae, aneca=aneca, sofia=sofia, cna=cna, evidencias=ev, indicadores=ind,
         creditos_aneca=q("SELECT modulo,creditos,ects,cursos,minimo_ects FROM v_creditos_aneca"),
         valoracion_cna=q("SELECT * FROM v_valoracion_cna"),
         valoracion_cna_inst=q("SELECT * FROM v_valoracion_cna_inst"),
+        valoracion_sofia=q("SELECT * FROM v_valoracion_sofia"),
         cna_inst_programa=q("SELECT * FROM v_cna_inst_programa"),
         factores_cna_inst=q("""SELECT n.codigo,n.nombre,
             (SELECT m.valor FROM medicion m JOIN indicador i ON i.id=m.indicador_id WHERE i.codigo='CNA_INST_VAL_FACTOR' AND m.desagregacion=n.codigo) valoracion,

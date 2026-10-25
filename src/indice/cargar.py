@@ -455,7 +455,7 @@ def _leer_ocr(ocr_json):
     return {(fuente, int(p)): lineas for fuente, c in cache.items() for p, lineas in c['paginas'].items()}
 
 
-VERSION_ESQUEMA = 14
+VERSION_ESQUEMA = 15
 # Migraciones que agregan tablas sin tocar los datos existentes: {versión destino: script}
 MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql', 4: PAQUETE / 'esquema_pad_v4.sql',
                5: PAQUETE / 'esquema_v5_decision.sql', 6: PAQUETE / 'esquema_v6_maestro.sql',
@@ -466,7 +466,8 @@ MIGRACIONES = {3: PAQUETE / 'esquema_pad.sql', 4: PAQUETE / 'esquema_pad_v4.sql'
                11: PAQUETE / 'esquema_v11_atmae.sql',
                12: PAQUETE / 'esquema_v12_aneca.sql',
                13: PAQUETE / 'esquema_v13_cna.sql',
-               14: PAQUETE / 'esquema_v14_cna_inst.sql'}
+               14: PAQUETE / 'esquema_v14_cna_inst.sql',
+               15: PAQUETE / 'esquema_v15_sofia.sql'}
 # Tablas que son copia directa de semillas, presentaciones o PAD: se vacían y se vuelven a llenar en cada carga
 # (hijas antes que padres). Su fuente de verdad son los CSV y los documentos, no la base.
 DERIVADAS = ['plan_2025_rea', 'plan_2025', 'transicion_2025', 'pad_fase', 'pad_recurso', 'pad_bibliografia', 'pad_actividad', 'pad_experiencia', 'pad_rea', 'pad',

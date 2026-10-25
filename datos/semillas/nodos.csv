@@ -191,3 +191,44 @@ CNA-INST,IF12,Comunidad de egresados,factor,,1200,
 CNA-INST,IC36,Seguimiento a egresados,caracteristica,IF12,1236,
 CNA-INST,IC37,Egresados y programas académicos,caracteristica,IF12,1237,
 CNA-INST,IC38,Relación de los egresados con la institución,caracteristica,IF12,1238,
+SOFIA,SF1,Política y estrategia,criterio,,100,"Planificación. ESG 1.1. Política pública de docencia, investigación y extensión, con estatus formal, implantada mediante una estrategia (plan estratégico con misión y visión) con responsables, indicadores de seguimiento y participación de los grupos de interés; integridad académica, control del fraude y no discriminación; alineación con los ODS."
+SOFIA,SF1.1,"Política de la universidad en docencia, investigación y extensión",subcriterio,SF1,101,
+SOFIA,SF1.2,Estrategia y plan estratégico,subcriterio,SF1,102,
+SOFIA,SF2,"Organización, financiación y alianzas",criterio,,200,"Planificación. Referencias ESG 3.2 y 3.3 trasladadas a la universidad. Estatuto legal y autonomía; órganos de gobierno con funciones claras y participación de estudiantes, docentes y administrativos; financiación con auditoría y plan financiero; política de alianzas con universidades y con el sector productivo."
+SOFIA,SF2.1,"Misión, visión y objetivos",subcriterio,SF2,201,
+SOFIA,SF2.2,Organización y gobernanza,subcriterio,SF2,202,
+SOFIA,SF2.3,Financiación,subcriterio,SF2,203,
+SOFIA,SF2.4,Alianzas,subcriterio,SF2,204,
+SOFIA,SF3,Recursos humanos,criterio,,300,Implantación. ESG 1.5. Personal docente e investigador y personal de administración y servicios suficiente y competente para cada programa; selección justa y transparente; evaluación; formación continua y movilidad; igualdad de género y no discriminación en la contratación. Tabla 2 de profesorado.
+SOFIA,SF3.1,Personal académico y de investigación,subcriterio,SF3,301,
+SOFIA,SF3.2,Personal de administración y gestión,subcriterio,SF3,302,
+SOFIA,SF3.3,Evaluación y plan de formación del personal,subcriterio,SF3,303,
+SOFIA,SF4,Recursos materiales y servicios,criterio,,400,"Implantación. ESG 1.6. Infraestructura, servicios y financiación suficientes para docencia, investigación y extensión: aulas, laboratorios, biblioteca, TIC, plataformas virtuales, accesibilidad; servicios de orientación, becas, empleo, deportes y movilidad."
+SOFIA,SF4.1,Recursos materiales de apoyo al aprendizaje,subcriterio,SF4,401,
+SOFIA,SF4.2,Servicios de apoyo al aprendizaje y al bienestar,subcriterio,SF4,402,
+SOFIA,SF4.3,Recursos y financiación para la investigación,subcriterio,SF4,403,
+SOFIA,SF4.4,Servicios para la investigación,subcriterio,SF4,404,
+SOFIA,SF4.5,Recursos y financiación para la extensión,subcriterio,SF4,405,
+SOFIA,SF5,Formación,criterio,,500,"Implantación. ESG 1.3 y 1.4. Programas centrados en el estudiante: perfil de ingreso y admisión, diseño de planes y resultados de aprendizaje, coordinación horizontal y vertical, metodologías y sistemas de evaluación públicos, reconocimiento y movilidad. En la visita el panel analiza los resultados de aprendizaje de una muestra de hasta siete títulos (al menos uno por área): asignaturas, trabajos de grado, exámenes e indicadores."
+SOFIA,SF5.1,Perfil de ingreso y proceso de admisión,subcriterio,SF5,501,
+SOFIA,SF5.2,Diseño de las titulaciones y resultados de aprendizaje,subcriterio,SF5,502,
+SOFIA,SF5.3,"Metodología, actividades formativas y evaluación de los resultados de aprendizaje",subcriterio,SF5,503,
+SOFIA,SF5.4,Reconocimiento de aprendizajes previos y movilidad,subcriterio,SF5,504,
+SOFIA,SF6,Investigación y transferencia,criterio,,600,"Implantación. Estrategia de investigación y transferencia, estructura (grupos, institutos, oficina de apoyo), vínculo con el doctorado y resultados: publicaciones, proyectos, tesis, contratos, patentes y movilidad. Tabla 3 de grupos y líneas."
+SOFIA,SF6.1,Estrategia y estructura de apoyo a la investigación,subcriterio,SF6,601,
+SOFIA,SF6.2,Líneas y grupos de investigación,subcriterio,SF6,602,
+SOFIA,SF6.3,Resultados e impacto de la investigación,subcriterio,SF6,603,
+SOFIA,SF7,Vinculación con el entorno,criterio,,700,"Implantación. Plan de extensión que capta las necesidades del entorno y responde con formación continua, seminarios y difusión; financiación anual y resultados (asistentes, publicaciones); alineación con los ODS."
+SOFIA,SF7.1,Estrategia y estructura de vinculación con el entorno,subcriterio,SF7,701,
+SOFIA,SF7.2,Resultados e impacto de la vinculación,subcriterio,SF7,702,
+SOFIA,SF8,Sistema de aseguramiento de la calidad,criterio,,800,"Cumplimiento. Sistema de calidad formal y público que cubre docencia, investigación y extensión: manual, mapa de procesos con responsables, procedimientos e indicadores, revisión periódica, evaluaciones externas y sellos."
+SOFIA,SF8.1,Política y órganos de aseguramiento de la calidad,subcriterio,SF8,801,
+SOFIA,SF8.2,Sistema de aseguramiento y recursos para la mejora continua,subcriterio,SF8,802,
+SOFIA,SF9,Gestión de la información e información pública,criterio,,900,"Cumplimiento. ESG 1.7 y 1.8. Recogida, análisis y uso de información: perfil de ingreso, éxito, graduación y abandono, rendimiento por asignatura, satisfacción de los grupos de interés, empleabilidad, investigación, extensión e indicadores de la Agenda 2030 (ambiente, género, diversidad); publicación clara y accesible."
+SOFIA,SF9.1,"Recogida, análisis y uso de la información",subcriterio,SF9,901,
+SOFIA,SF9.2,Publicación de información de la oferta y las actividades,subcriterio,SF9,902,
+SOFIA,SF9.3,Información institucional a los grupos de interés,subcriterio,SF9,903,
+SOFIA,SF10,Plan de mejora,criterio,,1000,"Programa de mejora. ESG 1.9. Planes de mejora institucionales con recursos, seguimiento y evaluación periódicos; actualización de títulos, uso de encuestas, captación de necesidades del entorno y alineación con la Agenda 2030."
+SOFIA,SF10.1,Mecanismos de mejora continua,subcriterio,SF10,1001,
+SOFIA,SF10.2,Seguimiento y evaluación del plan de mejora,subcriterio,SF10,1002,
+SOFIA,SF10.3,Seguimiento del plan estratégico u operativo,subcriterio,SF10,1003,

@@ -187,7 +187,8 @@ def inventariar(raiz, destino):
         out[clave].append(dict(archivo=rel, nombre=ruta.stem, firma=firma, mb=round(ruta.stat().st_size / 1e6, 2), **datos))
 
     for ruta in sorted((raiz / 'Modelos').glob('*.glb')): agregar('modelos', ruta, leer_glb)
-    for ruta in sorted((raiz / 'AR_models').glob('*.glb')): agregar('modelos_ar', ruta, leer_glb)
+    # la carpeta de modelos AR se renombró en Jardín Vivo (AR_models → AR_models_Provisionales); sirven ambas
+    for ruta in sorted(r for c in ('AR_models', 'AR_models_Provisionales') for r in (raiz / c).glob('*.glb')): agregar('modelos_ar', ruta, leer_glb)
     for ruta in sorted((raiz / 'Imagenes360').iterdir()):
         if ruta.suffix.lower() in EXT_IMG: agregar('imagenes360', ruta, leer_jpeg)
         elif ruta.suffix.lower() == '.mp4': agregar('videos360', ruta, leer_mp4)
