@@ -5,6 +5,8 @@ import sqlite3
 import zipfile
 from pathlib import Path
 
+from indice.config import cargar_rutas
+
 TABLAS = ['marco', 'nodo', 'correspondencia', 'evidencia', 'evidencia_nodo', 'indicador', 'medicion', 'indicador_nodo',
           'curso', 'curso_outcome', 'normativa', 'normativa_mencion', 'brecha', 'grafica', 'grafica_dato', 'tabla_diapositiva',
           'pad', 'pad_rea', 'pad_fase', 'pad_experiencia', 'pad_actividad', 'pad_bibliografia', 'pad_recurso', 'decision',
@@ -24,6 +26,17 @@ def _nodos_destino(q, marco):
         a['brechas'] = q("SELECT titulo,descripcion,severidad,accion,estado FROM brecha WHERE nodo_id=?", a['id'])
         a['indicadores'] = q("SELECT i.codigo,i.nombre FROM indicador_nodo x JOIN indicador i ON i.id=x.indicador_id WHERE x.nodo_id=?", a['id'])
     return nodos
+
+
+def acreditadoras(q):
+    """Contexto de cada acreditadora (datos/acreditadoras.json) con la estructura de su marco tomada de la base."""
+    ruta = cargar_rutas().semillas.parent / 'acreditadoras.json'
+    if not ruta.exists(): return []
+    lista = json.loads(ruta.read_text(encoding='utf-8'))['acreditadoras']
+    for a in lista:
+        a['estructura'] = q("""SELECT n.codigo,n.nombre,n.tipo,p.codigo padre,n.descripcion FROM nodo n LEFT JOIN nodo p ON p.id=n.padre_id
+                              JOIN marco m ON m.id=n.marco_id AND m.codigo=? ORDER BY n.orden, n.id""", a['marco'])
+    return lista
 
 
 def datos_tablero(c):
@@ -47,7 +60,7 @@ def datos_tablero(c):
     for i in ind:
         i['m'] = q("SELECT periodo,sede,valor,desagregacion d,nota FROM medicion WHERE indicador_id=? ORDER BY id", i.pop('id'))
     return dict(
-        abet=abet, atmae=atmae, aneca=aneca, sofia=sofia, cna=cna, evidencias=ev, indicadores=ind,
+        abet=abet, atmae=atmae, aneca=aneca, sofia=sofia, cna=cna, acreditadoras=acreditadoras(q), evidencias=ev, indicadores=ind,
         creditos_aneca=q("SELECT modulo,creditos,ects,cursos,minimo_ects FROM v_creditos_aneca"),
         valoracion_cna=q("SELECT * FROM v_valoracion_cna"),
         valoracion_cna_inst=q("SELECT * FROM v_valoracion_cna_inst"),

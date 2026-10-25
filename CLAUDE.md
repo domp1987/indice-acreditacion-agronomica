@@ -52,6 +52,7 @@ Idioma del proyecto: español (código, comentarios, datos e interfaz). Los text
 - `src/indice/reproyectar.py`: sincroniza las etiquetas inferidas (agrega, corrige el rol, retira las que ya no se deducen) desde las etiquetas de extracción y las correspondencias no descartadas; incluye la regla "plan de mejoramiento → C4 apoyo". Si varias correspondencias llegan al mismo nodo gana el rol más fuerte. Idempotente.
 - `src/indice/exportar.py`: `data.json` y `csv/` + `tablas_csv.zip` (UTF-8 con BOM).
 - `src/indice/tablero.py` y `plantillas/template.html`: tablero autocontenido; inyecta `data.json` en `__DATA__`, JavaScript puro, sin dependencias.
+- Pestaña «Acreditadoras»: ficha de cada acreditadora (CNA programas, CNA institucional, ABET, ATMAE, ANECA y SOFÍA) con contexto, proceso, qué tienen en cuenta los evaluadores, cómo deciden, vigencia, situación del programa y fuentes, más una tabla comparativa. Los textos viven en `datos/acreditadoras.json` (parafraseados de `referencias/` y de las guías oficiales; ABET sin copia local: verificar en abet.org); la estructura de cada modelo sale de la base (`exportar.acreditadoras`).
 - `indice.toml`: rutas (`pdf`, `salida`, `poppler` opcional). Hoy `pdf` apunta a `OneDrive_1_9-23-2026/`.
 - `legado/`: scripts del prototipo y su base (no versionada) para comparar. `tests/comparar_bases.py` compara dos bases por claves naturales.
 

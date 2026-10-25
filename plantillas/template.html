@@ -117,6 +117,16 @@ table{border-collapse:collapse;width:100%;font-size:.88rem}
 th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-weight:650;color:var(--muted);font-size:.8rem}
 td.n{text-align:right;font-variant-numeric:tabular-nums}
+.acr-sel{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.acr-sel button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 15px;cursor:pointer;font:inherit;font-size:14px}
+.acr-sel button[aria-pressed="true"]{background:var(--moss);border-color:var(--moss);color:var(--surface)}
+.acr-sel button:focus-visible{outline:2px solid var(--ochre);outline-offset:2px}
+.pasos{margin:0;padding-left:22px} .pasos li{margin:7px 0;line-height:1.5}
+.lista{margin:0;padding-left:20px} .lista li{margin:6px 0;line-height:1.5}
+.ficha h3{margin:16px 0 6px} .ficha h3:first-child{margin-top:0}
+.estr details{border-top:1px solid var(--line);padding:8px 0} .estr details:last-child{border-bottom:1px solid var(--line)}
+.estr summary{cursor:pointer;font-weight:600} .estr summary span{font-weight:400;color:var(--muted)}
+.estr ul{margin:6px 0 0;padding-left:20px} .estr li{margin:3px 0}
 .radares{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:18px}
 .radar{width:100%;height:600px}
 .radares .ancho{grid-column:1/-1} .radares .ancho .radar{height:680px}
@@ -173,6 +183,7 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
 </header>
 
 <nav role="tablist" aria-label="Vistas">
+  <button role="tab" aria-selected="false" data-tab="acreditadoras">Acreditadoras</button>
   <button role="tab" aria-selected="false" data-tab="cna">CNA alta calidad</button>
   <button role="tab" aria-selected="false" data-tab="radar">Comparación</button>
   <button role="tab" aria-selected="true" data-tab="mapa">Cobertura ABET</button>
@@ -185,6 +196,16 @@ svg text{font-family:var(--font);fill:var(--muted);font-size:12px}
   <button role="tab" aria-selected="false" data-tab="brechas">Brechas</button>
   <button role="tab" aria-selected="false" data-tab="normativa">Normativa</button>
 </nav>
+
+<section id="acreditadoras" role="tabpanel" hidden>
+  <div class="panel" style="margin-bottom:18px">
+    <h2 style="margin-bottom:6px">Las acreditadoras: qué evalúan y cómo</h2>
+    <p class="note">Contexto de cada acreditación que analiza el índice: quién la otorga, a quién evalúa, cómo es el proceso, qué tienen en cuenta los evaluadores, cómo deciden y la estructura de su modelo (los criterios que usa el índice). Elige una acreditadora para ver su ficha. Los textos están parafraseados de las fuentes citadas: verifica la versión vigente antes de usarlos en un informe.</p>
+    <div class="wide"><table id="tacred"></table></div>
+  </div>
+  <div class="acr-sel" id="acrSel" role="group" aria-label="Elegir acreditadora"></div>
+  <div id="acrFicha"></div>
+</section>
 
 <section id="cna" role="tabpanel" hidden>
   <div class="panel" style="margin-bottom:18px">
@@ -658,6 +679,68 @@ function render(){
 ['#q','#fFactor','#fAbet','#fTipo','#fNivel'].forEach(s=>$(s).addEventListener('input',()=>{limit=40;render()}));
 $('#more').addEventListener('click',()=>{limit+=40;render()});
 render();
+
+// Acreditadoras: contexto, proceso, criterios de evaluación y estructura de cada modelo
+const AC = D.acreditadoras || [];
+const RADAR_DE = {'ABET-EAC':'radarABET','ATMAE-2027':'radarATMAE','ANECA-EURACE':'radarANECA','SOFIA':'radarSOFIA'};
+function lecturaIndice(a){
+  const m = MARCOS.find(x=>x.id===RADAR_DE[a.marco]);
+  if(m) return [Math.round(m.datos.reduce((s,x)=>s+x.total,0)/m.datos.length)+'/100', a.marco==='SOFIA'?'preparación estimada de la Universidad':'preparación estimada del programa'];
+  const f = (a.marco==='CNA' ? D.factores_cna : D.factores_cna_inst).filter(x=>x.cumplimiento!=null);
+  return f.length ? [Math.round(f.reduce((s,x)=>s+x.cumplimiento,0)/f.length)+' %', 'cumplimiento medio en la autoevaluación'] : ['—',''];
+}
+const brechasDe = m => D.brechas.filter(b=>b.marco===m && b.estado!=='cerrada');
+$('#tacred').innerHTML = '<thead><tr><th>Acreditadora</th><th>Qué evalúa</th><th>Quién solicita</th><th>Modelo</th><th>Resultado posible</th><th>Vigencia</th><th class="n">Brechas abiertas (altas)</th></tr></thead><tbody>' +
+  AC.map(a=>{const b=brechasDe(a.marco); return `<tr><td><button class="link" style="text-align:left" data-acr="${a.marco}">${esc(a.nombre)}</button></td><td>${esc(a.alcance)}</td><td>${esc(a.solicita)}</td><td>${esc(a.estructura_resumen)}</td><td>${esc(a.resultado)}</td><td>${esc(a.vigencia)}</td><td class="n">${b.length} (${b.filter(x=>x.severidad==='alta').length})</td></tr>`}).join('') + '</tbody>';
+$('#acrSel').innerHTML = AC.map((a,i)=>`<button type="button" data-acr="${a.marco}" aria-pressed="${i===0}">${esc(a.nombre.split(' · ')[0])}${a.marco==='CNA-INST'?' institucional':''}</button>`).join('');
+function estructuraHTML(a){
+  const raiz = a.estructura.filter(n=>!n.padre);
+  return raiz.map(n=>{
+    const hijos = a.estructura.filter(h=>h.padre===n.codigo);
+    return `<details><summary>${esc(n.codigo)} ${esc(n.nombre)} <span>${hijos.length?`· ${hijos.length} ${hijos[0].tipo==='outcome'?'resultados':hijos[0].tipo==='caracteristica'?'características':'apartados'}`:''}</span></summary>
+      ${n.descripcion?`<p class="note" style="margin:6px 0 0">${esc(n.descripcion)}</p>`:''}
+      ${hijos.length?'<ul>'+hijos.map(h=>`<li><b>${esc(h.codigo)}</b> ${esc(h.nombre)}</li>`).join('')+'</ul>':''}</details>`;
+  }).join('');
+}
+function fichaAcr(marco){
+  const a = AC.find(x=>x.marco===marco); if(!a) return;
+  document.querySelectorAll('#acrSel button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.acr===marco)));
+  const b = brechasDe(marco), [valor, rotulo] = lecturaIndice(a);
+  const fuentes = a.fuentes.map(f=>f.url?`<li><a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.texto)}</a></li>`:`<li>${esc(f.texto)}</li>`).join('');
+  $('#acrFicha').innerHTML = `
+  <div class="panel ficha" style="margin-bottom:18px">
+    <h2 style="margin-bottom:4px">${esc(a.nombre)}</h2>
+    <p class="note" style="margin:0 0 6px">${esc(a.agencia)} · ${esc(a.base)}</p>
+    <p style="margin:0 0 12px"><b>Evalúa:</b> ${esc(a.alcance)} · <b>Solicita:</b> ${esc(a.solicita)} · <b>Vigencia:</b> ${esc(a.vigencia)}</p>
+    <div class="figs" style="margin:0 0 6px">
+      <div class="fig"><b>${valor}</b><span>${rotulo}</span></div>
+      <div class="fig"><b>${b.length}</b><span>brechas abiertas (${b.filter(x=>x.severidad==='alta').length} altas, ${b.filter(x=>x.severidad==='media').length} medias)</span></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="panel ficha">
+      <h3>Contexto</h3><p>${esc(a.contexto)}</p>
+      <h3>Cómo evalúa: el proceso</h3><ol class="pasos">${a.proceso.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
+    </div>
+    <div class="panel ficha">
+      <h3>Qué tienen en cuenta los evaluadores</h3><ul class="lista">${a.considera.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      <h3>Cómo decide</h3><p>${esc(a.decision)}</p>
+      <h3>Situación del programa en el índice</h3><p>${esc(a.situacion)}</p>
+      <p><button class="link" data-ir="${a.pestana}">Ir a la pestaña de análisis</button></p>
+      <h3>Fuentes</h3><ul class="lista">${fuentes}</ul>
+    </div>
+  </div>
+  <div class="panel estr" style="margin-top:18px">
+    <h3 style="margin-bottom:8px">Estructura del modelo: ${esc(a.estructura_resumen)}</h3>
+    <p class="note" style="margin:0 0 8px">Despliega cada criterio para ver qué pide y sus componentes. Es la estructura con la que el índice clasifica la evidencia.</p>
+    ${estructuraHTML(a)}
+  </div>`;
+}
+document.getElementById('acreditadoras').addEventListener('click', e=>{
+  const ir = e.target.closest('[data-ir]'); if(ir){ document.querySelector(`[data-tab="${ir.dataset.ir}"]`).click(); window.scrollTo({top:0}); return; }
+  const b = e.target.closest('[data-acr]'); if(b){ fichaAcr(b.dataset.acr); if(b.closest('#tacred')) $('#acrSel').scrollIntoView({block:'start', behavior:'smooth'}); }
+});
+if(AC.length) fichaAcr(AC[0].marco);
 
 // Brechas
 $('#tbrechas').innerHTML='<thead><tr><th>Marco</th><th>Severidad</th><th>Brecha</th><th>Acción propuesta</th><th>Estado</th></tr></thead><tbody>'+

@@ -1,0 +1,197 @@
+{
+  "nota": "Contexto de cada acreditadora para la pestaña «Acreditadoras» del tablero. Textos parafraseados de las fuentes citadas en cada una; verificar contra el documento oficial vigente antes de usarlos en un informe.",
+  "acreditadoras": [
+    {
+      "marco": "CNA",
+      "nombre": "CNA · Acreditación en alta calidad de programas",
+      "agencia": "Consejo Nacional de Acreditación (Colombia); el Ministerio de Educación Nacional expide la resolución",
+      "alcance": "Programa académico",
+      "solicita": "La institución, para cada programa",
+      "base": "Acuerdo CESU 02 de 2020 y lineamientos y aspectos por evaluar del CNA",
+      "estructura_resumen": "12 factores y 48 características",
+      "resultado": "Acreditación por 6, 8 o 10 años, o recomendaciones",
+      "vigencia": "6, 8 o 10 años",
+      "contexto": "Es el reconocimiento público de alta calidad del sistema colombiano: voluntario, temporal y posterior al registro calificado. Para pedirlo, el programa debe tener registro calificado vigente y una trayectoria continua de funcionamiento. Es la acreditación de la que parte todo este índice: las evidencias del programa son su autoevaluación.",
+      "proceso": [
+        "Apreciación de condiciones iniciales: el CNA verifica requisitos con visita de consejeros y emite un concepto (no la surten las instituciones con acreditación institucional vigente).",
+        "Autoevaluación: el programa se valora con el modelo, pondera factores y características y redacta su informe con plan de mejoramiento.",
+        "Evaluación externa por pares académicos: el CNA conforma la comisión (la institución puede recusar), los pares visitan y emiten su informe, al que la institución responde.",
+        "Evaluación integral: el CNA analiza autoevaluación, informe de pares y respuesta, y emite concepto.",
+        "Acto administrativo: el Ministerio concede la acreditación con su vigencia o el CNA formula recomendaciones."
+      ],
+      "considera": [
+        "Grado de cumplimiento de cada característica con juicio sobre evidencias (en los informes del programa: 4,5 o más «se cumple plenamente»; 3,7 a 4,4 «en alto grado»).",
+        "Ponderación que la propia institución asigna a factores y características.",
+        "Resultados de aprendizaje y su evaluación, profesores, estudiantes, egresados, investigación, impacto social e internacionalización.",
+        "Consolidación, sostenibilidad e impacto: deciden si la vigencia es de 6, 8 o 10 años.",
+        "Plan de mejoramiento y su seguimiento."
+      ],
+      "decision": "El CNA conceptúa y el Ministerio resuelve: acreditación por 6, 8 o 10 años según el grado de consolidación, sostenibilidad e impacto, o recomendaciones para volver a presentarse.",
+      "situacion": "Autoevaluación del programa (2025): media de los 12 factores 4,41; 4 factores y 23 de 48 características «se cumple plenamente». La Universidad incluye a Ingeniería Agronómica entre sus programas en ruta de acreditación (IP01-P023). Ver la pestaña «CNA alta calidad».",
+      "pestana": "cna",
+      "fuentes": [
+        {"texto": "Acuerdo CESU 02 de 2020 (referencias/cna)", "url": ""},
+        {"texto": "CNA: trámite de acreditación de programas (referencias/cna)", "url": ""},
+        {"texto": "Consejo Nacional de Acreditación", "url": "https://www.cna.gov.co"}
+      ]
+    },
+    {
+      "marco": "CNA-INST",
+      "nombre": "CNA · Acreditación institucional",
+      "agencia": "Consejo Nacional de Acreditación (Colombia); el Ministerio de Educación Nacional expide la resolución",
+      "alcance": "Institución",
+      "solicita": "La Universidad",
+      "base": "Acuerdo CESU 02 de 2020 (modelo institucional)",
+      "estructura_resumen": "12 factores y 38 características",
+      "resultado": "Acreditación por 6, 8 o 10 años, o recomendaciones",
+      "vigencia": "6, 8 o 10 años",
+      "contexto": "Evalúa a la Universidad completa (sedes, seccionales y extensiones) con el modelo institucional del CNA. Respalda a los programas: muchas características del programa se sostienen en políticas institucionales, y es la base de la autoevaluación que alimenta el Sello SOFÍA.",
+      "proceso": [
+        "Mismas cinco etapas que para programas: condiciones iniciales, autoevaluación institucional, evaluación externa por pares, evaluación integral del CNA y resolución del Ministerio.",
+        "En la reacreditación la institución radica de nuevo su autoevaluación y recibe visita de pares."
+      ],
+      "considera": [
+        "Identidad, gobierno y transparencia, gestión y sostenibilidad, mejoramiento continuo, procesos académicos, investigación, impacto social, visibilidad, bienestar y comunidades de profesores, estudiantes y egresados.",
+        "Coherencia entre lo institucional y lo que viven los programas en cada sede.",
+        "Consolidación, sostenibilidad e impacto para la vigencia."
+      ],
+      "decision": "Acreditación institucional por 6, 8 o 10 años, o recomendaciones.",
+      "situacion": "Autoevaluación institucional de octubre de 2025: media de los 11 factores presentados 4,53; falta la presentación del factor 8 y hay errores de cálculo en los factores 4 y 6. Según IP01-P023 la reacreditación institucional está radicada.",
+      "pestana": "cna",
+      "fuentes": [
+        {"texto": "Actualización de aspectos por evaluar del CNA (referencias/cna)", "url": ""},
+        {"texto": "Presentaciones Institucionales (autoevaluación, octubre de 2025)", "url": ""}
+      ]
+    },
+    {
+      "marco": "ABET-EAC",
+      "nombre": "ABET · Engineering Accreditation Commission",
+      "agencia": "ABET (Estados Unidos), Comisión de Acreditación de Ingeniería (EAC)",
+      "alcance": "Programa de ingeniería",
+      "solicita": "La institución, para el programa",
+      "base": "Criterios para acreditar programas de ingeniería 2026-2027 y manual de políticas y procedimientos (APPM)",
+      "estructura_resumen": "8 criterios generales, 7 resultados de los estudiantes (SO) y criterios de programa",
+      "resultado": "Próxima revisión general (hasta 6 años), informe o visita intermedios, o no acreditación",
+      "vigencia": "Hasta 6 años",
+      "contexto": "Acreditación voluntaria de programas de ingeniería, reconocida internacionalmente y base del Washington Accord. Evalúa el programa con nombre propio, no la institución. Es la meta original de este índice: las evidencias CNA se reproyectan a sus criterios.",
+      "proceso": [
+        "Revisión de preparación (Readiness Review) si la institución no tiene programas acreditados por ABET.",
+        "Solicitud de evaluación (Request for Evaluation), en enero del año de la visita.",
+        "Informe de autoestudio (Self-Study Report) a mitad de año, con la evidencia por criterio.",
+        "Visita de un equipo evaluador en el segundo semestre, que deja hallazgos por escrito al cierre.",
+        "Declaración preliminar y respuesta del programa (debido proceso) para corregir hallazgos.",
+        "Decisión de la comisión en su reunión de mitad del año siguiente."
+      ],
+      "considera": [
+        "Estudiantes, objetivos educacionales (PEOs), resultados de los estudiantes (SO 1–7), mejora continua, currículo, profesores, instalaciones y apoyo institucional.",
+        "Mejora continua con evaluación directa de los resultados de los estudiantes y uso de los resultados para mejorar.",
+        "Currículo: mínimos de matemáticas y ciencias básicas y de temas de ingeniería, con una experiencia de diseño culminante.",
+        "Criterios de programa de la sociedad profesional que corresponda al nombre del programa.",
+        "Hallazgos graduados como deficiencia, debilidad, preocupación u observación."
+      ],
+      "decision": "Una deficiencia impide la acreditación; las debilidades llevan a informe o visita intermedios. Sin ellas, la acreditación va hasta la próxima revisión general (máximo 6 años).",
+      "situacion": "Es el marco con más brechas altas: 9 créditos de ingeniería frente a los 45 exigidos, sin proyecto de diseño culminante, sin evaluación directa de los SO y profesorado. Ver «Cobertura ABET» y «Comparación».",
+      "pestana": "mapa",
+      "fuentes": [
+        {"texto": "ABET: criterios y manual de políticas (verificar la versión vigente; no hay copia en referencias/)", "url": "https://www.abet.org/accreditation/accreditation-criteria/"}
+      ]
+    },
+    {
+      "marco": "ATMAE-2027",
+      "nombre": "ATMAE 2027 · Tecnología, gestión e ingeniería aplicada",
+      "agencia": "Association of Technology, Management, and Applied Engineering (Estados Unidos); reconocida por CHEA hasta 2030",
+      "alcance": "Programa (tecnología, gestión de tecnología, ingeniería aplicada)",
+      "solicita": "La institución, para el programa u opción",
+      "base": "2027 ATMAE Accreditation Handbook (vigente desde el 1 de septiembre de 2026)",
+      "estructura_resumen": "12 estándares y sus subestándares",
+      "resultado": "Acreditación, con informe a 2 años, con informe y visita a 2 años, o no acreditación",
+      "vigencia": "Inicial 4 años; reacreditación 6 años",
+      "contexto": "Acredita programas de tecnología, gestión e ingeniería aplicada en EE. UU. y en instituciones de otros países que cumplan los mismos estándares (más de 400 programas). Su alcance no es la ingeniería clásica: la elegibilidad de Ingeniería Agronómica la decide ATMAE al recibir la solicitud.",
+      "proceso": [
+        "Solicitud hasta el 1 de octubre; ATMAE decide si el programa entra en su definición (elegibilidad).",
+        "Informe de autoestudio por estándar, con fortalezas, mejoras y evidencias, hasta el 31 de enero siguiente.",
+        "Visita entre el 1 de marzo y el 1 de mayo; el equipo se asigna en enero.",
+        "Informe del equipo visitante, con oportunidad de corregir errores de hecho.",
+        "Audiencias de la Junta de Acreditación (BoA) en la conferencia anual de octubre o noviembre, con un representante del programa.",
+        "Carta de decisión en 45 días; informe de avance a 1 o 2 años si hay cumplimiento parcial."
+      ],
+      "considera": [
+        "Estructura curricular con mínimos y máximos por área (educación general, matemáticas, ciencias, gestión y técnica).",
+        "Comité asesor de la industria activo, resultados de aprendizaje medidos y usados para mejorar.",
+        "Cualificación de profesores, instalaciones y seguridad, satisfacción de graduados y empleadores.",
+        "Trabajos calificados de estudiantes de los dos últimos años y certificados de notas representativos.",
+        "Publicación de los resultados y logros de los estudiantes."
+      ],
+      "decision": "La Junta de Acreditación acepta o modifica la recomendación del equipo y fija el resultado y sus condiciones.",
+      "situacion": "Cumple los mínimos de estructura curricular (a diferencia de ABET). Brechas altas: comité asesor de la industria, profesores de tiempo completo con doctorado y tabla de resultados por REA. Ver «Cobertura ATMAE».",
+      "pestana": "atmae",
+      "fuentes": [
+        {"texto": "2027 ATMAE Accreditation Handbook (referencias/atmae)", "url": ""},
+        {"texto": "ATMAE Accreditation", "url": "https://www.atmae.org/accreditation"}
+      ]
+    },
+    {
+      "marco": "ANECA-EURACE",
+      "nombre": "ANECA · Sello EUR-ACE de ingeniería",
+      "agencia": "ANECA (España), con autorización de ENAEE para otorgar el sello EUR-ACE",
+      "alcance": "Título de ingeniería (grado o máster)",
+      "solicita": "La universidad, para el título",
+      "base": "Criterios y Directrices Marco EUR-ACE de ENAEE (2015) y modelo de evaluación de ANECA",
+      "estructura_resumen": "4 dimensiones, 9 criterios y 8 áreas de resultados EUR-ACE",
+      "resultado": "Obtención del sello, obtención con prescripciones o denegación",
+      "vigencia": "Hasta 6 años",
+      "contexto": "EUR-ACE es el sello europeo de calidad de títulos de ingeniería; ENAEE autoriza a agencias nacionales para concederlo. ANECA lo ha otorgado a títulos españoles, pero hoy está recuperando su autorización ante ENAEE: para la Universidad hay que confirmar la vía (ANECA u otra agencia autorizada).",
+      "proceso": [
+        "Autoevaluación del título con evidencias por criterio.",
+        "Visita de un panel de expertos (al menos tres personas), con la documentación un mes antes; puede pedir muestras de trabajos de estudiantes.",
+        "Informe del panel y propuesta a la Comisión de Acreditación EUR-ACE.",
+        "Informe final: obtención, obtención con prescripciones (plan de actuación en un mes) o denegación; apelación en 30 días."
+      ],
+      "considera": [
+        "Gestión del título (organización, información pública, sistema interno de calidad).",
+        "Recursos: personal académico y de apoyo, recursos materiales y servicios.",
+        "Resultados: aprendizaje e indicadores de satisfacción y rendimiento.",
+        "Las 8 áreas EUR-ACE: conocimiento, análisis, proyectos de ingeniería, investigación, aplicación práctica, juicio, comunicación y trabajo en equipo, formación continua; y el soporte institucional del título."
+      ],
+      "decision": "La Comisión de Acreditación EUR-ACE decide el sello y su periodo; con prescripciones, la validez puede extenderse al verificar su cumplimiento.",
+      "situacion": "240 ECTS equivalentes, pero formación básica 40 de 60 y trabajo de grado 2 de 12 frente a la referencia española; diseño sin proyecto final. Ver «Cobertura ANECA».",
+      "pestana": "aneca",
+      "fuentes": [
+        {"texto": "Criterios y Directrices Marco EUR-ACE, ENAEE 2015 (referencias/aneca)", "url": ""},
+        {"texto": "ANECA: Sellos Internacionales de Calidad", "url": "https://www.aneca.es"}
+      ]
+    },
+    {
+      "marco": "SOFIA",
+      "nombre": "Sello SOFÍA · Fundación madri+d",
+      "agencia": "Fundación para el Conocimiento madri+d (España), agencia inscrita en EQAR",
+      "alcance": "Institución (con muestra de títulos)",
+      "solicita": "La Universidad, por medio del rector",
+      "base": "Guía SOFÍA 2023, sobre la Parte 1 de los ESG",
+      "estructura_resumen": "4 dimensiones, 10 estándares y 31 apartados",
+      "resultado": "Favorable con mención excelente, favorable, favorable con condiciones o desfavorable",
+      "vigencia": "5 años, con seguimiento trienal",
+      "contexto": "Acreditación institucional internacional alineada con los estándares europeos (ESG) para universidades fuera del sistema español, ofrecida primero a América Latina y el Caribe. La institución acreditada se registra en DEQAR. La Universidad ya prevé una «Ruta de Acreditación Institucional Internacional» (IF04-P042).",
+      "proceso": [
+        "Solicitud firmada por el rector con la tabla de titulaciones; la Fundación responde la viabilidad y el costo en 20 días hábiles.",
+        "Convenio y entrega del informe de autoevaluación en 60 días, con enlaces a las evidencias de cada estándar.",
+        "Evaluación documental del panel e informe previo en 20 días (continuar, plan de mejora de 6 a 12 meses o no continuar).",
+        "Visita con audiencias (equipo directivo, calidad, coordinadores); 10 días antes se fija la muestra de hasta 7 títulos.",
+        "Informe de visita en 20 días y resolución del Comité de Acreditación Internacional en otros 20; el proceso dura unos 6 meses."
+      ],
+      "considera": [
+        "Las tres misiones (docencia, investigación y extensión) en cada estándar.",
+        "Requisitos de entrada: autorización oficial, egresados en al menos el 70 % de las titulaciones y un sistema formal de calidad.",
+        "Resultados de aprendizaje de la muestra de títulos: asignaturas, trabajos de grado, exámenes e indicadores.",
+        "Tablas de titulaciones, profesorado y grupos de investigación; indicadores públicos, incluidos los de la Agenda 2030."
+      ],
+      "decision": "Cada estándar se califica A, B, C o D: todos A o B da favorable (con mención excelente si predominan las A); un C da favorable con condiciones; un D, desfavorable.",
+      "situacion": "Lectura indicativa: favorable con condiciones (6 de 10 estándares con brechas medias). Ver «Sello SOFÍA».",
+      "pestana": "sofia",
+      "fuentes": [
+        {"texto": "Sello SOFÍA (Fundación madri+d)", "url": "https://sellosofia.madrimasd.org"},
+        {"texto": "Guía SOFÍA 2023", "url": "https://www.madrimasd.org/sites/default/files/2023.02.12%20GUIA_SOFIA_2023.pdf"}
+      ]
+    }
+  ]
+}
